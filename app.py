@@ -22,8 +22,6 @@ def homepage():
     return """
     <h1>Hello heroku</h1>
     <p>It is currently {time}. Db version is {version}</p>
-
-    <img src="http://loremflickr.com/600/400">
     """.format(time=the_time, version=db_version)
 
 
