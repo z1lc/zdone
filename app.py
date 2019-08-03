@@ -16,8 +16,8 @@ toodledo = Toodledo(
 def homepage():
     to_print = []
     for task in toodledo.GetTasks(params={"fields": "length,repeat,parent"}):
-        if task.completedDate is None and (task.length != 0 or hasattr(task, "repeat")):
-            to_print.append(task.title)
+        if task.completedDate is None and task.length != 0:
+            to_print.append(task)
 
     return render_template('index.html', tasks=to_print)
 

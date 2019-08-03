@@ -7,9 +7,9 @@
     <style>
         #sortable {
             list-style-type: none;
-            margin: 0;
+            margin: auto;
             padding: 0;
-            width: 60%;
+            width: 500px;
         }
 
         #sortable li {
@@ -17,6 +17,7 @@
             padding: 5px;
             font-size: 1.2em;
             height: 1.5em;
+            overflow: hidden;
         }
 
         html > body #sortable li {
@@ -42,8 +43,8 @@
 </head>
 <body>
 <ul id="sortable">
-    {% for name in tasks %}
-    <li class="ui-state-default">{{ name }}</li>
+    {% for task in tasks %}
+    <li class="ui-state-default"><b>{{ task.length }}m</b> {{ task.title }}</li>
     {% endfor %}
 </ul>
 
