@@ -16,7 +16,7 @@ def homepage():
     return """
     <h1>Hello heroku</h1>
     <p>It is currently {time}. Db version is {version}</p>
-    """.format(time=the_time, version=run_query('SELECT version()'))
+    """.format(time=the_time, version=run_query('SELECT * from zkv;'))
 
 
 def run_query(query):
