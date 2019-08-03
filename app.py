@@ -15,8 +15,10 @@ def homepage():
         clientSecret=kv.get('TOODLEDO_CLIENT_SECRET'),
         tokenStorage=storage,
         scope="basic tasks notes outlines lists share write folders")
+    account = toodledo.GetAccount()
+
     to_print = ""
-    for task in toodledo.GetTasks(params={"fields": "length,repeat"}):
+    for task in toodledo.GetTasks(params={"fields": "length,repeat,parent"}):
         if task.completedDate is None and (task.length != 0 or hasattr(task, "repeat")):
             to_print += task.title + '  ' + '<br>'
 
