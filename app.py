@@ -14,12 +14,12 @@ toodledo = Toodledo(
 
 @app.route('/')
 def homepage():
-    to_print = ""
+    to_print = []
     for task in toodledo.GetTasks(params={"fields": "length,repeat,parent"}):
         if task.completedDate is None and (task.length != 0 or hasattr(task, "repeat")):
-            to_print += task.title + '  ' + '<br>'
+            to_print.append(task.title)
 
-    return render_template('index.html', username="fdsfds")
+    return render_template('index.html', tasks=to_print)
 
 
 if __name__ == '__main__':

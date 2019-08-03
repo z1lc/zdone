@@ -1,5 +1,26 @@
 <!DOCTYPE html>
-<html>
-<p>Hello {{ username }}</p>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>zdone</title>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="//code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+      $(function () {
+        $("#sortable").sortable({
+          placeholder: "ui-state-highlight"
+        });
+        $("#sortable").disableSelection();
+      });
+    </script>
+</head>
+<body>
+<ul id="sortable">
+    {% for name in tasks %}
+    <li class="ui-state-default">{{ name }}</li>
+    {% endfor %}
+</ul>
+
 </body>
 </html>
