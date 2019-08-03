@@ -35,8 +35,8 @@ def get(key):
 def put(key, value):
     conn = get_con()
     cur = conn.cursor()
-    cur.execute("INSERT INTO kv(k, v) VALUES (%s, %s) ON CONFLICT (k) DO UPDATE SET v = %s"
-                .format(key=key, value=value))
+    cur.execute("INSERT INTO kv(k, v) VALUES (%s, %s) ON CONFLICT (k) DO UPDATE SET v = %s",
+                (key, value, value))
     conn.commit()
     cur.close()
     conn.close()
