@@ -16,12 +16,12 @@ def homepage():
     return """
     <h1>Hello heroku</h1>
     <p>It is currently {time}. Db version is {version}</p>
-    """.format(time=the_time, version=run_query('SELECT * from zkv;'))
+    """.format(time=the_time, version=get('TOODLEDO_CLIENT_ID'))
 
 
-def run_query(query):
+def get(key):
     cur = conn.cursor()
-    cur.execute(query)
+    cur.execute("SELECT v FROM zkv WHERE k='{key}'".format(key=key))
     res = cur.fetchone()
     cur.close()
     return res
