@@ -16,8 +16,8 @@ def homepage():
         tokenStorage=storage,
         scope="basic tasks notes outlines lists share write folders")
     to_print = ""
-    for task in toodledo.GetTasks(params={}):
-        if task.completedDate is None and (hasattr(task, "length") or hasattr(task, "repeat")):
+    for task in toodledo.GetTasks(params={"fields": "length,repeat"}):
+        if task.completedDate is None and (task.length != 0 or hasattr(task, "repeat")):
             to_print += task.title + '  ' + '<br>'
 
     return to_print
