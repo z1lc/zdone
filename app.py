@@ -1,45 +1,26 @@
-import os
-from datetime import datetime
-
-import psycopg2
 from flask import Flask
+from toodledo import Toodledo
+
+import kv
+from storage import TokenStoragePostgres
 
 app = Flask(__name__)
 
 
 @app.route('/')
 def homepage():
-    the_time = datetime.now().strftime("%A, %d %b %Y")
-    put('time', the_time)
+    storage = TokenStoragePostgres("TOODLEDO_TOKEN_JSON")
+    toodledo = Toodledo(
+        clientId=kv.get('TOODLEDO_CLIENT_ID'),
+        clientSecret=kv.get('TOODLEDO_CLIENT_SECRET'),
+        tokenStorage=storage,
+        scope="basic tasks notes folders write")
+    to_print = ""
+    for task in toodledo.GetTasks(params={}):
+        if 'repeat' in task and task['repeat'] is not "":
+            to_print += task['title'] + '<br>'
 
-    return """
-    <h1>Hello heroku</h1>
-    <p>It is currently {time}. Db version is {version}</p>
-    """.format(time=the_time, version=get('time'))
-
-
-def get_con():
-    return psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require')
-
-
-def get(key):
-    conn = get_con()
-    cur = conn.cursor()
-    cur.execute("SELECT v FROM kv WHERE k='{key}'".format(key=key))
-    res = cur.fetchone()[0]
-    cur.close()
-    conn.close()
-    return res
-
-
-def put(key, value):
-    conn = get_con()
-    cur = conn.cursor()
-    cur.execute("INSERT INTO kv(k, v) VALUES (%s, %s) ON CONFLICT (k) DO UPDATE SET v = %s",
-                (key, value, value))
-    conn.commit()
-    cur.close()
-    conn.close()
+    return to_print
 
 
 if __name__ == '__main__':
