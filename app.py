@@ -14,7 +14,7 @@ def homepage():
         clientId=kv.get('TOODLEDO_CLIENT_ID'),
         clientSecret=kv.get('TOODLEDO_CLIENT_SECRET'),
         tokenStorage=storage,
-        scope="basic tasks notes folders write")
+        scope="basic tasks notes outlines lists share write folders")
     to_print = ""
     for task in toodledo.GetTasks(params={}):
         if 'repeat' in task and task['repeat'] is not "":
