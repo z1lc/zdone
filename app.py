@@ -30,7 +30,7 @@ def get(key):
 
 def put(key, value):
     cur = conn.cursor()
-    cur.execute("INSERT INTO kv(k, v) VALUES ('{key}', '{value}') ON CONFLICT (k) DO UPDATE SET v = {value}"
+    cur.execute("INSERT INTO kv(k, v) VALUES ('{key}', '{value}') ON CONFLICT (k) DO UPDATE SET v = '{value}'"
                 .format(key=key, value=value))
     cur.close()
 
