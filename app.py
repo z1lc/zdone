@@ -17,8 +17,8 @@ def homepage():
         scope="basic tasks notes outlines lists share write folders")
     to_print = ""
     for task in toodledo.GetTasks(params={}):
-        if task.completedDate is None:
-            to_print += task.title + '  ' + task.repeat + '<br>'
+        if task.completedDate is None and task.length != 0:
+            to_print += task.title + '  ' + '<br>'
 
     return to_print
 
