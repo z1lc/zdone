@@ -6,23 +6,25 @@ from flask import Flask
 
 app = Flask(__name__)
 DATABASE_URL = os.environ['DATABASE_URL']
+conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
 
 @app.route('/')
 def homepage():
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    cur = conn.cursor()
-    print('PostgreSQL database version:')
-    cur.execute('SELECT version()')
-    db_version = cur.fetchone()
-    cur.close()
-
     the_time = datetime.now().strftime("%A, %d %b %Y")
 
     return """
     <h1>Hello heroku</h1>
     <p>It is currently {time}. Db version is {version}</p>
-    """.format(time=the_time, version=db_version)
+    """.format(time=the_time, version=run_query('SELECT version()'))
+
+
+def run_query(query):
+    cur = conn.cursor()
+    cur.execute(query)
+    res = cur.fetchone()
+    cur.close()
+    return res
 
 
 if __name__ == '__main__':
