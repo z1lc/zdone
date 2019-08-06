@@ -12,14 +12,19 @@ toodledo = Toodledo(
     scope="basic tasks notes outlines lists share write folders")
 
 
-@app.route('/')
-def homepage():
+@app.route('/prioritize')
+def prioritize():
     to_print = []
     for task in toodledo.GetTasks(params={"fields": "length,repeat,parent"}):
         if task.completedDate is None and task.length != 0:
             to_print.append(task)
 
-    return render_template('index.html', tasks=to_print)
+    return render_template('prioritize.html', tasks=to_print)
+
+
+@app.route('/')
+def homepage():
+    return "hi"
 
 
 if __name__ == '__main__':
