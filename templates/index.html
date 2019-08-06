@@ -5,19 +5,21 @@
     <title>zdone</title>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <style>
-        #sortable1, #sortable2 {
+        #unsorted, #sorted {
             border: 1px solid #eee;
-            width: 50%;
             min-height: 20px;
             list-style-type: none;
             padding: 5px 0 0 0;
-            float: left;
         }
-        #sortable1 li, #sortable2 li {
+        #unsorted li, #sorted li {
             margin: 0 5px 5px 5px;
             padding: 5px;
             font-size: 1.2em;
             width: 100%;
+        }
+        #grid {
+            grid-template-columns: auto auto;
+            grid-template-rows: auto;
         }
     </style>
     <script src="//code.jquery.com/jquery-1.12.4.js"></script>
@@ -31,14 +33,19 @@
     </script>
 </head>
 <body>
-<ul id="sortable1" class="connectedSortable">
-    {% for task in tasks %}
-    <li class="ui-state-default"><b>{{ task.length }}m</b> {{ task.title }}</li>
-    {% endfor %}
-</ul>
-<ul id="sortable2" class="connectedSortable">
+<div id="grid">
+    <div id="unsortedContainer">
+        <ul id="unsorted" class="connectedSortable">
+            {% for task in tasks %}
+            <li class="ui-state-default"><b>{{ task.length }}m</b> {{ task.title }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div id="sortedContainer">
+        <ul id="sorted" class="connectedSortable">
 
-</ul>
-
+        </ul>
+    </div>
+</div>
 </body>
 </html>
