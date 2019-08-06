@@ -17,12 +17,16 @@ def show_prioritized_list():
     currently_sorted_in_db = kv.get("priorities").split("|||")
     sorted_tasks = []
     unsorted_task = []
-    for task in toodledo.GetTasks(params={"fields": "length,repeat,parent"}):
-        if task.completedDate is None and task.length != 0:
-            if task.title in currently_sorted_in_db:
-                sorted_tasks.append(task)
-            else:
-                unsorted_task.append(task)
+    all_tasks = toodledo.GetTasks(params={"fields": "length,repeat,parent"})
+    all_recurring_tasks = [t for t in all_tasks if t.completedDate is None and t.length != 0]
+    task_map = {t.title: t for t in all_recurring_tasks}
+    for name in currently_sorted_in_db:
+        if name in task_map:
+            sorted_tasks.append(task_map[name])
+            del task_map[name]
+
+    for v in task_map.values():
+        unsorted_task.append(v)
 
     return render_template('prioritize.html',
                            sorted_tasks=sorted_tasks,
