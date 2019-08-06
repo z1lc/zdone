@@ -38,8 +38,10 @@
           connectWith: ".connectedSortable"
         }).disableSelection();
         $("#sorted").on("sortupdate", function (event, ui) {
-          alert($(this).text());
-        })
+          $.post("https://endsrnhec5g8u.x.pipedream.net", $("#sorted span.taskTitle").toArray()
+            .map(e => $(e).text())
+            .join("|||"));
+        });
       });
     </script>
 </head>
@@ -56,7 +58,7 @@
         <h1>To be Sorted</h1>
         <ul id="unsorted" class="connectedSortable">
             {% for task in tasks %}
-            <li class="ui-state-default"><b>{{ task.length }}m</b> {{ task.title }}</li>
+            <li class="ui-state-default"><b>{{ task.length }}m</b> <span class="taskTitle">{{ task.title }}</span></li>
             {% endfor %}
         </ul>
     </div>
