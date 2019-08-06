@@ -38,11 +38,16 @@
           connectWith: ".connectedSortable"
         }).disableSelection();
         $("#sorted").on("sortupdate", function (event, ui) {
-          $.post("https://zdone.herokuapp.com/set_priorities", JSON.stringify({
-            "priorities": $("#sorted span.taskTitle").toArray()
-              .map(e => $(e).text())
-              .join("|||")
-          }));
+          $.ajax({
+            contentType: "application/json",
+            data: JSON.stringify({
+              "priorities": $("#sorted span.taskTitle").toArray()
+                .map(e => $(e).text())
+                .join("|||")
+            }),
+            type: "POST",
+            url: "https://zdone.herokuapp.com/set_priorities"
+          });
         });
       });
     </script>
