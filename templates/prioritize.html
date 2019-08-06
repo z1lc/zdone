@@ -38,9 +38,11 @@
           connectWith: ".connectedSortable"
         }).disableSelection();
         $("#sorted").on("sortupdate", function (event, ui) {
-          $.post("https://endsrnhec5g8u.x.pipedream.net", $("#sorted span.taskTitle").toArray()
-            .map(e => $(e).text())
-            .join("|||"));
+          $.post("https://zdone.herokuapp.com/set_priorities", {
+            "priorities": $("#sorted span.taskTitle").toArray()
+              .map(e => $(e).text())
+              .join("|||")
+          });
         });
       });
     </script>
@@ -51,13 +53,15 @@
     <div id="sortedContainer">
         <h1>Sorted by Priority</h1>
         <ul id="sorted" class="connectedSortable">
-
+            {% for task in sorted_tasks %}
+            <li class="ui-state-default"><b>{{ task.length }}m</b> <span class="taskTitle">{{ task.title }}</span></li>
+            {% endfor %}
         </ul>
     </div>
     <div id="unsortedContainer">
         <h1>To be Sorted</h1>
         <ul id="unsorted" class="connectedSortable">
-            {% for task in tasks %}
+            {% for task in unsorted_tasks %}
             <li class="ui-state-default"><b>{{ task.length }}m</b> <span class="taskTitle">{{ task.title }}</span></li>
             {% endfor %}
         </ul>

@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from toodledo import Toodledo
 
 import kv
@@ -13,13 +13,25 @@ toodledo = Toodledo(
 
 
 @app.route('/prioritize')
-def prioritize():
-    to_print = []
+def show_prioritized_list():
+    currently_sorted_in_db = kv.get("priorities").split("|||")
+    sorted_tasks = []
+    unsorted_task = []
     for task in toodledo.GetTasks(params={"fields": "length,repeat,parent"}):
         if task.completedDate is None and task.length != 0:
-            to_print.append(task)
+            if task.title in currently_sorted_in_db:
+                sorted_tasks.append(task)
+            else:
+                unsorted_task.append(task)
 
-    return render_template('prioritize.html', tasks=to_print)
+    return render_template('prioritize.html',
+                           sorted_tasks=sorted_tasks,
+                           unsorted_tasks=unsorted_task)
+
+
+@app.route('/set_priorities', methods=['POST'])
+def update_priorities():
+    kv.put("priorities", request.get_json()["priorities"])
 
 
 @app.route('/')
