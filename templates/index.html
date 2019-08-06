@@ -15,9 +15,9 @@
             margin: 0 5px 5px 5px;
             padding: 5px;
             font-size: 1.2em;
-            width: 100%;
         }
         #grid {
+            display: grid;
             grid-template-columns: auto auto;
             grid-template-rows: auto;
         }
@@ -26,7 +26,7 @@
     <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script>
       $(function () {
-        $("#sortable1, #sortable2").sortable({
+        $("#unsorted, #sorted").sortable({
           connectWith: ".connectedSortable"
         }).disableSelection();
       });
@@ -34,16 +34,16 @@
 </head>
 <body>
 <div id="grid">
+    <div id="sortedContainer">
+        <ul id="sorted" class="connectedSortable">
+
+        </ul>
+    </div>
     <div id="unsortedContainer">
         <ul id="unsorted" class="connectedSortable">
             {% for task in tasks %}
             <li class="ui-state-default"><b>{{ task.length }}m</b> {{ task.title }}</li>
             {% endfor %}
-        </ul>
-    </div>
-    <div id="sortedContainer">
-        <ul id="sorted" class="connectedSortable">
-
         </ul>
     </div>
 </div>
