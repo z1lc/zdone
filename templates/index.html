@@ -17,6 +17,7 @@
             margin: 0 5px 5px 5px;
             padding: 5px;
             font-size: 1.2em;
+            width: 100%;
         }
     </style>
     <script src="//code.jquery.com/jquery-1.12.4.js"></script>
@@ -30,12 +31,12 @@
     </script>
 </head>
 <body>
-<ul id="sortable1">
+<ul id="sortable1" class="connectedSortable">
     {% for task in tasks %}
     <li class="ui-state-default"><b>{{ task.length }}m</b> {{ task.title }}</li>
     {% endfor %}
 </ul>
-<ul id="sortable2">
+<ul id="sortable2" class="connectedSortable">
 
 </ul>
 
