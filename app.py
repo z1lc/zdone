@@ -32,6 +32,7 @@ def show_prioritized_list():
 @app.route('/set_priorities', methods=['POST'])
 def update_priorities():
     kv.put("priorities", request.get_json()["priorities"])
+    return "{'result': 'success'}"
 
 
 @app.route('/')
