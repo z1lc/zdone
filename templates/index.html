@@ -5,47 +5,41 @@
     <title>zdone</title>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <style>
-        #sortable {
-            list-style-type: none;
-            margin: auto;
-            padding: 0;
+        #sortable1, #sortable2 {
+            border: 1px solid #eee;
             width: 500px;
+            min-height: 20px;
+            list-style-type: none;
+            margin: 0;
+            padding: 5px 0 0 0;
+            float: left;
+            margin-right: 10px;
         }
-
-        #sortable li {
+        #sortable1 li, #sortable2 li {
             margin: 0 5px 5px 5px;
             padding: 5px;
             font-size: 1.2em;
-            height: 1.5em;
-            overflow: hidden;
-        }
-
-        html > body #sortable li {
-            height: 1.5em;
-            line-height: 1.2em;
-        }
-
-        .ui-state-highlight {
-            height: 1.5em;
-            line-height: 1.2em;
+            width: 120px;
         }
     </style>
     <script src="//code.jquery.com/jquery-1.12.4.js"></script>
     <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script>
       $(function () {
-        $("#sortable").sortable({
-          placeholder: "ui-state-highlight"
-        });
-        $("#sortable").disableSelection();
+        $("#sortable1, #sortable2").sortable({
+          connectWith: ".connectedSortable"
+        }).disableSelection();
       });
     </script>
 </head>
 <body>
-<ul id="sortable">
+<ul id="sortable1">
     {% for task in tasks %}
     <li class="ui-state-default"><b>{{ task.length }}m</b> {{ task.title }}</li>
     {% endfor %}
+</ul>
+<ul id="sortable2">
+
 </ul>
 
 </body>
