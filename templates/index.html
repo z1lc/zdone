@@ -16,8 +16,8 @@
 {% endblock %}
 
 {% block body %}
-<span class="timeSummary">{{ times['minutes_total'] }}m total - {{ times['minutes_completed_today'] }}m completed = {{ times['minutes_total'] - times['minutes_completed_today'] }}m remaining<br>
-({{ times['minutes_allocated'] }}m scheduled)</span>
+<div class="timeSummary">{{ times['minutes_total'] }}m total - {{ times['minutes_completed_today'] }}m completed = {{ times['minutes_total'] - times['minutes_completed_today'] }}m remaining<br>
+({{ times['minutes_allocated'] }}m scheduled)</div>
 
 <ul>
     {% for task in tasks %}
