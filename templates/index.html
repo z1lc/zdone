@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block within_head %}
+<link rel="stylesheet" href="//www.w3schools.com/w3css/4/w3.css">
 <style>
     body {
         max-width: 500px;
@@ -9,18 +10,43 @@
         font-size: 20px;
     }
 
-    .timeSummary {
+    .strike {
+        text-decoration: line-through;
+    }
+
+    .gray {
+        color: gray;
+    }
+
+    h1 {
         text-align: center;
     }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="timeSummary">{{ times['minutes_total'] }}m total - {{ times['minutes_completed_today'] }}m completed = {{ times['minutes_total'] - times['minutes_completed_today'] }}m remaining<br>
-({{ times['minutes_allocated'] }}m scheduled)</div>
+<h1>zdone</h1>
+<hr>
 
+<div class="w3-container" style="position: relative; margin: 0 16px; padding:0">
+    <div class="w3-light-grey w3-round-large">
+        <div class="w3-container w3-blue w3-round"
+             style="width:{{ times['minutes_completed_today'] / times['minutes_total'] }}%; height:24px"></div>
+    </div>
+    <div style="display: inline-block;">{{ times['minutes_completed_today'] }}m done</div>
+    <div style="float: right; display: inline-block;">{{ times['minutes_allocated'] }}m left</div>
+</div>
 <ul>
-    {% for task in tasks %}
+    {% for task in tasks_to_do %}
+    <li><b>{{ task.length }}m</b> <span class="taskTitle">{{ task.title }}</span></li>
+    {% endfor %}
+    {% for task in tasks_completed %}
+    <li class="strike gray"><b>{{ task.length }}m</b> <span class="taskTitle">{{ task.title }}</span></li>
+    {% endfor %}
+</ul>
+
+<ul class="gray">
+    {% for task in tasks_backlog %}
     <li><b>{{ task.length }}m</b> <span class="taskTitle">{{ task.title }}</span></li>
     {% endfor %}
 </ul>

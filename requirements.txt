@@ -1,3 +1,4 @@
+habitipy
 pytz
 toodledo
 Flask
