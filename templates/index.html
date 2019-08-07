@@ -8,6 +8,7 @@
         font-family: "Open Sans", Arial, Helvetica, sans-serif;
         font-size: 20px;
     }
+
     .timeSummary {
         text-align: center;
     }
@@ -15,7 +16,8 @@
 {% endblock %}
 
 {% block body %}
-<span class="timeSummary">{{ times['minutes_total'] }}m total - {{ times['minutes_completed_today'] }}m completed = {{ times['minutes_total'] - times['minutes_completed_today'] }}m remaining ({{ times['minutes_allocated'] }}m scheduled)</span>
+<span class="timeSummary">{{ times['minutes_total'] }}m total - {{ times['minutes_completed_today'] }}m completed = {{ times['minutes_total'] - times['minutes_completed_today'] }}m remaining<br>
+({{ times['minutes_allocated'] }}m scheduled)</span>
 
 <ul>
     {% for task in tasks %}
