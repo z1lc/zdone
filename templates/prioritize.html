@@ -1,59 +1,57 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>zdone</title>
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <style>
-        #unsorted, #sorted {
-            border: 1px solid #eee;
-            min-height: 20px;
-            list-style-type: none;
-            padding: 5px 0 0 0;
-        }
+{% extends "base.html" %}
 
-        #unsorted li, #sorted li {
-            margin: 0 5px 5px 5px;
-            padding: 5px;
-            font-size: 1.2em;
-        }
+{% block within_head %}
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<style>
+    #unsorted, #sorted {
+        border: 1px solid #eee;
+        min-height: 20px;
+        list-style-type: none;
+        padding: 5px 0 0 0;
+    }
 
-        #grid {
-            display: grid;
-            grid-template-columns: 50% 50%;
-            grid-template-rows: auto;
-        }
+    #unsorted li, #sorted li {
+        margin: 0 5px 5px 5px;
+        padding: 5px;
+        font-size: 1.2em;
+    }
 
-        .ui-state-highlight {
-            height: 1.5em;
-            line-height: 1.2em;
-        }
-    </style>
-    <script src="//code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <script>
-      $(function () {
-        $("#unsorted, #sorted").sortable({
-          placeholder: "ui-state-highlight",
-          connectWith: ".connectedSortable"
-        }).disableSelection();
-        $("#sorted").on("sortupdate", function (event, ui) {
-          $.ajax({
-            contentType: "application/json",
-            data: JSON.stringify({
-              "priorities": $("#sorted span.taskTitle").toArray()
-                .map(e => $(e).text())
-                .join("|||")
-            }),
-            type: "POST",
-            url: "https://zdone.herokuapp.com/set_priorities"
-          });
-        });
+    #grid {
+        display: grid;
+        grid-template-columns: 50% 50%;
+        grid-template-rows: auto;
+    }
+
+    .ui-state-highlight {
+        height: 1.5em;
+        line-height: 1.2em;
+    }
+</style>
+<script src="//code.jquery.com/jquery-1.12.4.js"></script>
+<script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+  $(function () {
+    $("#unsorted, #sorted").sortable({
+      placeholder: "ui-state-highlight",
+      connectWith: ".connectedSortable"
+    }).disableSelection();
+    $("#sorted").on("sortupdate", function (event, ui) {
+      $.ajax({
+        contentType: "application/json",
+        data: JSON.stringify({
+          "priorities": $("#sorted span.taskTitle").toArray()
+            .map(e => $(e).text())
+            .join("|||")
+        }),
+        type: "POST",
+        url: "https://zdone.herokuapp.com/set_priorities"
       });
-    </script>
-</head>
-<body>
+    });
+  });
+</script>
+{% endblock %}
 
+{% block body %}
 <div id="grid">
     <div id="sortedContainer">
         <h1>Sorted by Priority</h1>
@@ -72,5 +70,4 @@
         </ul>
     </div>
 </div>
-</body>
-</html>
+{% endblock %}
