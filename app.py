@@ -54,7 +54,7 @@ def homepage():
     i = 0
     tasks_to_do = []
     while minutes_left_to_schedule > 0 and i < len(tasks):
-        if tasks[i].dueDate <= datetime.datetime.now() and tasks[i].length <= (minutes_left_to_schedule + 5):
+        if tasks[i].dueDate <= datetime.date.today() and tasks[i].length <= (minutes_left_to_schedule + 5):
             tasks_to_do.append(tasks[i])
             minutes_left_to_schedule -= tasks[i].length
     return render_template('index.html',
