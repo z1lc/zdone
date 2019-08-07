@@ -1,8 +1,21 @@
 {% extends "base.html" %}
 
+{% block within_head %}
+<style>
+    body {
+        max-width: 500px;
+        margin: 10px auto;
+        font-family: "Open Sans", Arial, Helvetica, sans-serif;
+        font-size: 20px;
+    }
+</style>
+{% endblock %}
+
 {% block body %}
-Minutes allocated for today: {{ minutes_total }}<br>
-Minutes already completed today: {{ minutes_completed_today }}
+Minutes allocated for today: {{ times['minutes_total'] }}<br>
+Minutes already completed today: {{ times['minutes_completed_today'] }}<br>
+Minutes left to allocate: {{ times['minutes_total'] - times['minutes_completed_today'] }}<br>
+Minutes allocated: {{ times['minutes_allocated'] }}
 
 <ul>
     {% for task in tasks %}

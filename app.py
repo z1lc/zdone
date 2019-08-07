@@ -54,20 +54,26 @@ def homepage():
     for task in all_tasks:
         if task.completedDate == datetime.date.today():
             minutes_completed_today += task.length
-
     minutes_left_to_schedule = 120 - minutes_completed_today
     tasks, _ = get_sorted_and_unsorted_tasks()
     i = 0
     tasks_to_do = []
+    minutes_allocated = 0
     while minutes_left_to_schedule > 0 and i < len(tasks):
         if tasks[i].dueDate <= datetime.date.today() and tasks[i].length <= (minutes_left_to_schedule + 5):
             tasks_to_do.append(tasks[i])
             minutes_left_to_schedule -= tasks[i].length
+            minutes_allocated += tasks[i].length
         i += 1
+
+    times = {
+        'minutes_total': 120,
+        'minutes_completed_today': minutes_completed_today,
+        'minutes_allocated': minutes_allocated
+    }
     return render_template('index.html',
                            tasks=tasks_to_do,
-                           minutes_total=120,
-                           minutes_completed_today=0)
+                           times=times)
 
 
 if __name__ == '__main__':
