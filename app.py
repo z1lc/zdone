@@ -1,6 +1,7 @@
 import datetime
 from typing import List
 
+import pytz
 from flask import Flask, render_template, request
 from toodledo import Toodledo
 
@@ -13,6 +14,7 @@ toodledo = Toodledo(
     clientSecret=kv.get('TOODLEDO_CLIENT_SECRET'),
     tokenStorage=TokenStoragePostgres("TOODLEDO_TOKEN_JSON"),
     scope="basic tasks notes outlines lists share write folders")
+today = datetime.datetime.now(pytz.timezone('US/Pacific')).date()
 
 
 @app.route('/prioritize')
@@ -52,7 +54,7 @@ def homepage():
     minutes_completed_today = 0
     all_tasks = toodledo.GetTasks(params={"fields": "length"})
     for task in all_tasks:
-        if task.completedDate == datetime.date.today():
+        if task.completedDate == today:
             minutes_completed_today += task.length
     minutes_left_to_schedule = 120 - minutes_completed_today
     tasks, _ = get_sorted_and_unsorted_tasks()
@@ -60,7 +62,7 @@ def homepage():
     tasks_to_do = []
     minutes_allocated = 0
     while minutes_left_to_schedule > 0 and i < len(tasks):
-        if tasks[i].dueDate <= datetime.date.today() and tasks[i].length <= (minutes_left_to_schedule + 5):
+        if tasks[i].dueDate <= today and tasks[i].length <= (minutes_left_to_schedule + 5):
             tasks_to_do.append(tasks[i])
             minutes_left_to_schedule -= tasks[i].length
             minutes_allocated += tasks[i].length
