@@ -12,10 +12,7 @@
 {% endblock %}
 
 {% block body %}
-Minutes allocated for today: {{ times['minutes_total'] }}<br>
-Minutes already completed today: {{ times['minutes_completed_today'] }}<br>
-Minutes left to allocate: {{ times['minutes_total'] - times['minutes_completed_today'] }}<br>
-Minutes allocated: {{ times['minutes_allocated'] }}
+{{ times['minutes_total'] }}m total - {{ times['minutes_completed_today'] }}m = {{ times['minutes_total'] - times['minutes_completed_today'] }}m ({{ times['minutes_allocated'] }}m)
 
 <ul>
     {% for task in tasks %}
