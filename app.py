@@ -27,7 +27,7 @@ def show_prioritized_list():
 def get_sorted_and_unsorted_tasks() -> (List, List):
     currently_sorted_in_db = kv.get("priorities").split("|||")
     sorted_tasks, unsorted_tasks = [], []
-    all_tasks = toodledo.GetTasks(params={"fields": "length,repeat,parent"})
+    all_tasks = toodledo.GetTasks(params={"fields": "duedate,star,length,repeat,parent"})
     all_recurring_tasks = [t for t in all_tasks if t.completedDate is None and t.length != 0]
     task_map = {t.title: t for t in all_recurring_tasks}
     for name in currently_sorted_in_db:
