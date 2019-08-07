@@ -7,6 +7,7 @@ from habitipy import Habitipy
 from toodledo import Toodledo
 
 import kv
+from habitica import HabiticaTask
 from storage import TokenStoragePostgres
 
 app = Flask(__name__)
@@ -27,11 +28,13 @@ cached_tasks = []
 
 
 @app.route('/habitica')
-def habitica_page():
+def habitica_today_tasks():
     habit_list = []
+    # habitica_day_string = {0: "m", 1: "tu", 2: "w", 3: "th", 4: "f", 5: "s", 6: "su"}[today.weekday()]
+    priority_to_length = {0.1: 5, 1: 15, 1.5: 30, 2: 60}
     for habit in habitica.tasks.user.get(type='dailys'):
-        habit_list.append(habit["text"])
-        # habitica.tasks[habit["id"]].score.up.post()
+        task = HabiticaTask(habit['_id'], habit['title'], 0)
+        habit_list.append(task)
     return str(habit_list)
 
 
