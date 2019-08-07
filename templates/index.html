@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block body %}
+Minutes allocated for today: {{ minutes_total }}<br>
+Minutes already completed today: {{ minutes_completed_today }}
+
 <ul>
     {% for task in tasks %}
     <li><b>{{ task.length }}m</b> <span class="taskTitle">{{ task.title }}</span></li>

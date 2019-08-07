@@ -49,7 +49,13 @@ def update_priorities():
 
 @app.route('/')
 def homepage():
-    minutes_left_to_schedule = 120
+    minutes_completed_today = 0
+    all_tasks = toodledo.GetTasks(params={"fields": "length"})
+    for task in all_tasks:
+        if task.completedDate == datetime.date.today():
+            minutes_completed_today += task.length
+
+    minutes_left_to_schedule = 120 - minutes_completed_today
     tasks, _ = get_sorted_and_unsorted_tasks()
     i = 0
     tasks_to_do = []
@@ -59,7 +65,9 @@ def homepage():
             minutes_left_to_schedule -= tasks[i].length
         i += 1
     return render_template('index.html',
-                           tasks=tasks_to_do)
+                           tasks=tasks_to_do,
+                           minutes_total=120,
+                           minutes_completed_today=0)
 
 
 if __name__ == '__main__':
