@@ -1,3 +1,4 @@
+import time
 from typing import List
 
 from flask import Flask, render_template, request
@@ -53,7 +54,7 @@ def homepage():
     i = 0
     tasks_to_do = []
     while minutes_left_to_schedule > 0 and i < len(tasks):
-        if tasks[i].length <= (minutes_left_to_schedule + 5):
+        if tasks[i].dueDate <= time.time() and tasks[i].length <= (minutes_left_to_schedule + 5):
             tasks_to_do.append(tasks[i])
             minutes_left_to_schedule -= tasks[i].length
     return render_template('index.html',
