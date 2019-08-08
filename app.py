@@ -4,6 +4,7 @@ from typing import List
 import pytz
 from dateutil import parser
 from flask import Flask, render_template, request
+from flask_talisman import Talisman
 from habitipy import Habitipy
 from toodledo import Toodledo
 
@@ -12,6 +13,7 @@ from storage import TokenStoragePostgres
 from uniformtasks import ZDTask
 
 app = Flask(__name__)
+Talisman(app)
 toodledo = Toodledo(
     clientId=kv.get('TOODLEDO_CLIENT_ID'),
     clientSecret=kv.get('TOODLEDO_CLIENT_SECRET'),
