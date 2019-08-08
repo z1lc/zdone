@@ -21,7 +21,7 @@
     h1 {
         float: left;
         display: block;
-        margin: 10px 0 10px 10px;
+        margin: 0 0 10px 10px;
     }
 
     div.top-container {
@@ -37,6 +37,7 @@
     div.w3-container.w3-blue.w3-round {
         width: {{ times['minutes_completed_today'] / times['minutes_total'] }}%;
         height: 24px;
+        padding: 0;
     }
     /* @formatter:on */
 
@@ -47,18 +48,45 @@
     hr {
         clear: both;
     }
+
+    .badge1 {
+        position: relative;
+    }
+
+    .badge1[data-badge]:after {
+        content: attr(data-badge);
+        position: absolute;
+        top: 12px;
+        right: -8px;
+        font-size: .3em;
+        background: red;
+        color: white;
+        width: 18px;
+        height: 18px;
+        text-align: center;
+        line-height: 18px;
+        border-radius: 50%;
+        box-shadow: 0 0 1px #333;
+        font-weight: bold;
+    }
 </style>
 {% endblock %}
 
 {% block body %}
+{% if num_unsorted_tasks > 0 %}
+<a href="/prioritize"><h1 class="badge1" data-badge="{{ num_unsorted_tasks }}">zdone</h1></a>
+{% else %}
 <h1>zdone</h1>
+{% endif %}
 
 <div class="w3-container top-container">
     <div class="w3-light-grey w3-round-large">
         <div class="w3-container w3-blue w3-round"></div>
     </div>
+    <!--
     <div style="display: inline-block;">{{ times['minutes_completed_today'] }}m done</div>
-    <div style="float: right; display: inline-block;">{{ times['minutes_allocated'] }}m left</div>
+    <div style="float: right; display: inline-block;">{{ times['minutes_allocated'] }}m</div>
+    -->
 </div>
 <hr>
 <ul>

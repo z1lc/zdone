@@ -6,3 +6,4 @@ Flask
 gunicorn
 psycopg2-binary
 flask-talisman
+flask-redis
