@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block within_head %}
-<link rel="stylesheet" href="//www.w3schools.com/w3css/4/w3.css">
 <style>
     body {
         max-width: 500px;
@@ -35,7 +34,7 @@
 
     /* @formatter:off */
     div.w3-container.w3-blue.w3-round {
-        width: {{ times['minutes_completed_today'] / times['minutes_total'] }}%;
+        width: {{ times['minutes_completed_today'] * 100 / times['minutes_total'] }}%;
         height: 24px;
         padding: 0;
     }

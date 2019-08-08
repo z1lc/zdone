@@ -25,6 +25,10 @@ toodledo = Toodledo(
     scope="basic tasks notes outlines lists share write folders")
 
 
+def get_habitica_daily_ordering() -> List[str]:
+    return habitica.user.get(userFields='tasksOrder')['tasksOrder']['dailys']
+
+
 def get_habitica_tasks() -> List[ZDTask]:
     habit_list = []
     habitica_day_string = {0: "m", 1: "tu", 2: "w", 3: "th", 4: "f", 5: "s", 6: "su"}[today.weekday()]
