@@ -56,7 +56,7 @@
         <h1>Sorted by Priority</h1>
         <ul id="sorted" class="connectedSortable">
             {% for task in sorted_tasks %}
-            <li class="ui-state-default"><b>{{ task.length }}m</b> <span class="taskTitle">{{ task.title }}</span></li>
+            <li class="ui-state-default"><b>{{ task.length_minutes }}m</b> <span class="taskTitle">{{ task.name }}</span></li>
             {% endfor %}
         </ul>
     </div>
@@ -64,7 +64,7 @@
         <h1>To be Sorted</h1>
         <ul id="unsorted" class="connectedSortable">
             {% for task in unsorted_tasks %}
-            <li class="ui-state-default"><b>{{ task.length }}m</b> <span class="taskTitle">{{ task.title }}</span></li>
+            <li class="ui-state-default"><b>{{ task.length_minutes }}m</b> <span class="taskTitle">{{ task.name }}</span></li>
             {% endfor %}
         </ul>
     </div>

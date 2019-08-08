@@ -63,16 +63,16 @@
 <hr>
 <ul>
     {% for task in tasks_to_do %}
-    <li><b>{{ task.length }}m</b> <span class="taskTitle">{{ task.title }}</span></li>
+    <li><b>{{ task.length_minutes }}m</b> <span class="taskTitle">{{ task.name }}</span></li>
     {% endfor %}
     {% for task in tasks_completed %}
-    <li class="strike gray"><b>{{ task.length }}m</b> <span class="taskTitle">{{ task.title }}</span></li>
+    <li class="strike gray"><b>{{ task.length_minutes }}m</b> <span class="taskTitle">{{ task.name }}</span></li>
     {% endfor %}
 </ul>
 
 <ul class="gray">
     {% for task in tasks_backlog %}
-    <li><b>{{ task.length }}m</b> <span class="taskTitle">{{ task.title }}</span></li>
+    <li><b>{{ task.length_minutes }}m</b> <span class="taskTitle">{{ task.name }}</span></li>
     {% endfor %}
 </ul>
 {% endblock %}

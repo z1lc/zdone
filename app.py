@@ -1,14 +1,15 @@
-import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 import pytz
+from dateutil import parser
 from flask import Flask, render_template, request
 from habitipy import Habitipy
 from toodledo import Toodledo
 
 import kv
-from habitica import HabiticaTask
 from storage import TokenStoragePostgres
+from uniformtasks import ZDTask
 
 app = Flask(__name__)
 toodledo = Toodledo(
@@ -23,19 +24,27 @@ habitica = Habitipy({
     'show_numbers': 'y',
     'show_style': 'wide'
 })
-today = datetime.datetime.now(pytz.timezone('US/Pacific')).date()
+today = datetime.now(pytz.timezone('US/Pacific')).date()
 cached_tasks = []
 
 
-@app.route('/habitica')
-def habitica_today_tasks():
+def get_habitica_tasks() -> List[ZDTask]:
     habit_list = []
-    # habitica_day_string = {0: "m", 1: "tu", 2: "w", 3: "th", 4: "f", 5: "s", 6: "su"}[today.weekday()]
-    priority_to_length = {0.1: 5, 1: 15, 1.5: 30, 2: 60}
+    habitica_day_string = {0: "m", 1: "tu", 2: "w", 3: "th", 4: "f", 5: "s", 6: "su"}[today.weekday()]
     for habit in habitica.tasks.user.get(type='dailys'):
-        task = HabiticaTask(habit['_id'], habit['title'], 0)
+        if habit['repeat'][habitica_day_string] and not habit['completed']:
+            due = today
+        else:
+            due = parser.parse(habit['nextDue'][0], '').date()
+        task = ZDTask(
+            habit['_id'],
+            habit['text'],
+            float(habit['notes']),  # use notes field in habitica for estimated minutes
+            due,
+            habit['completed'],
+            'habitica')
         habit_list.append(task)
-    return str(habit_list)
+    return habit_list
 
 
 @app.route('/prioritize')
@@ -47,12 +56,17 @@ def show_prioritized_list():
                            unsorted_tasks=unsorted_tasks)
 
 
-def get_sorted_and_unsorted_tasks() -> (List, List):
+@app.route('/dependencies')
+def show_dependency_list():
+    return ""
+
+
+def get_sorted_and_unsorted_tasks() -> (List[ZDTask], List[ZDTask]):
     currently_sorted_in_db = kv.get("priorities").split("|||")
     sorted_tasks, unsorted_tasks = [], []
-    all_tasks = get_all_tasks_from_api()
-    all_recurring_tasks = [t for t in all_tasks if t.completedDate is None and t.length != 0]
-    task_map = {t.title: t for t in all_recurring_tasks}
+    all_tasks: List[ZDTask] = get_toodledo_tasks() + get_habitica_tasks()
+    all_recurring_tasks = [t for t in all_tasks if t.length_minutes != 0]
+    task_map = {t.name: t for t in all_recurring_tasks}
     for name in currently_sorted_in_db:
         if name in task_map:
             sorted_tasks.append(task_map[name])
@@ -70,10 +84,19 @@ def update_priorities():
     return "{'result': 'success'}"
 
 
-def get_all_tasks_from_api():
+def get_toodledo_tasks() -> List[ZDTask]:
+    zd_tasks = []
+    # TODO: add support for repeat,parent
+    all_uncomplete = toodledo.GetTasks(params={"fields": "duedate,length,", "comp": 0})
+    recent_complete = toodledo.GetTasks(params={"fields": "duedate,length", "comp": 1,
+                                                "after": int((datetime.today() - timedelta(days=2)).timestamp())})
+    for task in all_uncomplete + recent_complete:
+        if task.completedDate is None or task.completedDate == today:
+            zd_tasks.append(
+                ZDTask(task.id_, task.title, task.length, task.dueDate, task.completedDate == today, "toodledo"))
     global cached_tasks
     if not cached_tasks:
-        cached_tasks = toodledo.GetTasks(params={"fields": "duedate,star,length,repeat,parent"})
+        cached_tasks = zd_tasks
     return cached_tasks
 
 
@@ -81,21 +104,21 @@ def get_all_tasks_from_api():
 def homepage():
     minutes_completed_today = 0
     tasks_completed, tasks_to_do, tasks_backlog = [], [], []
-    all_tasks = get_all_tasks_from_api()
+    all_tasks = get_toodledo_tasks()
     for task in all_tasks:
-        if task.completedDate == today and task.length > 0:
-            minutes_completed_today += task.length
+        if task.completed_today and task.length_minutes > 0:
+            minutes_completed_today += task.length_minutes
             tasks_completed.append(task)
     minutes_left_to_schedule = 120 - minutes_completed_today
     tasks, _ = get_sorted_and_unsorted_tasks()
     i = 0
     minutes_allocated = 0
     while minutes_left_to_schedule > 0 and i < len(tasks):
-        if tasks[i].dueDate <= today:
-            if tasks[i].length <= (minutes_left_to_schedule + 5):
+        if tasks[i].due <= today:
+            if tasks[i].length_minutes <= (minutes_left_to_schedule + 5):
                 tasks_to_do.append(tasks[i])
-                minutes_left_to_schedule -= tasks[i].length
-                minutes_allocated += tasks[i].length
+                minutes_left_to_schedule -= tasks[i].length_minutes
+                minutes_allocated += tasks[i].length_minutes
             else:
                 tasks_backlog.append(tasks[i])
         i += 1
