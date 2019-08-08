@@ -12,8 +12,15 @@ import kv
 from storage import TokenStoragePostgres
 from uniformtasks import ZDTask
 
+csp = {
+    'default-src': [
+        '\'self\'',
+        '*.jquery.com',
+        '*.w3schools.com'
+    ]
+}
 app = Flask(__name__)
-Talisman(app)
+Talisman(content_security_policy=csp)
 toodledo = Toodledo(
     clientId=kv.get('TOODLEDO_CLIENT_ID'),
     clientSecret=kv.get('TOODLEDO_CLIENT_SECRET'),
