@@ -5,3 +5,4 @@ toodledo
 Flask
 gunicorn
 psycopg2-binary
+flask-talisman
