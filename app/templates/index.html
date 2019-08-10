@@ -85,6 +85,11 @@
         margin-right: 10px;
     }
 
+    div.pieAndTitle {
+        display: inline-block;
+        width: 420px;
+    }
+
     div.buttons {
         display: inline-block;
         cursor: pointer;
@@ -148,16 +153,21 @@
     -->
 </div>
 <hr>
-{% for task in tasks_to_do %}
-<div class="task" id="{{ task.service }}-{{ task.id }}">
-    <pie style="background-image: {{ task.pie_background_image }};"></pie>
-    <span class="taskTitle">{{ task.name }}</span>
-    {% if task.service == "habitica" %}
-    <div class="buttons">
-        <i class="fas fa-check check" onclick="completeItem('{{ task.service }}', '{{ task.id }}')"></i><i class="fas fa-angle-double-right defer" onclick="deferItem('{{ task.service }}', '{{ task.id }}')"></i>
+<div class="tasks">
+    {% for task in tasks_to_do %}
+    <div class="task" id="{{ task.service }}-{{ task.id }}">
+        <div class="pieAndTitle">
+            <pie style="background-image: {{ task.pie_background_image }};"></pie>
+            <span class="taskTitle">{{ task.name }}</span>
+        </div>
+        {% if task.service == "habitica" %}
+        <div class="buttons">
+            <i class="fas fa-check check" onclick="completeItem('{{ task.service }}', '{{ task.id }}')"></i><i
+                class="fas fa-angle-double-right defer" onclick="deferItem('{{ task.service }}', '{{ task.id }}')"></i>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
+    {% endfor %}
 </div>
-{% endfor %}
 
 {% endblock %}
