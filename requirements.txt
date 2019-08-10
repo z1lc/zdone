@@ -10,3 +10,4 @@ flask-talisman
 flask-redis
 flask_login
 flask_migrate
+flask_wtf
