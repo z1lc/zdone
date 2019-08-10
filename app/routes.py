@@ -15,7 +15,7 @@ from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica
 from .util import today
 from .ztasks import ZDTask
 
-TOTAL_MINUTES = 180
+DEFAULT_TOTAL_MINUTES = 120
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -148,7 +148,9 @@ def homepage():
 
     task_ids_to_hide = redis_client.get("hidden:" + current_user.username + ":" + str(today))
     task_ids_to_hide = [] if task_ids_to_hide is None else task_ids_to_hide.decode().split("|||")
-    minutes_left_to_schedule = TOTAL_MINUTES - minutes_completed_today
+
+    total_minutes = DEFAULT_TOTAL_MINUTES if request.args.get('time') is None else int(request.args.get('time'))
+    minutes_left_to_schedule = total_minutes - minutes_completed_today
     i = 0
     minutes_allocated = 0
     while i < len(prioritized_tasks):
@@ -176,14 +178,15 @@ def homepage():
     sorted_tasks_to_do.sort(key=lambda tup: tup[0])
 
     times = {
-        'minutes_total': TOTAL_MINUTES,
         'minutes_completed_today': minutes_completed_today,
         'minutes_allocated': minutes_allocated
     }
+    percent_done = int(times['minutes_completed_today'] * 100 / (
+            times['minutes_completed_today'] + times['minutes_allocated']))
     return render_template('index.html',
                            tasks_completed=tasks_completed,
                            tasks_to_do=[task for _, task in sorted_tasks_to_do],
                            tasks_backlog=tasks_backlog,
                            times=times,
                            num_unsorted_tasks=len(unprioritized_tasks),
-                           percentage=max(1, times['minutes_completed_today'] * 100 / times['minutes_total']))
+                           percentage=min(100, max(1, percent_done)))
