@@ -5,6 +5,7 @@ from typing import List
 
 import requests
 from dateutil import parser
+from flask_login import current_user
 from habitipy import Habitipy
 from toodledo import Toodledo
 
@@ -13,31 +14,32 @@ from .storage import TokenStoragePostgres
 from .util import today
 from .ztasks import ZDTask
 
-habitica = Habitipy({
-    'url': 'https://habitica.com',
-    'login': kv.get('HABITICA_USER_ID'),
-    'password': kv.get('HABITICA_API_TOKEN'),
-    'show_numbers': 'y',
-    'show_style': 'wide'
-})
-toodledo = Toodledo(
-    clientId=kv.get('TOODLEDO_CLIENT_ID'),
-    clientSecret=kv.get('TOODLEDO_CLIENT_SECRET'),
-    tokenStorage=TokenStoragePostgres("TOODLEDO_TOKEN_JSON"),
-    scope="basic tasks notes outlines lists share write folders")
+
+def get_habitica():
+    return Habitipy({
+        'url': 'https://habitica.com',
+        'login': current_user.habitica_user_id,
+        'password': current_user.habitica_api_token,
+        'show_numbers': 'y',
+        'show_style': 'wide'
+    })
 
 
-def get_habitica_daily_ordering() -> List[str]:
-    return habitica.user.get(userFields='tasksOrder')['tasksOrder']['dailys']
+def get_toodledo():
+    return Toodledo(
+        clientId=kv.get('TOODLEDO_CLIENT_ID'),
+        clientSecret=kv.get('TOODLEDO_CLIENT_SECRET'),
+        tokenStorage=TokenStoragePostgres(current_user.id),
+        scope="basic tasks notes outlines lists share write folders")
 
 
 def get_habitica_tasks() -> List[ZDTask]:
     # cron rolls over to next day in the case of uncompleted dailys yesterday
     # idempotent so fine to call every time
-    habitica.cron.post()
+    get_habitica().cron.post()
     habit_list = []
     habitica_day_string = {0: "m", 1: "tu", 2: "w", 3: "th", 4: "f", 5: "s", 6: "su"}[today.weekday()]
-    for habit in habitica.tasks.user.get(type='dailys'):
+    for habit in get_habitica().tasks.user.get(type='dailys'):
         if habit['repeat'][habitica_day_string] and not habit['completed']:
             due = today
         else:
@@ -54,7 +56,7 @@ def get_habitica_tasks() -> List[ZDTask]:
 
 
 def complete_habitica_task(task_id):
-    habitica.tasks[task_id].score.up.post()
+    get_habitica().tasks[task_id].score.up.post()
 
 
 def complete_toodledo_task(task_id):
@@ -65,20 +67,21 @@ def complete_toodledo_task(task_id):
         "reschedule": "1"
     }]
     endpoint = "http://api.toodledo.com/3/tasks/edit.php?access_token={access_token}&tasks={tasks}".format(
-        access_token=loads(kv.get("TOODLEDO_TOKEN_JSON"))["access_token"], tasks=dumps(tasks))
+        access_token=loads(current_user.toodledo_token_json)["access_token"], tasks=dumps(tasks))
     requests.post(url=endpoint)
 
 
 def get_toodledo_tasks(redis_client) -> List[ZDTask]:
-    account = toodledo.GetAccount()
+    account = get_toodledo().GetAccount()
     server_last_mod = max(account.lastEditTask.timestamp(), account.lastDeleteTask.timestamp())
     db_last_mod = redis_client.get("toodledo:last_mod")
     if db_last_mod is None or float(db_last_mod) < server_last_mod:
         zd_tasks = []
         # TODO: add support for repeat,parent
-        all_uncomplete = toodledo.GetTasks(params={"fields": "duedate,length,", "comp": 0})
-        recent_complete = toodledo.GetTasks(params={"fields": "duedate,length", "comp": 1,
-                                                    "after": int((datetime.today() - timedelta(days=2)).timestamp())})
+        all_uncomplete = get_toodledo().GetTasks(params={"fields": "duedate,length,", "comp": 0})
+        recent_complete = get_toodledo().GetTasks(params={"fields": "duedate,length", "comp": 1,
+                                                          "after": int(
+                                                              (datetime.today() - timedelta(days=2)).timestamp())})
         for task in all_uncomplete + recent_complete:
             if task.completedDate is None or task.completedDate == today:
                 zd_tasks.append(

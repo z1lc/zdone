@@ -4,17 +4,19 @@ from json import dumps, loads
 
 from toodledo import TokenStorageFile
 
-from . import kv
+from app.models import User
+from . import db
 
 
 class TokenStoragePostgres(TokenStorageFile):
-    """Stores the API tokens as a file"""
+    """Stores the API tokens in the user db"""
 
     def __init__(self, path):
         super().__init__(path)
 
     def Save(self, token):
-        kv.put(self.path, dumps(token))
+        User.query.get(int(self.path)).toodledo_token_json = dumps(token)
+        db.session.commit()
 
     def Load(self):
-        return loads(kv.get(self.path))
+        return loads(User.query.get(int(self.path)).toodledo_token_json)

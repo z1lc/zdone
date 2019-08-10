@@ -8,12 +8,12 @@ from flask_login import login_required
 from werkzeug.urls import url_parse
 from werkzeug.utils import redirect
 
-from . import kv, redis_client, app
+from . import redis_client, app, db
 from .forms import LoginForm
 from .models import User
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task
-from .ztasks import ZDTask
 from .util import today
+from .ztasks import ZDTask
 
 TOTAL_MINUTES = 120
 
@@ -76,7 +76,7 @@ def get_all_tasks() -> List[ZDTask]:
 
 
 def get_task_order_from_db(order_type) -> (List[ZDTask], List[ZDTask]):
-    currently_sorted_in_db = kv.get(order_type).split("|||")
+    currently_sorted_in_db = getattr(current_user, order_type).split("|||")
     sorted_tasks, unsorted_tasks = [], []
     all_tasks: List[ZDTask] = get_all_tasks()
     all_recurring_tasks = [t for t in all_tasks if t.length_minutes != 0]
@@ -95,14 +95,16 @@ def get_task_order_from_db(order_type) -> (List[ZDTask], List[ZDTask]):
 @app.route('/set_priorities', methods=['POST'])
 @login_required
 def update_priorities():
-    kv.put("priorities", request.get_json()["priorities"])
+    current_user.priorities = request.get_json()["priorities"]
+    db.session.commit()
     return "{'result': 'success'}"
 
 
 @app.route('/set_dependencies', methods=['POST'])
 @login_required
 def update_dependencies():
-    kv.put("dependencies", request.get_json()["dependencies"])
+    current_user.dependencies = request.get_json()["dependencies"]
+    db.session.commit()
     return "{'result': 'success'}"
 
 

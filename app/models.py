@@ -5,11 +5,6 @@ from . import db
 from . import login
 
 
-@login.user_loader
-def load_user(id):
-    return User.query.get(int(id))
-
-
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
@@ -33,6 +28,11 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
+
+
+@login.user_loader
+def load_user(id) -> User:
+    return User.query.get(int(id))
 
 
 class kv(db.Model):
