@@ -1,9 +1,11 @@
 import collections
+import datetime
 import pickle
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from json import loads, dumps
 from typing import List, Dict
 
+import pytz
 import requests
 from dateutil import parser
 from flask_login import current_user
@@ -47,12 +49,26 @@ def get_habitica_tasks() -> List[ZDTask]:
             due = today
         else:
             due = parser.parse(habit['nextDue'][0], '').date()
+
+        completed_date = None
+        if habit['completed']:
+            completed_date = today
+        else:
+            sorted_history = sorted(habit['history'], key=lambda date_plus_val: -date_plus_val['date'])
+            i = 1
+            while i < len(sorted_history):
+                if sorted_history[i - 1]['value'] > sorted_history[i]['value']:
+                    completed_date = datetime.fromtimestamp(int(sorted_history[i - 1]['date'] / 1000),
+                                                            tz=pytz.timezone('US/Pacific'))
+                    break
+                i += 1
+
         task = ZDTask(
             habit['_id'],
             habit['text'],
             float(habit['notes']),  # use notes field in habitica for estimated minutes
             due,
-            habit['completed'],
+            completed_date,
             "",
             'habitica',
             [])
@@ -68,7 +84,7 @@ def complete_toodledo_task(task_id):
     tasks = [{
         "id": task_id,
         # https://stackoverflow.com/a/8778548
-        "completed": int(datetime.now().replace(tzinfo=timezone.utc).timestamp()),
+        "completed": int(datetime.now().replace(tzinfo=datetime.timezone.utc).timestamp()),
         "reschedule": "1"
     }]
     endpoint = "http://api.toodledo.com/3/tasks/edit.php?access_token={access_token}&tasks={tasks}".format(
@@ -92,12 +108,12 @@ def get_toodledo_tasks(redis_client) -> List[ZDTask]:
         for task in all_uncomplete + recent_complete:
             if task.parent != 0:
                 parent_id_to_subtask_list[task.parent].append(
-                    ZDSubTask(str(task.id_), task.title, task.completedDate == today, task.note, "toodledo"))
+                    ZDSubTask(str(task.id_), task.title, task.completedDate, task.note, "toodledo"))
 
         for task in all_uncomplete + recent_complete:
             if task.parent == 0 and (task.completedDate is None or task.completedDate == today):
                 zd_tasks.append(
-                    ZDTask(str(task.id_), task.title, float(task.length), task.dueDate, task.completedDate == today,
+                    ZDTask(str(task.id_), task.title, float(task.length), task.dueDate, task.completedDate,
                            task.note, "toodledo", parent_id_to_subtask_list[task.id_]))
         redis_client.set("toodledo:" + current_user.username, pickle.dumps(zd_tasks))
         redis_client.set("toodledo:" + current_user.username + ":last_mod", server_last_mod)

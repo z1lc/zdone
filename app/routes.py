@@ -62,8 +62,8 @@ def show_dependencies():
         if e.name == "Mail":
             index_insert = i
 
-    dependencies_ordered.insert(index_insert,
-                                ZDTask("-1", "[all unordered Toodledo tasks]", 0, None, False, "unorderedToodledo"))
+    dependencies_ordered.insert(index_insert, ZDTask(
+        "-1", "[all unordered Toodledo tasks]", 0, None, None, "", "unorderedToodledo", []))
 
     return render_template('prioritize_and_order.html',
                            sorted_tasks=dependencies_ordered,
@@ -119,7 +119,8 @@ def update_task():
     if update == "defer":
         redis_client.append("hidden:" + current_user.username + ":" + str(today), (task_id + "|||").encode())
         redis_client.expire("hidden:" + current_user.username + ":" + str(today), timedelta(days=7))
-        redis_client.delete("toodledo:" + current_user.username + ":last_mod")  # can no longer use cached tasks since we have to re-sort
+        # can no longer use cached tasks since we have to re-sort
+        redis_client.delete("toodledo:" + current_user.username + ":last_mod")
     elif update == "complete":
         if service == "habitica":
             complete_habitica_task(task_id)
@@ -141,7 +142,7 @@ def homepage():
     tasks_completed, tasks_to_do, tasks_backlog = set(), set(), set()
     prioritized_tasks, unprioritized_tasks = get_task_order_from_db("priorities")
     for task in prioritized_tasks + unprioritized_tasks:
-        if task.completed_today and task.length_minutes > 0:
+        if task.completed_today() and task.length_minutes > 0:
             minutes_completed_today += task.length_minutes
             tasks_completed.add(task)
 
@@ -152,9 +153,10 @@ def homepage():
     minutes_allocated = 0
     while i < len(prioritized_tasks):
         prioritized_task = prioritized_tasks[i]
-        if prioritized_task.due <= today:
+        if prioritized_task.due_date <= today:
             if prioritized_task.length_minutes <= (minutes_left_to_schedule + 5) \
-                    and prioritized_task.id not in task_ids_to_hide:
+                    and prioritized_task.id not in task_ids_to_hide \
+                    and not prioritized_task.completed_today():
                 tasks_to_do.add(prioritized_task)
                 minutes_left_to_schedule -= prioritized_task.length_minutes
                 minutes_allocated += prioritized_task.length_minutes

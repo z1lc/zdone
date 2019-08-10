@@ -1,19 +1,26 @@
 import datetime
 from typing import List
+
 from urlextract import URLExtract
+
+from app.util import today
+
 extractor = URLExtract()
 
 
 class ZDSubTask:
-    def __init__(self, id_: str, name: str, completed_today: bool, note: str, service: str):
+    def __init__(self, id_: str, name: str, completed_date: datetime, note: str, service: str):
         self.id = id_
         self.name = name
-        self.completed_today = completed_today
+        self.completed_date = completed_date
         urls = extractor.find_urls(note)
         for url in urls:
             note = note.replace(url, "<a href=\"{url}\" target=\"_blank\">{url}</a>".format(url=url))
         self.note = note.replace("\n", "<br>")
         self.service = service
+
+    def completed_today(self):
+        return self.completed_date == today
 
 
 class ZDTask:
@@ -21,16 +28,16 @@ class ZDTask:
                  id_: str,
                  name: str,
                  length_minutes: float,
-                 due: datetime,
-                 completed_today: bool,
+                 due_date: datetime,
+                 completed_date: datetime,
                  note: str,
                  service: str,
                  sub_tasks: List[ZDSubTask]):
         self.id = id_
         self.name = name
         self.length_minutes = length_minutes
-        self.due = due
-        self.completed_today = completed_today
+        self.due_date = due_date
+        self.completed_date = completed_date
         self.note = note.replace("\n", "<br>")
         self.service = service
         self.sub_tasks = sub_tasks
@@ -49,4 +56,7 @@ class ZDTask:
 
     def __repr__(self):
         return "{" + self.service + "_task" + ", ".join(
-            [self.id, self.name, str(self.length_minutes), str(self.due), str(self.completed_today)]) + "}"
+            [self.id, self.name, str(self.length_minutes), str(self.due_date), str(self.completed_date)]) + "}"
+
+    def completed_today(self):
+        return self.completed_date == today
