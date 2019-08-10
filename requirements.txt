@@ -8,3 +8,4 @@ gunicorn
 psycopg2-binary
 flask-talisman
 flask-redis
+flask_login
