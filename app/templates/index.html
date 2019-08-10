@@ -165,12 +165,12 @@
             <pie style="background-image: {{ task.pie_background_image }};"></pie>
             <span class="taskTitle">{{ task.name }}</span>
         </div>
-        {% if task.service == "habitica" %}
         <div class="buttons">
-            <i class="fas fa-check check" onclick="completeItem('{{ task.service }}', '{{ task.id }}')"></i><i
-                class="fas fa-angle-double-right defer" onclick="deferItem('{{ task.service }}', '{{ task.id }}')"></i>
+            {% if task.service == "habitica" %}
+            <i class="fas fa-check check" onclick="completeItem('{{ task.service }}', '{{ task.id }}')"></i>
+            {% endif %}
+            <i class="fas fa-angle-double-right defer" onclick="deferItem('{{ task.service }}', '{{ task.id }}')"></i>
         </div>
-        {% endif %}
     </div>
     {% endfor %}
 </div>
