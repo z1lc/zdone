@@ -4,7 +4,7 @@ from json import dumps, loads
 
 from toodledo import TokenStorageFile
 
-import kv
+from . import kv
 
 
 class TokenStoragePostgres(TokenStorageFile):

@@ -1,3 +1,4 @@
+import pickle
 from datetime import datetime, timedelta
 from typing import List
 
@@ -5,11 +6,10 @@ from dateutil import parser
 from habitipy import Habitipy
 from toodledo import Toodledo
 
-import kv
-from storage import TokenStoragePostgres
-from uniformtasks import ZDTask
-from util import today
-import pickle
+from . import kv
+from .storage import TokenStoragePostgres
+from .ztasks import ZDTask
+from .util import today
 
 habitica = Habitipy({
     'url': 'https://habitica.com',
@@ -30,6 +30,9 @@ def get_habitica_daily_ordering() -> List[str]:
 
 
 def get_habitica_tasks() -> List[ZDTask]:
+    # cron rolls over to next day in the case of uncompleted dailys yesterday
+    # idempotent so fine to call every time
+    habitica.cron.post()
     habit_list = []
     habitica_day_string = {0: "m", 1: "tu", 2: "w", 3: "th", 4: "f", 5: "s", 6: "su"}[today.weekday()]
     for habit in habitica.tasks.user.get(type='dailys'):
@@ -48,11 +51,15 @@ def get_habitica_tasks() -> List[ZDTask]:
     return habit_list
 
 
+def complete_habitica_task(id):
+    habitica.tasks[id].score.up.post()
+
+
 def get_toodledo_tasks(redis_client) -> List[ZDTask]:
     account = toodledo.GetAccount()
     server_last_mod = max(account.lastEditTask.timestamp(), account.lastDeleteTask.timestamp())
-    db_last_mod = float(redis_client.get("toodledo:last_mod"))
-    if db_last_mod is None or db_last_mod < server_last_mod:
+    db_last_mod = redis_client.get("toodledo:last_mod")
+    if db_last_mod is None or float(db_last_mod) < server_last_mod:
         zd_tasks = []
         # TODO: add support for repeat,parent
         all_uncomplete = toodledo.GetTasks(params={"fields": "duedate,length,", "comp": 0})
@@ -61,7 +68,8 @@ def get_toodledo_tasks(redis_client) -> List[ZDTask]:
         for task in all_uncomplete + recent_complete:
             if task.completedDate is None or task.completedDate == today:
                 zd_tasks.append(
-                    ZDTask(task.id_, task.title, task.length, task.dueDate, task.completedDate == today, "toodledo"))
+                    ZDTask(str(task.id_), task.title, float(task.length), task.dueDate, task.completedDate == today,
+                           "toodledo"))
         redis_client.set("toodledo", pickle.dumps(zd_tasks))
         redis_client.set("toodledo:last_mod", server_last_mod)
 

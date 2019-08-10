@@ -11,7 +11,9 @@ def get(key):
     conn = get_con()
     cur = conn.cursor()
     cur.execute("SELECT v FROM kv WHERE k='{key}'".format(key=key))
-    res = cur.fetchone()[0]
+    res = cur.fetchone()
+    if res:
+        res = res[0]
     cur.close()
     conn.close()
     return res

@@ -3,6 +3,9 @@
 {% block within_head %}
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <style>
+    body {
+        max-width: 100%;
+    }
     #unsorted, #sorted {
         min-height: 20px;
         list-style-type: none;
@@ -42,18 +45,24 @@
   $(function () {
     $("#unsorted, #sorted").sortable({
       placeholder: "ui-state-highlight",
+    /* @formatter:off */
+      {% if type == 'dependencies' %}
+        cancel: ".habitica",
+          canel: ".unorderedToodledo"
+      {% endif %}
       connectWith: ".connectedSortable"
     }).disableSelection();
+      /* @formatter:on */
     $("#sorted").on("sortupdate", function (event, ui) {
       $.ajax({
         contentType: "application/json",
         data: JSON.stringify({
-          "priorities": $("#sorted span.taskTitle").toArray()
+          "{{ type }}": $("#sorted span.taskTitle").toArray()
             .map(e => $(e).text())
             .join("|||")
         }),
         type: "POST",
-        url: "set_priorities"
+        url: "set_{{ type }}"
       });
     });
   });
@@ -66,7 +75,8 @@
         <h1>Sorted by Priority</h1>
         <ul id="sorted" class="connectedSortable">
             {% for task in sorted_tasks %}
-            <li class="ui-state-default {{ task.service }}"><b>{{ task.length_minutes }}m</b> <span class="taskTitle">{{ task.name }}</span></li>
+            <li class="ui-state-default {{ task.service }}"><b>{{ task.length_minutes }}m</b> <span class="taskTitle">{{ task.name }}</span>
+            </li>
             {% endfor %}
         </ul>
     </div>
@@ -74,7 +84,8 @@
         <h1>To be Sorted</h1>
         <ul id="unsorted" class="connectedSortable">
             {% for task in unsorted_tasks %}
-            <li class="ui-state-default {{ task.service }}"><b>{{ task.length_minutes }}m</b> <span class="taskTitle">{{ task.name }}</span></li>
+            <li class="ui-state-default {{ task.service }}"><b>{{ task.length_minutes }}m</b> <span class="taskTitle">{{ task.name }}</span>
+            </li>
             {% endfor %}
         </ul>
     </div>
