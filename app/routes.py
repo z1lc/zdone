@@ -15,7 +15,7 @@ from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica
 from .util import today
 from .ztasks import ZDTask
 
-TOTAL_MINUTES = 120
+TOTAL_MINUTES = 180
 
 
 @app.route('/login', methods=['GET', 'POST'])
