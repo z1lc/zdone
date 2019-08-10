@@ -1,7 +1,6 @@
 import collections
 import datetime
 import pickle
-from datetime import datetime, timedelta
 from json import loads, dumps
 from typing import List, Dict
 
@@ -58,8 +57,8 @@ def get_habitica_tasks() -> List[ZDTask]:
             i = 1
             while i < len(sorted_history):
                 if sorted_history[i - 1]['value'] > sorted_history[i]['value']:
-                    completed_date = datetime.fromtimestamp(int(sorted_history[i - 1]['date'] / 1000),
-                                                            tz=pytz.timezone('US/Pacific'))
+                    completed_date = datetime.datetime.fromtimestamp(int(sorted_history[i - 1]['date'] / 1000),
+                                                                     tz=pytz.timezone('US/Pacific'))
                     break
                 i += 1
 
@@ -84,7 +83,7 @@ def complete_toodledo_task(task_id):
     tasks = [{
         "id": task_id,
         # https://stackoverflow.com/a/8778548
-        "completed": int(datetime.now().replace(tzinfo=datetime.timezone.utc).timestamp()),
+        "completed": int(datetime.datetime.now().replace(tzinfo=datetime.timezone.utc).timestamp()),
         "reschedule": "1"
     }]
     endpoint = "http://api.toodledo.com/3/tasks/edit.php?access_token={access_token}&tasks={tasks}".format(
@@ -100,9 +99,9 @@ def get_toodledo_tasks(redis_client) -> List[ZDTask]:
         zd_tasks = []
         # TODO: add support for repeat
         all_uncomplete = get_toodledo().GetTasks(params={"fields": "duedate,length,parent,note", "comp": 0})
-        recent_complete = get_toodledo().GetTasks(params={"fields": "duedate,length,parent,note", "comp": 1,
-                                                          "after": int(
-                                                              (datetime.today() - timedelta(days=2)).timestamp())})
+        recent_complete = get_toodledo().GetTasks(
+            params={"fields": "duedate,length,parent,note", "comp": 1,
+                    "after": int((datetime.datetime.today() - datetime.timedelta(days=2)).timestamp())})
         parent_id_to_subtask_list: Dict[int, List[ZDSubTask]] = collections.defaultdict(list)
 
         for task in all_uncomplete + recent_complete:
