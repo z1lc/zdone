@@ -1,14 +1,39 @@
 import datetime
+from typing import List
+from urlextract import URLExtract
+extractor = URLExtract()
+
+
+class ZDSubTask:
+    def __init__(self, id_: str, name: str, completed_today: bool, note: str, service: str):
+        self.id = id_
+        self.name = name
+        self.completed_today = completed_today
+        urls = extractor.find_urls(note)
+        for url in urls:
+            note = note.replace(url, "<a href=\"{url}\" target=\"_blank\">{url}</a>".format(url=url))
+        self.note = note.replace("\n", "<br>")
+        self.service = service
 
 
 class ZDTask:
-    def __init__(self, id_: str, name: str, length_minutes: float, due: datetime, completed_today: bool, service: str):
+    def __init__(self,
+                 id_: str,
+                 name: str,
+                 length_minutes: float,
+                 due: datetime,
+                 completed_today: bool,
+                 note: str,
+                 service: str,
+                 sub_tasks: List[ZDSubTask]):
         self.id = id_
         self.name = name
         self.length_minutes = length_minutes
         self.due = due
         self.completed_today = completed_today
+        self.note = note.replace("\n", "<br>")
         self.service = service
+        self.sub_tasks = sub_tasks
 
         # https://stackoverflow.com/a/21206274
         if length_minutes >= 60:

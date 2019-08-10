@@ -80,25 +80,25 @@
         margin-left: 19px;
     }
 
-    div.task {
-        height: 35px;
-        margin-right: 10px;
-        overflow: hidden;
-        position: relative;
+    table.tasks td {
+        padding: 5px 0;
     }
 
-    div.pieAndTitle {
-        display: inline-block;
-        max-width: 80%;
-        position: absolute;
-        top: 7px;
+    td.pie {
+        width: 5%;
     }
 
-    div.buttons {
-        display: inline-block;
+    td.buttons {
+        min-width: 70px;
         cursor: pointer;
-        float: right;
-        font-size: 30px;
+    }
+
+    td.subTaskName {
+        font-size: 15px;
+    }
+
+    span.note {
+        font-size: 10px;
     }
 
     .fas {
@@ -158,19 +158,33 @@
     -->
 </div>
 <hr>
-<div class="tasks">
+<table class="tasks">
     {% for task in tasks_to_do %}
-    <div class="task" id="{{ task.service }}-{{ task.id }}">
-        <div class="pieAndTitle">
-            <pie style="background-image: {{ task.pie_background_image }};"></pie>
-            <span class="taskTitle">{{ task.name }}</span>
-        </div>
-        <div class="buttons">
-            <i class="fas fa-check check" onclick="completeItem('{{ task.service }}', '{{ task.id }}')"></i>
-            <i class="fas fa-angle-double-right defer" onclick="deferItem('{{ task.service }}', '{{ task.id }}')"></i>
-        </div>
-    </div>
+    <tr class="task" id="{{ task.service }}-{{ task.id }}">
+        <td class="pie">
+            <pie style="background-image: {{ task.pie_background_image }}"></pie>
+        </td>
+        <td class="taskName">{{ task.name }}{% if task.note %}<br><span
+                class="note">{{ task.note|safe }}</span>{% endif %}</td>
+        <td class="buttons"><i class="fas fa-check check"
+                               onclick="completeItem('{{ task.service }}', '{{ task.id }}')"></i><i
+                class="fas fa-angle-double-right defer" onclick="deferItem('{{ task.service }}', '{{ task.id }}')"></i>
+        </td>
+    </tr>
+    {% for sub_task in task.sub_tasks %}
+    {% if not sub_task.completed_today %}
+    <tr class="subTask" id="{{ sub_task.service }}-{{ sub_task.id }}">
+        <td class="pie"></td>
+        <td class="subTaskName">{{ sub_task.name }}{% if sub_task.note %}<br><span
+                class="note">{{ sub_task.note|safe }}</span>{% endif %}</td>
+        <td class="buttons"><i class="fas fa-check check"
+                               onclick="completeItem('{{ sub_task.service }}', '{{ sub_task.id }}')"></i><i
+                class="fas fa-angle-double-right defer"
+                onclick="deferItem('{{ sub_task.service }}', '{{ sub_task.id }}')"></i></td>
+    </tr>
+    {% endif %}
     {% endfor %}
-</div>
+    {% endfor %}
+</table>
 
 {% endblock %}

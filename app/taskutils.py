@@ -1,7 +1,8 @@
+import collections
 import pickle
 from datetime import datetime, timedelta, timezone
 from json import loads, dumps
-from typing import List
+from typing import List, Dict
 
 import requests
 from dateutil import parser
@@ -12,7 +13,7 @@ from toodledo import Toodledo
 from . import kv
 from .storage import TokenStoragePostgres
 from .util import today
-from .ztasks import ZDTask
+from .ztasks import ZDTask, ZDSubTask
 
 
 def get_habitica():
@@ -34,8 +35,10 @@ def get_toodledo():
 
 
 def get_habitica_tasks() -> List[ZDTask]:
+    # https://habitica.fandom.com/wiki/Cron
     # cron rolls over to next day in the case of uncompleted dailys yesterday
-    # idempotent so fine to call every time
+    # however, seems to send back 502's occasionally if called frequently.
+    # TODO examine next_due dates for existing tasks to see if we need to call cron() or not
     get_habitica().cron.post()
     habit_list = []
     habitica_day_string = {0: "m", 1: "tu", 2: "w", 3: "th", 4: "f", 5: "s", 6: "su"}[today.weekday()]
@@ -50,7 +53,9 @@ def get_habitica_tasks() -> List[ZDTask]:
             float(habit['notes']),  # use notes field in habitica for estimated minutes
             due,
             habit['completed'],
-            'habitica')
+            "",
+            'habitica',
+            [])
         habit_list.append(task)
     return habit_list
 
@@ -74,22 +79,29 @@ def complete_toodledo_task(task_id):
 def get_toodledo_tasks(redis_client) -> List[ZDTask]:
     account = get_toodledo().GetAccount()
     server_last_mod = max(account.lastEditTask.timestamp(), account.lastDeleteTask.timestamp())
-    db_last_mod = redis_client.get("toodledo:last_mod")
+    db_last_mod = redis_client.get("toodledo:" + current_user.username + ":last_mod")
     if db_last_mod is None or float(db_last_mod) < server_last_mod:
         zd_tasks = []
-        # TODO: add support for repeat,parent
-        all_uncomplete = get_toodledo().GetTasks(params={"fields": "duedate,length,", "comp": 0})
-        recent_complete = get_toodledo().GetTasks(params={"fields": "duedate,length", "comp": 1,
+        # TODO: add support for repeat
+        all_uncomplete = get_toodledo().GetTasks(params={"fields": "duedate,length,parent,note", "comp": 0})
+        recent_complete = get_toodledo().GetTasks(params={"fields": "duedate,length,parent,note", "comp": 1,
                                                           "after": int(
                                                               (datetime.today() - timedelta(days=2)).timestamp())})
+        parent_id_to_subtask_list: Dict[int, List[ZDSubTask]] = collections.defaultdict(list)
+
         for task in all_uncomplete + recent_complete:
-            if task.completedDate is None or task.completedDate == today:
+            if task.parent != 0:
+                parent_id_to_subtask_list[task.parent].append(
+                    ZDSubTask(str(task.id_), task.title, task.completedDate == today, task.note, "toodledo"))
+
+        for task in all_uncomplete + recent_complete:
+            if task.parent == 0 and (task.completedDate is None or task.completedDate == today):
                 zd_tasks.append(
                     ZDTask(str(task.id_), task.title, float(task.length), task.dueDate, task.completedDate == today,
-                           "toodledo"))
-        redis_client.set("toodledo", pickle.dumps(zd_tasks))
-        redis_client.set("toodledo:last_mod", server_last_mod)
+                           task.note, "toodledo", parent_id_to_subtask_list[task.id_]))
+        redis_client.set("toodledo:" + current_user.username, pickle.dumps(zd_tasks))
+        redis_client.set("toodledo:" + current_user.username + ":last_mod", server_last_mod)
 
         return zd_tasks
     else:
-        return pickle.loads(redis_client.get("toodledo"))
+        return pickle.loads(redis_client.get("toodledo:" + current_user.username))
