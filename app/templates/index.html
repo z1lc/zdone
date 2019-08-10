@@ -13,7 +13,7 @@
     h1 {
         float: left;
         display: block;
-        margin: 0 0 10px 10px;
+        margin: 10px 0 10px 10px;
     }
 
     div.top-container {
@@ -80,8 +80,8 @@
         margin-left: 19px;
     }
 
-    table.tasks td {
-        padding: 5px 0;
+    table.tasks {
+        margin-right: 10px;
     }
 
     td.pie {
@@ -91,6 +91,8 @@
     td.buttons {
         min-width: 70px;
         cursor: pointer;
+        text-align: right;
+        font-size: 35px;
     }
 
     td.subTaskName {
@@ -132,6 +134,7 @@
         })
         .done(function () {
           $("#" + service + "-" + id).slideUp();
+          $("." + service + "-" + id).slideUp();
         });
     } else {
       alert("Unexpected service '" + service + "'!")
@@ -165,22 +168,22 @@
             <pie style="background-image: {{ task.pie_background_image }}"></pie>
         </td>
         <td class="taskName">{{ task.name }}{% if task.note %}<br><span
-                class="note">{{ task.note|safe }}</span>{% endif %}</td>
-        <td class="buttons"><i class="fas fa-check check"
-                               onclick="completeItem('{{ task.service }}', '{{ task.id }}')"></i><i
-                class="fas fa-angle-double-right defer" onclick="deferItem('{{ task.service }}', '{{ task.id }}')"></i>
+                class="note">{{ task.note|safe }}</span>{% endif %}
+        </td>
+        <td class="buttons"><i class="fas fa-angle-double-right defer"
+                               onclick="deferItem('{{ task.service }}', '{{ task.id }}')"></i><i
+                class="fas fa-check check" onclick="completeItem('{{ task.service }}', '{{ task.id }}')"></i>
         </td>
     </tr>
     {% for sub_task in task.sub_tasks %}
     {% if not sub_task.completed_today %}
-    <tr class="subTask" id="{{ sub_task.service }}-{{ sub_task.id }}">
+    <tr class="subTask {{ task.service }}-{{ task.id }}" id="{{ sub_task.service }}-{{ sub_task.id }}">
         <td class="pie"></td>
         <td class="subTaskName">{{ sub_task.name }}{% if sub_task.note %}<br><span
-                class="note">{{ sub_task.note|safe }}</span>{% endif %}</td>
+                class="note">{{ sub_task.note|safe }}</span>{% endif %}
+        </td>
         <td class="buttons"><i class="fas fa-check check"
-                               onclick="completeItem('{{ sub_task.service }}', '{{ sub_task.id }}')"></i><i
-                class="fas fa-angle-double-right defer"
-                onclick="deferItem('{{ sub_task.service }}', '{{ sub_task.id }}')"></i></td>
+                               onclick="completeItem('{{ sub_task.service }}', '{{ sub_task.id }}')"></i></td>
     </tr>
     {% endif %}
     {% endfor %}
