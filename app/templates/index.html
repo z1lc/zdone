@@ -166,9 +166,7 @@
             <span class="taskTitle">{{ task.name }}</span>
         </div>
         <div class="buttons">
-            {% if task.service == "habitica" %}
             <i class="fas fa-check check" onclick="completeItem('{{ task.service }}', '{{ task.id }}')"></i>
-            {% endif %}
             <i class="fas fa-angle-double-right defer" onclick="deferItem('{{ task.service }}', '{{ task.id }}')"></i>
         </div>
     </div>

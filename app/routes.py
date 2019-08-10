@@ -11,7 +11,7 @@ from werkzeug.utils import redirect
 from . import kv, redis_client, app
 from .forms import LoginForm
 from .models import User
-from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task
+from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task
 from .ztasks import ZDTask
 from .util import today
 
@@ -121,6 +121,8 @@ def update_task():
     elif update == "complete":
         if service == "habitica":
             complete_habitica_task(task_id)
+        elif service == "toodledo":
+            complete_toodledo_task(task_id)
         else:
             return "{'result': 'failure: unexpected service type \"" + service + "\"'}"
     else:

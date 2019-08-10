@@ -1,15 +1,17 @@
 import pickle
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from json import loads, dumps
 from typing import List
 
+import requests
 from dateutil import parser
 from habitipy import Habitipy
 from toodledo import Toodledo
 
 from . import kv
 from .storage import TokenStoragePostgres
-from .ztasks import ZDTask
 from .util import today
+from .ztasks import ZDTask
 
 habitica = Habitipy({
     'url': 'https://habitica.com',
@@ -51,8 +53,20 @@ def get_habitica_tasks() -> List[ZDTask]:
     return habit_list
 
 
-def complete_habitica_task(id):
-    habitica.tasks[id].score.up.post()
+def complete_habitica_task(task_id):
+    habitica.tasks[task_id].score.up.post()
+
+
+def complete_toodledo_task(task_id):
+    tasks = [{
+        "id": task_id,
+        # https://stackoverflow.com/a/8778548
+        "completed": int(datetime.now().replace(tzinfo=timezone.utc).timestamp()),
+        "reschedule": "1"
+    }]
+    endpoint = "http://api.toodledo.com/3/tasks/edit.php?access_token={access_token}&tasks={tasks}".format(
+        access_token=loads(kv.get("TOODLEDO_TOKEN_JSON"))["access_token"], tasks=dumps(tasks))
+    requests.post(url=endpoint)
 
 
 def get_toodledo_tasks(redis_client) -> List[ZDTask]:
