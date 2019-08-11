@@ -76,7 +76,11 @@ def get_all_tasks() -> List[ZDTask]:
 
 
 def get_task_order_from_db(order_type) -> (List[ZDTask], List[ZDTask]):
-    currently_sorted_in_db = getattr(current_user, order_type).split("|||")
+    currently_sorted_in_db = getattr(current_user, order_type)
+    if currently_sorted_in_db:
+        currently_sorted_in_db = currently_sorted_in_db.split("|||")
+    else:
+        currently_sorted_in_db = []
     sorted_tasks, unsorted_tasks = [], []
     all_tasks: List[ZDTask] = get_all_tasks()
     all_recurring_tasks = [t for t in all_tasks if t.length_minutes != 0]
@@ -181,8 +185,8 @@ def homepage():
         'minutes_completed_today': minutes_completed_today,
         'minutes_allocated': minutes_allocated
     }
-    percent_done = int(times['minutes_completed_today'] * 100 / (
-            times['minutes_completed_today'] + times['minutes_allocated']))
+    denom = times['minutes_completed_today'] + times['minutes_allocated']
+    percent_done = int(times['minutes_completed_today'] * 100 / denom) if denom > 0 else 0
     return render_template('index.html',
                            tasks_completed=tasks_completed,
                            tasks_to_do=[task for _, task in sorted_tasks_to_do],

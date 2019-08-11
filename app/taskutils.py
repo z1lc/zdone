@@ -1,6 +1,7 @@
 import collections
 import datetime
 import pickle
+import re
 from json import loads, dumps
 from typing import List, Dict
 
@@ -65,7 +66,8 @@ def get_habitica_tasks() -> List[ZDTask]:
         task = ZDTask(
             habit['_id'],
             habit['text'],
-            float(habit['notes']),  # use notes field in habitica for estimated minutes
+            # use notes field in habitica for estimated minutes
+            float(habit['notes']) if re.match("^\d+$", habit['notes']) else 0,
             due,
             completed_date,
             "",
