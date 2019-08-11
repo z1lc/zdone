@@ -12,6 +12,8 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(128), index=True, unique=True)
     password_hash = db.Column(db.String(128))
 
+    api_key = db.Column(db.String(128), unique=True)
+
     toodledo_token_json = db.Column(db.String(512))
 
     habitica_user_id = db.Column(db.String(128))

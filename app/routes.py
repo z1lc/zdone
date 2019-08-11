@@ -97,12 +97,17 @@ def get_task_order_from_db(order_type) -> (List[ZDTask], List[ZDTask]):
     return sorted_tasks, unsorted_tasks
 
 
+SUCCESS_RESULT = {
+    'result': 'success'
+}
+
+
 @app.route('/set_priorities', methods=['POST'])
 @login_required
 def update_priorities():
     current_user.priorities = request.get_json()["priorities"]
     db.session.commit()
-    return "{'result': 'success'}"
+    return dumps(SUCCESS_RESULT)
 
 
 @app.route('/set_dependencies', methods=['POST'])
@@ -110,7 +115,7 @@ def update_priorities():
 def update_dependencies():
     current_user.dependencies = request.get_json()["dependencies"]
     db.session.commit()
-    return "{'result': 'success'}"
+    return dumps(SUCCESS_RESULT)
 
 
 @app.route('/update_task', methods=['POST'])
@@ -132,11 +137,17 @@ def update_task():
         elif service == "toodledo":
             complete_toodledo_task(task_id)
         else:
-            return "{'result': 'failure: unexpected service type \"" + service + "\"'}"
+            return dumps({
+                'result': 'failure',
+                'reason': 'unexpected service type "' + service + '"'
+            })
     else:
-        return "{'result': 'failure: unexpected update type \"" + update + "\"'}"
+        return dumps({
+            'result': 'failure',
+            'reason': 'unexpected update type "' + update + '"'
+        })
 
-    return "{'result': 'success'}"
+    return dumps(SUCCESS_RESULT)
 
 
 def get_homepage_info():
