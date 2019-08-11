@@ -84,8 +84,8 @@ def complete_habitica_task(task_id):
 def complete_toodledo_task(task_id):
     tasks = [{
         "id": task_id,
-        # https://stackoverflow.com/a/8778548
-        "completed": int(datetime.datetime.now().replace(tzinfo=datetime.timezone.utc).timestamp()),
+        # unclear what timestamp should be used here. manual testing suggested this was the right one
+        "completed": int(datetime.datetime.now().timestamp()),
         "reschedule": "1"
     }]
     endpoint = "http://api.toodledo.com/3/tasks/edit.php?access_token={access_token}&tasks={tasks}".format(
@@ -98,27 +98,28 @@ def get_toodledo_tasks(redis_client) -> List[ZDTask]:
     server_last_mod = max(account.lastEditTask.timestamp(), account.lastDeleteTask.timestamp())
     db_last_mod = redis_client.get("toodledo:" + current_user.username + ":last_mod")
     if db_last_mod is None or float(db_last_mod) < server_last_mod:
-        zd_tasks = []
         # TODO: add support for repeat
         all_uncomplete = get_toodledo().GetTasks(params={"fields": "duedate,length,parent,note", "comp": 0})
         recent_complete = get_toodledo().GetTasks(
             params={"fields": "duedate,length,parent,note", "comp": 1,
                     "after": int((datetime.datetime.today() - datetime.timedelta(days=2)).timestamp())})
-        parent_id_to_subtask_list: Dict[int, List[ZDSubTask]] = collections.defaultdict(list)
-
-        for task in all_uncomplete + recent_complete:
-            if task.parent != 0:
-                parent_id_to_subtask_list[task.parent].append(
-                    ZDSubTask(str(task.id_), task.title, task.completedDate, task.note, "toodledo"))
-
-        for task in all_uncomplete + recent_complete:
-            if task.parent == 0 and (task.completedDate is None or task.completedDate == today):
-                zd_tasks.append(
-                    ZDTask(str(task.id_), task.title, float(task.length), task.dueDate, task.completedDate,
-                           task.note, "toodledo", parent_id_to_subtask_list[task.id_]))
-        redis_client.set("toodledo:" + current_user.username, pickle.dumps(zd_tasks))
+        full_api_response = all_uncomplete + recent_complete
+        redis_client.set("toodledo:" + current_user.username, pickle.dumps(full_api_response))
         redis_client.set("toodledo:" + current_user.username + ":last_mod", server_last_mod)
-
-        return zd_tasks
     else:
-        return pickle.loads(redis_client.get("toodledo:" + current_user.username))
+        full_api_response = pickle.loads(redis_client.get("toodledo:" + current_user.username))
+
+    zd_tasks = []
+    parent_id_to_subtask_list: Dict[int, List[ZDSubTask]] = collections.defaultdict(list)
+    for task in full_api_response:
+        if task.parent != 0:
+            parent_id_to_subtask_list[task.parent].append(
+                ZDSubTask(str(task.id_), task.title, task.completedDate, task.note, "toodledo"))
+
+    for task in full_api_response:
+        if task.parent == 0 and (task.completedDate is None or task.completedDate == today):
+            zd_tasks.append(
+                ZDTask(str(task.id_), task.title, float(task.length), task.dueDate, task.completedDate,
+                       task.note, "toodledo", parent_id_to_subtask_list[task.id_]))
+
+    return zd_tasks
