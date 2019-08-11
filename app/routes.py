@@ -48,25 +48,29 @@ def logout():
 def show_priorities():
     prioritized_tasks, unprioritizsed_tasks = get_task_order_from_db("priorities")
 
-    return render_template('prioritize_and_order.html',
+    return render_template('priorities_and_dependencies.html',
                            sorted_tasks=prioritized_tasks,
                            unsorted_tasks=unprioritizsed_tasks,
                            type='priorities')
+
+
+TOODLEDO_UNORDERED_TASKS_PLACEHOLDER = ZDTask(
+    "-1", "[all unordered Toodledo Tasks]", 0, None, None, "", "unorderedToodledo", [])
 
 
 @app.route('/dependencies')
 @login_required
 def show_dependencies():
     dependencies_ordered, dependencies_to_order = get_task_order_from_db("dependencies")
-    index_insert = 0
-    for i, e in enumerate(dependencies_ordered):
-        if e.name == "Mail":
-            index_insert = i
+    if TOODLEDO_UNORDERED_TASKS_PLACEHOLDER not in dependencies_ordered:
+        index_insert = 0
+        for i, e in enumerate(dependencies_ordered):
+            if e.name == "Mail":
+                index_insert = i
 
-    dependencies_ordered.insert(index_insert, ZDTask(
-        "-1", "[all unordered Toodledo tasks]", 0, None, None, "", "unorderedToodledo", []))
+        dependencies_ordered.insert(index_insert, TOODLEDO_UNORDERED_TASKS_PLACEHOLDER)
 
-    return render_template('prioritize_and_order.html',
+    return render_template('priorities_and_dependencies.html',
                            sorted_tasks=dependencies_ordered,
                            unsorted_tasks=dependencies_to_order,
                            type='dependencies')
@@ -86,6 +90,7 @@ def get_task_order_from_db(order_type, user=current_user) -> (List[ZDTask], List
     all_tasks: List[ZDTask] = get_all_tasks(user)
     all_recurring_tasks = [t for t in all_tasks if t.length_minutes != 0]
     task_map = {t.name: t for t in all_recurring_tasks}
+    task_map[TOODLEDO_UNORDERED_TASKS_PLACEHOLDER.name] = TOODLEDO_UNORDERED_TASKS_PLACEHOLDER
     for name in currently_sorted_in_db:
         if name in task_map:
             sorted_tasks.append(task_map[name])
@@ -93,6 +98,9 @@ def get_task_order_from_db(order_type, user=current_user) -> (List[ZDTask], List
 
     for v in task_map.values():
         unsorted_tasks.append(v)
+
+    if TOODLEDO_UNORDERED_TASKS_PLACEHOLDER in unsorted_tasks:
+        del unsorted_tasks[unsorted_tasks.index(TOODLEDO_UNORDERED_TASKS_PLACEHOLDER)]
 
     return sorted_tasks, unsorted_tasks
 
@@ -197,8 +205,9 @@ def get_homepage_info(user=current_user):
         if task.name in ordering:
             sorted_tasks_to_do.append((ordering.index(task.name), task))
         else:
-            # TODO: unify this search for Mail and the one in show_dependencies
-            sorted_tasks_to_do.append((ordering.index("Mail") if "Mail" in ordering else 0, task))
+            sorted_tasks_to_do.append((ordering.index(TOODLEDO_UNORDERED_TASKS_PLACEHOLDER.name)
+                                       if TOODLEDO_UNORDERED_TASKS_PLACEHOLDER.name in ordering else 0,
+                                       task))
 
     sorted_tasks_to_do.sort(key=lambda tup: tup[0])
 

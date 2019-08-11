@@ -6,6 +6,7 @@
     body {
         max-width: 100%;
     }
+
     #unsorted, #sorted {
         min-height: 20px;
         list-style-type: none;
@@ -47,8 +48,7 @@
       placeholder: "ui-state-highlight",
     /* @formatter:off */
       {% if type == 'dependencies' %}
-        cancel: ".habitica",
-          canel: ".unorderedToodledo"
+        cancel: ".nosort",
       {% endif %}
       connectWith: ".connectedSortable"
     }).disableSelection();
@@ -72,10 +72,15 @@
 {% block body %}
 <div id="grid">
     <div id="sortedContainer">
-        <h1>Sorted by Priority</h1>
+        <h1>Sorted by {% if type == 'dependencies' %}
+            Dependency
+            {% else %}
+            Priority
+            {% endif %}</h1>
         <ul id="sorted" class="connectedSortable">
             {% for task in sorted_tasks %}
-            <li class="ui-state-default {{ task.service }}"><b>{{ task.length_minutes }}m</b> <span class="taskTitle">{{ task.name }}</span>
+            <li class="ui-state-default {{ task.service }} {% if task.service in ['habitica'] %}nosort{% endif %}">
+                <b>{{ task.length_minutes }}m</b> <span class="taskTitle">{{ task.name }}</span>
             </li>
             {% endfor %}
         </ul>
@@ -84,7 +89,8 @@
         <h1>To be Sorted</h1>
         <ul id="unsorted" class="connectedSortable">
             {% for task in unsorted_tasks %}
-            <li class="ui-state-default {{ task.service }}"><b>{{ task.length_minutes }}m</b> <span class="taskTitle">{{ task.name }}</span>
+            <li class="ui-state-default {{ task.service }} {% if task.service in ['habitica'] %}nosort{% endif %}">
+                <b>{{ task.length_minutes }}m</b> <span class="taskTitle">{{ task.name }}</span>
             </li>
             {% endfor %}
         </ul>
