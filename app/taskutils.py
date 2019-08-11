@@ -67,7 +67,7 @@ def get_habitica_tasks() -> List[ZDTask]:
             habit['_id'],
             habit['text'],
             # use notes field in habitica for estimated minutes
-            float(habit['notes']) if re.match("^\d+$", habit['notes']) else 0,
+            float(habit['notes']) if re.match("^\\d+(\\.\\d+)?$", habit['notes']) else 0,
             due,
             completed_date,
             "",

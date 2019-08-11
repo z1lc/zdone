@@ -177,7 +177,7 @@ def homepage():
             sorted_tasks_to_do.append((ordering.index(task.name), task))
         else:
             # TODO: unify this search for Mail and the one in show_dependencies
-            sorted_tasks_to_do.append((ordering.index("Mail") if task.name in ordering else 0, task))
+            sorted_tasks_to_do.append((ordering.index("Mail") if "Mail" in ordering else 0, task))
 
     sorted_tasks_to_do.sort(key=lambda tup: tup[0])
 
