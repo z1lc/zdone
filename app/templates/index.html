@@ -165,7 +165,7 @@
     {% for task in tasks_to_do %}
     <tr class="task" id="{{ task.service }}-{{ task.id }}">
         <td class="pie">
-            <pie style="background-image: {{ task.pie_background_image }}"></pie>
+            <pie style="background-image: {{ task.get_pie_background_image() }}"></pie>
         </td>
         <td class="taskName">{{ task.name }}{% if task.note %}<br><span
                 class="note">{{ task.note|safe }}</span>{% endif %}

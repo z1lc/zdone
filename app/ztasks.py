@@ -42,17 +42,18 @@ class ZDTask:
         self.service = service
         self.sub_tasks = sub_tasks
 
+    def get_pie_background_image(self):
         # https://stackoverflow.com/a/21206274
-        if length_minutes >= 60:
-            self.pie_background_image = "none"
-        elif length_minutes > 30:
-            self.pie_background_image = "linear-gradient(" + str(int(90 + (360 * (length_minutes - 30) / 60))) + \
-                                        "deg, transparent 50%, black 50%), linear-gradient(90deg, white 50%, transparent 50%);"
-        elif length_minutes < 3:
-            self.pie_background_image = "linear-gradient(90deg, transparent 50%, white 50%), linear-gradient(90deg, white 50%, transparent 50%);"
+        if self.length_minutes >= 60:
+            return "none"
+        elif self.length_minutes > 30:
+            return "linear-gradient(" + str(int(90 + (360 * (self.length_minutes - 30) / 60))) + \
+                   "deg, transparent 50%, black 50%), linear-gradient(90deg, white 50%, transparent 50%);"
+        elif self.length_minutes < 3:
+            return "linear-gradient(90deg, transparent 50%, white 50%), linear-gradient(90deg, white 50%, transparent 50%);"
         else:  # 3 <= length_minutes <= 30
-            self.pie_background_image = "linear-gradient(" + str(int(90 + (360 * length_minutes / 60))) + \
-                                        "deg, transparent 50%, white 50%), linear-gradient(90deg, white 50%, transparent 50%);"
+            return "linear-gradient(" + str(int(90 + (360 * self.length_minutes / 60))) + \
+                   "deg, transparent 50%, white 50%), linear-gradient(90deg, white 50%, transparent 50%);"
 
     def __repr__(self):
         return "{" + self.service + "_task" + ", ".join(

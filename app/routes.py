@@ -1,7 +1,8 @@
 from datetime import timedelta
+from json import dumps
 from typing import List, Tuple
 
-from flask import render_template, request
+from flask import render_template, request, make_response
 from flask import url_for, flash
 from flask_login import current_user, login_user, logout_user
 from flask_login import login_required
@@ -138,10 +139,7 @@ def update_task():
     return "{'result': 'success'}"
 
 
-@app.route('/')
-@app.route("/index")
-@login_required
-def homepage():
+def get_homepage_info():
     minutes_completed_today = 0
     tasks_completed, tasks_to_do, tasks_backlog = set(), set(), set()
     prioritized_tasks, unprioritized_tasks = get_task_order_from_db("priorities")
@@ -187,10 +185,33 @@ def homepage():
     }
     denom = times['minutes_completed_today'] + times['minutes_allocated']
     percent_done = int(times['minutes_completed_today'] * 100 / denom) if denom > 0 else 0
+    return {
+        "tasks_completed": list(tasks_completed),
+        "tasks_to_do": [task for _, task in sorted_tasks_to_do],
+        "tasks_backlog": list(tasks_backlog),
+        "times": times,
+        "num_unsorted_tasks": len(unprioritized_tasks),
+        "percentage": min(100, max(1, percent_done))
+    }
+
+
+@app.route('/')
+@app.route("/index")
+@login_required
+def homepage():
+    info = get_homepage_info()
     return render_template('index.html',
-                           tasks_completed=tasks_completed,
-                           tasks_to_do=[task for _, task in sorted_tasks_to_do],
-                           tasks_backlog=tasks_backlog,
-                           times=times,
-                           num_unsorted_tasks=len(unprioritized_tasks),
-                           percentage=min(100, max(1, percent_done)))
+                           tasks_completed=info['tasks_completed'],
+                           tasks_to_do=info['tasks_to_do'],
+                           tasks_backlog=info['tasks_backlog'],
+                           times=info['times'],
+                           num_unsorted_tasks=info['num_unsorted_tasks'],
+                           percentage=info['percentage'])
+
+
+@app.route("/api")
+@login_required
+def api():
+    r = make_response(dumps(get_homepage_info()))
+    r.mimetype = 'application/json'
+    return r

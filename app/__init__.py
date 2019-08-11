@@ -5,6 +5,7 @@ from flask_redis import FlaskRedis
 from flask_sqlalchemy import SQLAlchemy
 from flask_talisman import Talisman
 
+from app import make_json_serializable
 from app.config import Config
 
 app = Flask(__name__)
