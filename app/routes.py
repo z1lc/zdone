@@ -2,7 +2,7 @@ from datetime import timedelta
 from json import dumps
 from typing import List, Tuple
 
-from flask import render_template, request, make_response
+from flask import render_template, request, make_response, jsonify
 from flask import url_for, flash
 from flask_login import current_user, login_user, logout_user
 from flask_login import login_required
@@ -72,18 +72,18 @@ def show_dependencies():
                            type='dependencies')
 
 
-def get_all_tasks() -> List[ZDTask]:
-    return get_toodledo_tasks(redis_client) + get_habitica_tasks()
+def get_all_tasks(user=current_user) -> List[ZDTask]:
+    return get_toodledo_tasks(redis_client, user) + get_habitica_tasks(user)
 
 
-def get_task_order_from_db(order_type) -> (List[ZDTask], List[ZDTask]):
-    currently_sorted_in_db = getattr(current_user, order_type)
+def get_task_order_from_db(order_type, user=current_user) -> (List[ZDTask], List[ZDTask]):
+    currently_sorted_in_db = getattr(user, order_type)
     if currently_sorted_in_db:
         currently_sorted_in_db = currently_sorted_in_db.split("|||")
     else:
         currently_sorted_in_db = []
     sorted_tasks, unsorted_tasks = [], []
-    all_tasks: List[ZDTask] = get_all_tasks()
+    all_tasks: List[ZDTask] = get_all_tasks(user)
     all_recurring_tasks = [t for t in all_tasks if t.length_minutes != 0]
     task_map = {t.name: t for t in all_recurring_tasks}
     for name in currently_sorted_in_db:
@@ -97,9 +97,17 @@ def get_task_order_from_db(order_type) -> (List[ZDTask], List[ZDTask]):
     return sorted_tasks, unsorted_tasks
 
 
-SUCCESS_RESULT = {
-    'result': 'success'
-}
+def success():
+    return jsonify({
+        'result': 'success'
+    }), 200
+
+
+def api_key_failure():
+    return jsonify({
+        'result': 'failure',
+        'reason': 'Make sure you are passing a valid API key in the x-api-key header.'
+    }), 401
 
 
 @app.route('/set_priorities', methods=['POST'])
@@ -107,7 +115,7 @@ SUCCESS_RESULT = {
 def update_priorities():
     current_user.priorities = request.get_json()["priorities"]
     db.session.commit()
-    return dumps(SUCCESS_RESULT)
+    return success()
 
 
 @app.route('/set_dependencies', methods=['POST'])
@@ -115,7 +123,32 @@ def update_priorities():
 def update_dependencies():
     current_user.dependencies = request.get_json()["dependencies"]
     db.session.commit()
-    return dumps(SUCCESS_RESULT)
+    return success()
+
+
+def do_update_task(update, service, task_id, user=current_user):
+    if update == "defer":
+        redis_client.append("hidden:" + user.username + ":" + str(today), (task_id + "|||").encode())
+        redis_client.expire("hidden:" + user.username + ":" + str(today), timedelta(days=7))
+        # can no longer use cached tasks since we have to re-sort
+        redis_client.delete("toodledo:" + current_user.username + ":last_mod")
+    elif update == "complete":
+        if service == "habitica":
+            complete_habitica_task(task_id, user)
+        elif service == "toodledo":
+            complete_toodledo_task(task_id, user)
+        else:
+            return jsonify({
+                'result': 'failure',
+                'reason': 'unexpected service type "' + service + '"'
+            }), 400
+    else:
+        return jsonify({
+            'result': 'failure',
+            'reason': 'unexpected update type "' + update + '"'
+        }), 400
+
+    return success()
 
 
 @app.route('/update_task', methods=['POST'])
@@ -126,40 +159,19 @@ def update_task():
     service = req["service"]
     task_id = req["id"]
 
-    if update == "defer":
-        redis_client.append("hidden:" + current_user.username + ":" + str(today), (task_id + "|||").encode())
-        redis_client.expire("hidden:" + current_user.username + ":" + str(today), timedelta(days=7))
-        # can no longer use cached tasks since we have to re-sort
-        redis_client.delete("toodledo:" + current_user.username + ":last_mod")
-    elif update == "complete":
-        if service == "habitica":
-            complete_habitica_task(task_id)
-        elif service == "toodledo":
-            complete_toodledo_task(task_id)
-        else:
-            return dumps({
-                'result': 'failure',
-                'reason': 'unexpected service type "' + service + '"'
-            })
-    else:
-        return dumps({
-            'result': 'failure',
-            'reason': 'unexpected update type "' + update + '"'
-        })
-
-    return dumps(SUCCESS_RESULT)
+    return do_update_task(update, service, task_id)
 
 
-def get_homepage_info():
+def get_homepage_info(user=current_user):
     minutes_completed_today = 0
     tasks_completed, tasks_to_do, tasks_backlog = set(), set(), set()
-    prioritized_tasks, unprioritized_tasks = get_task_order_from_db("priorities")
+    prioritized_tasks, unprioritized_tasks = get_task_order_from_db("priorities", user)
     for task in prioritized_tasks + unprioritized_tasks:
         if task.completed_today() and task.length_minutes > 0:
             minutes_completed_today += task.length_minutes
             tasks_completed.add(task)
 
-    task_ids_to_hide = redis_client.get("hidden:" + current_user.username + ":" + str(today))
+    task_ids_to_hide = redis_client.get("hidden:" + user.username + ":" + str(today))
     task_ids_to_hide = [] if task_ids_to_hide is None else task_ids_to_hide.decode().split("|||")
 
     total_minutes = DEFAULT_TOTAL_MINUTES if request.args.get('time') is None else int(request.args.get('time'))
@@ -179,7 +191,7 @@ def get_homepage_info():
                 tasks_backlog.add(prioritized_task)
         i += 1
 
-    ordering = [t.name for t in get_task_order_from_db("dependencies")[0]]
+    ordering = [t.name for t in get_task_order_from_db("dependencies", user)[0]]
     sorted_tasks_to_do: List[Tuple[int, ZDTask]] = []  # int in Tuple is priority; lower is better
     for task in tasks_to_do:
         if task.name in ordering:
@@ -220,9 +232,43 @@ def homepage():
                            percentage=info['percentage'])
 
 
+def validate_api_key(api_key):
+    return User.query.filter_by(api_key=api_key).first() if api_key else None
+
+
 @app.route("/api")
-@login_required
 def api():
-    r = make_response(dumps(get_homepage_info()))
-    r.mimetype = 'application/json'
-    return r
+    user = validate_api_key(request.headers.get('x-api-key'))
+    if not user:
+        return api_key_failure()
+    else:
+        r = dumps(get_homepage_info(user))
+        r = make_response(r)
+        r.mimetype = 'application/json'
+        return r, 200
+
+
+@app.route('/api/update_task', methods=['POST'])
+def api_update_task():
+    user = validate_api_key(request.headers.get('x-api-key'))
+    if not user:
+        return api_key_failure()
+    else:
+        req = request.get_json()
+        if not req or "update" not in req or "service" not in req or "id" not in req:
+            return jsonify({
+                'result': 'failure',
+                'reason': 'Request body must be application/json with keys \'update\', \'service\', and \'id\'.'
+            }), 400
+        else:
+            update = req["update"]
+            service = req["service"]
+            task_id = req["id"]
+
+            try:
+                return do_update_task(update, service, task_id, user)
+            except Exception as e:
+                return jsonify({
+                    'result': 'failure',
+                    'reason': str(e)
+                }), 400

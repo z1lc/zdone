@@ -18,33 +18,33 @@ from .util import today
 from .ztasks import ZDTask, ZDSubTask
 
 
-def get_habitica():
+def get_habitica(user=current_user):
     return Habitipy({
         'url': 'https://habitica.com',
-        'login': current_user.habitica_user_id,
-        'password': current_user.habitica_api_token,
+        'login': user.habitica_user_id,
+        'password': user.habitica_api_token,
         'show_numbers': 'y',
         'show_style': 'wide'
     })
 
 
-def get_toodledo():
+def get_toodledo(user=current_user):
     return Toodledo(
         clientId=kv.get('TOODLEDO_CLIENT_ID'),
         clientSecret=kv.get('TOODLEDO_CLIENT_SECRET'),
-        tokenStorage=TokenStoragePostgres(current_user.id),
+        tokenStorage=TokenStoragePostgres(user.id),
         scope="basic tasks notes outlines lists share write folders")
 
 
-def get_habitica_tasks() -> List[ZDTask]:
+def get_habitica_tasks(user=current_user) -> List[ZDTask]:
     # https://habitica.fandom.com/wiki/Cron
     # cron rolls over to next day in the case of uncompleted dailys yesterday
     # however, seems to send back 502's occasionally if called frequently.
     # TODO examine next_due dates for existing tasks to see if we need to call cron() or not
-    get_habitica().cron.post()
+    get_habitica(user).cron.post()
     habit_list = []
     habitica_day_string = {0: "m", 1: "tu", 2: "w", 3: "th", 4: "f", 5: "s", 6: "su"}[today.weekday()]
-    for habit in get_habitica().tasks.user.get(type='dailys'):
+    for habit in get_habitica(user).tasks.user.get(type='dailys'):
         if habit['repeat'][habitica_day_string] and not habit['completed']:
             due = today
         else:
@@ -77,11 +77,11 @@ def get_habitica_tasks() -> List[ZDTask]:
     return habit_list
 
 
-def complete_habitica_task(task_id):
-    get_habitica().tasks[task_id].score.up.post()
+def complete_habitica_task(task_id, user=current_user):
+    get_habitica(user).tasks[task_id].score.up.post()
 
 
-def complete_toodledo_task(task_id):
+def complete_toodledo_task(task_id, user=current_user):
     tasks = [{
         "id": task_id,
         # unclear what timestamp should be used here. manual testing suggested this was the right one
@@ -89,14 +89,14 @@ def complete_toodledo_task(task_id):
         "reschedule": "1"
     }]
     endpoint = "http://api.toodledo.com/3/tasks/edit.php?access_token={access_token}&tasks={tasks}".format(
-        access_token=loads(current_user.toodledo_token_json)["access_token"], tasks=dumps(tasks))
+        access_token=loads(user.toodledo_token_json)["access_token"], tasks=dumps(tasks))
     requests.post(url=endpoint)
 
 
-def get_toodledo_tasks(redis_client) -> List[ZDTask]:
-    account = get_toodledo().GetAccount()
+def get_toodledo_tasks(redis_client, user=current_user) -> List[ZDTask]:
+    account = get_toodledo(user).GetAccount()
     server_last_mod = max(account.lastEditTask.timestamp(), account.lastDeleteTask.timestamp())
-    db_last_mod = redis_client.get("toodledo:" + current_user.username + ":last_mod")
+    db_last_mod = redis_client.get("toodledo:" + user.username + ":last_mod")
     if db_last_mod is None or float(db_last_mod) < server_last_mod:
         # TODO: add support for repeat
         all_uncomplete = get_toodledo().GetTasks(params={"fields": "duedate,length,parent,note", "comp": 0})
@@ -104,10 +104,10 @@ def get_toodledo_tasks(redis_client) -> List[ZDTask]:
             params={"fields": "duedate,length,parent,note", "comp": 1,
                     "after": int((datetime.datetime.today() - datetime.timedelta(days=2)).timestamp())})
         full_api_response = all_uncomplete + recent_complete
-        redis_client.set("toodledo:" + current_user.username, pickle.dumps(full_api_response))
-        redis_client.set("toodledo:" + current_user.username + ":last_mod", server_last_mod)
+        redis_client.set("toodledo:" + user.username, pickle.dumps(full_api_response))
+        redis_client.set("toodledo:" + user.username + ":last_mod", server_last_mod)
     else:
-        full_api_response = pickle.loads(redis_client.get("toodledo:" + current_user.username))
+        full_api_response = pickle.loads(redis_client.get("toodledo:" + user.username))
 
     zd_tasks = []
     parent_id_to_subtask_list: Dict[int, List[ZDSubTask]] = collections.defaultdict(list)
