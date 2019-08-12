@@ -85,7 +85,7 @@ def complete_toodledo_task(task_id, user=current_user):
     tasks = [{
         "id": task_id,
         # unclear what timestamp should be used here. manual testing suggested this was the right one
-        "completed": int(datetime.datetime.now().timestamp()),
+        "completed": int(datetime.datetime(today.year, today.month, today.day).timestamp()),
         "reschedule": "1"
     }]
     endpoint = "http://api.toodledo.com/3/tasks/edit.php?access_token={access_token}&tasks={tasks}".format(
