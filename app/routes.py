@@ -139,7 +139,7 @@ def do_update_task(update, service, task_id, user=current_user):
         redis_client.append("hidden:" + user.username + ":" + str(today), (task_id + "|||").encode())
         redis_client.expire("hidden:" + user.username + ":" + str(today), timedelta(days=7))
         # can no longer use cached tasks since we have to re-sort
-        redis_client.delete("toodledo:" + current_user.username + ":last_mod")
+        redis_client.delete("toodledo:" + user.username + ":last_mod")
     elif update == "complete":
         if service == "habitica":
             complete_habitica_task(task_id, user)
@@ -182,7 +182,7 @@ def get_homepage_info(user=current_user):
     task_ids_to_hide = redis_client.get("hidden:" + user.username + ":" + str(today))
     task_ids_to_hide = [] if task_ids_to_hide is None else task_ids_to_hide.decode().split("|||")
 
-    total_minutes = DEFAULT_TOTAL_MINUTES if request.args.get('time') is None else int(request.args.get('time'))
+    total_minutes = DEFAULT_TOTAL_MINUTES if request.args.get('time') is None else float(request.args.get('time'))
     minutes_left_to_schedule = total_minutes - minutes_completed_today
     i = 0
     minutes_allocated = 0
