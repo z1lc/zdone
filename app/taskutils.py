@@ -43,16 +43,16 @@ def get_habitica_tasks(user=current_user) -> List[ZDTask]:
     # TODO examine next_due dates for existing tasks to see if we need to call cron() or not
     get_habitica(user).cron.post()
     habit_list = []
-    habitica_day_string = {0: "m", 1: "t", 2: "w", 3: "th", 4: "f", 5: "s", 6: "su"}[today.weekday()]
+    habitica_day_string = {0: "m", 1: "t", 2: "w", 3: "th", 4: "f", 5: "s", 6: "su"}[today().weekday()]
     for habit in get_habitica(user).tasks.user.get(type='dailys'):
         if habit['repeat'][habitica_day_string] and not habit['completed']:
-            due = today
+            due = today()
         else:
             due = parser.parse(habit['nextDue'][0], '').date()
 
         completed_date = None
         if habit['completed']:
-            completed_date = today
+            completed_date = today()
         else:
             sorted_history = sorted(habit['history'], key=lambda date_plus_val: -date_plus_val['date'])
             i = 1
@@ -85,7 +85,7 @@ def complete_toodledo_task(task_id, user=current_user):
     tasks = [{
         "id": task_id,
         # unclear what timestamp should be used here. manual testing suggested this was the right one
-        "completed": int(datetime.datetime(today.year, today.month, today.day).timestamp()),
+        "completed": int(datetime.datetime(today().year, today().month, today().day).timestamp()),
         "reschedule": "1"
     }]
     endpoint = "http://api.toodledo.com/3/tasks/edit.php?access_token={access_token}&tasks={tasks}".format(
@@ -117,7 +117,7 @@ def get_toodledo_tasks(redis_client, user=current_user) -> List[ZDTask]:
                 ZDSubTask(str(task.id_), task.title, task.completedDate, task.note, "toodledo"))
 
     for task in full_api_response:
-        if task.parent == 0 and (task.completedDate is None or task.completedDate == today):
+        if task.parent == 0 and (task.completedDate is None or task.completedDate == today()):
             zd_tasks.append(
                 ZDTask(str(task.id_), task.title, float(task.length), task.dueDate, task.completedDate,
                        task.note, "toodledo", parent_id_to_subtask_list[task.id_]))

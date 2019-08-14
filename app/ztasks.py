@@ -20,7 +20,7 @@ class ZDSubTask:
         self.service = service
 
     def completed_today(self):
-        return self.completed_date == today
+        return self.completed_date == today()
 
 
 class ZDTask:
@@ -60,4 +60,4 @@ class ZDTask:
             [self.id, self.name, str(self.length_minutes), str(self.due_date), str(self.completed_date)]) + "}"
 
     def completed_today(self):
-        return self.completed_date == today
+        return self.completed_date == today()

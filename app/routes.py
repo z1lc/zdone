@@ -136,8 +136,8 @@ def update_dependencies():
 
 def do_update_task(update, service, task_id, user=current_user):
     if update == "defer":
-        redis_client.append("hidden:" + user.username + ":" + str(today), (task_id + "|||").encode())
-        redis_client.expire("hidden:" + user.username + ":" + str(today), timedelta(days=7))
+        redis_client.append("hidden:" + user.username + ":" + str(today()), (task_id + "|||").encode())
+        redis_client.expire("hidden:" + user.username + ":" + str(today()), timedelta(days=7))
         # can no longer use cached tasks since we have to re-sort
         redis_client.delete("toodledo:" + user.username + ":last_mod")
     elif update == "complete":
@@ -179,7 +179,7 @@ def get_homepage_info(user=current_user):
             minutes_completed_today += task.length_minutes
             tasks_completed.add(task)
 
-    task_ids_to_hide = redis_client.get("hidden:" + user.username + ":" + str(today))
+    task_ids_to_hide = redis_client.get("hidden:" + user.username + ":" + str(today()))
     task_ids_to_hide = [] if task_ids_to_hide is None else task_ids_to_hide.decode().split("|||")
 
     total_minutes = DEFAULT_TOTAL_MINUTES if request.args.get('time') is None else float(request.args.get('time'))
@@ -188,7 +188,7 @@ def get_homepage_info(user=current_user):
     minutes_allocated = 0
     while i < len(prioritized_tasks):
         prioritized_task = prioritized_tasks[i]
-        if prioritized_task.due_date <= today:
+        if prioritized_task.due_date <= today():
             if prioritized_task.length_minutes <= (minutes_left_to_schedule + 5) \
                     and prioritized_task.id not in task_ids_to_hide \
                     and not prioritized_task.completed_today():
