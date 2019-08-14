@@ -38,6 +38,9 @@ class ZDTask:
         self.length_minutes = length_minutes
         self.due_date = due_date
         self.completed_date = completed_date
+        urls = extractor.find_urls(note)
+        for url in urls:
+            note = note.replace(url, "<a href=\"{url}\" target=\"_blank\">{url}</a>".format(url=url))
         self.note = note.replace("\n", "<br>")
         self.service = service
         self.sub_tasks = sub_tasks
