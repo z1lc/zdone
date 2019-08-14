@@ -43,7 +43,7 @@ def get_habitica_tasks(user=current_user) -> List[ZDTask]:
     # TODO examine next_due dates for existing tasks to see if we need to call cron() or not
     get_habitica(user).cron.post()
     habit_list = []
-    habitica_day_string = {0: "m", 1: "tu", 2: "w", 3: "th", 4: "f", 5: "s", 6: "su"}[today.weekday()]
+    habitica_day_string = {0: "m", 1: "t", 2: "w", 3: "th", 4: "f", 5: "s", 6: "su"}[today.weekday()]
     for habit in get_habitica(user).tasks.user.get(type='dailys'):
         if habit['repeat'][habitica_day_string] and not habit['completed']:
             due = today
