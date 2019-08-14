@@ -99,8 +99,8 @@ def get_toodledo_tasks(redis_client, user=current_user) -> List[ZDTask]:
     db_last_mod = redis_client.get("toodledo:" + user.username + ":last_mod")
     if db_last_mod is None or float(db_last_mod) < server_last_mod:
         # TODO: add support for repeat
-        all_uncomplete = get_toodledo().GetTasks(params={"fields": "duedate,length,parent,note", "comp": 0})
-        recent_complete = get_toodledo().GetTasks(
+        all_uncomplete = get_toodledo(user).GetTasks(params={"fields": "duedate,length,parent,note", "comp": 0})
+        recent_complete = get_toodledo(user).GetTasks(
             params={"fields": "duedate,length,parent,note", "comp": 1,
                     "after": int((datetime.datetime.today() - datetime.timedelta(days=2)).timestamp())})
         full_api_response = all_uncomplete + recent_complete
