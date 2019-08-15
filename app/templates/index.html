@@ -2,10 +2,6 @@
 
 {% block within_head %}
 <style>
-    .strike {
-        text-decoration: line-through;
-    }
-
     .gray {
         color: gray;
     }
@@ -40,6 +36,7 @@
 
     hr {
         clear: both;
+        margin: 10px 0;
     }
 
     .badge1 {
@@ -49,7 +46,7 @@
     .badge1[data-badge]:after {
         content: attr(data-badge);
         position: absolute;
-        top: 12px;
+        top: 6px;
         right: -8px;
         font-size: .3em;
         background: red;
@@ -61,10 +58,6 @@
         border-radius: 50%;
         box-shadow: 0 0 1px #333;
         font-weight: bold;
-    }
-
-    hr {
-        margin: 10px 0;
     }
 
     pie {
@@ -90,9 +83,12 @@
 
     td.buttons {
         min-width: 90px;
-        cursor: pointer;
         text-align: right;
         font-size: 35px;
+    }
+
+    td.buttons i {
+        cursor: pointer;
     }
 
     td.subTaskName {
@@ -106,6 +102,23 @@
     .fas {
         margin-left: 10px;
         color: #cacaca;
+    }
+
+    td.pie {
+        position: relative;
+    }
+
+    td.pie i {
+        position: absolute;
+        font-size: 13px;
+        color: black;
+        bottom: 12px;
+        right: 30px;
+    }
+
+    td.date {
+        font-size: 12px;
+        text-align: right;
     }
 </style>
 <script>
@@ -165,7 +178,12 @@
     {% for task in tasks_to_do %}
     <tr class="task" id="{{ task.service }}-{{ task.id }}">
         <td class="pie">
+            {% if task.length_minutes > 0 %}
             <pie style="background-image: {{ task.get_pie_background_image() }}"></pie>
+            {% endif %}
+            {% if task.is_repeating() %}
+            <i aria-hidden="true" class="fa fa-sync"></i>
+            {% endif %}
         </td>
         <td class="taskName">{{ task.name }}{% if task.note %}<br><span
                 class="note">{{ task.note|safe }}</span>{% endif %}
@@ -187,6 +205,14 @@
     </tr>
     {% endif %}
     {% endfor %}
+    {% endfor %}
+
+    {% for task in nonrecurring_tasks_coming_up %}
+    <tr class="task gray" id="{{ task.service }}-{{ task.id }}">
+        <td class="date">{{ task.due_date.month }}-{{ task.due_date.day }}</td>
+        <td class="taskName">{{ task.name }}</td>
+        <td class="buttons"></td>
+    </tr>
     {% endfor %}
 </table>
 

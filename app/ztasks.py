@@ -13,10 +13,7 @@ class ZDSubTask:
         self.id = id_
         self.name = name
         self.completed_date = completed_date
-        urls = extractor.find_urls(note)
-        for url in urls:
-            note = note.replace(url, "<a href=\"{url}\" target=\"_blank\">{url}</a>".format(url=url))
-        self.note = note.replace("\n", "<br>")
+        self.note = htmlize_note(note)
         self.service = service
 
     def completed_today(self):
@@ -30,6 +27,7 @@ class ZDTask:
                  length_minutes: float,
                  due_date: datetime,
                  completed_date: datetime,
+                 repeat: str,
                  note: str,
                  service: str,
                  sub_tasks: List[ZDSubTask]):
@@ -38,10 +36,8 @@ class ZDTask:
         self.length_minutes = length_minutes
         self.due_date = due_date
         self.completed_date = completed_date
-        urls = extractor.find_urls(note)
-        for url in urls:
-            note = note.replace(url, "<a href=\"{url}\" target=\"_blank\">{url}</a>".format(url=url))
-        self.note = note.replace("\n", "<br>")
+        self.repeat = repeat
+        self.note = htmlize_note(note)
         self.service = service
         self.sub_tasks = sub_tasks
 
@@ -64,3 +60,13 @@ class ZDTask:
 
     def completed_today(self):
         return self.completed_date == today()
+
+    def is_repeating(self):
+        return self.repeat != ""
+
+
+def htmlize_note(raw_note):
+    urls = extractor.find_urls(raw_note)
+    for url in urls:
+        raw_note = raw_note.replace(url, "<a href=\"{url}\" target=\"_blank\">{url}</a>".format(url=url))
+    return raw_note.replace("\n", "<br>")

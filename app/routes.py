@@ -55,7 +55,7 @@ def show_priorities():
 
 
 TOODLEDO_UNORDERED_TASKS_PLACEHOLDER = ZDTask(
-    "-1", "[all unordered Toodledo Tasks]", 0, None, None, "", "unorderedToodledo", [])
+    "-1", "[all unordered Toodledo Tasks]", 0, None, None, "", "", "unorderedToodledo", [])
 
 
 @app.route('/dependencies')
@@ -88,16 +88,16 @@ def get_task_order_from_db(order_type, user=current_user) -> (List[ZDTask], List
         currently_sorted_in_db = []
     sorted_tasks, unsorted_tasks = [], []
     all_tasks: List[ZDTask] = get_all_tasks(user)
-    all_recurring_tasks = [t for t in all_tasks if t.length_minutes != 0]
-    task_map = {t.name: t for t in all_recurring_tasks}
+    task_map = {t.name: t for t in all_tasks}
     task_map[TOODLEDO_UNORDERED_TASKS_PLACEHOLDER.name] = TOODLEDO_UNORDERED_TASKS_PLACEHOLDER
     for name in currently_sorted_in_db:
         if name in task_map:
             sorted_tasks.append(task_map[name])
             del task_map[name]
 
-    for v in task_map.values():
-        unsorted_tasks.append(v)
+    for task in task_map.values():
+        if task.is_repeating():
+            unsorted_tasks.append(task)
 
     if TOODLEDO_UNORDERED_TASKS_PLACEHOLDER in unsorted_tasks:
         del unsorted_tasks[unsorted_tasks.index(TOODLEDO_UNORDERED_TASKS_PLACEHOLDER)]
@@ -172,31 +172,39 @@ def update_task():
 
 def get_homepage_info(user=current_user):
     minutes_completed_today = 0
-    tasks_completed, tasks_to_do, tasks_backlog = set(), set(), set()
+    tasks_completed, tasks_to_do, tasks_backlog, nonrecurring_tasks_coming_up = set(), set(), set(), set()
     prioritized_tasks, unprioritized_tasks = get_task_order_from_db("priorities", user)
-    for task in prioritized_tasks + unprioritized_tasks:
-        if task.completed_today() and task.length_minutes > 0:
+    for task in prioritized_tasks:
+        if task.completed_today():
             minutes_completed_today += task.length_minutes
             tasks_completed.add(task)
 
     task_ids_to_hide = redis_client.get("hidden:" + user.username + ":" + str(today()))
     task_ids_to_hide = [] if task_ids_to_hide is None else task_ids_to_hide.decode().split("|||")
 
-    total_minutes = DEFAULT_TOTAL_MINUTES if request.args.get('time') is None else float(request.args.get('time'))
+    total_minutes = DEFAULT_TOTAL_MINUTES
+    if request.args.get('time') is not None:
+        try:
+            total_minutes = float(request.args.get('time'))
+        except ValueError:
+            pass
     minutes_left_to_schedule = total_minutes - minutes_completed_today
     i = 0
     minutes_allocated = 0
-    while i < len(prioritized_tasks):
-        prioritized_task = prioritized_tasks[i]
-        if prioritized_task.due_date <= today():
-            if prioritized_task.length_minutes <= (minutes_left_to_schedule + 5) \
-                    and prioritized_task.id not in task_ids_to_hide \
-                    and not prioritized_task.completed_today():
-                tasks_to_do.add(prioritized_task)
-                minutes_left_to_schedule -= prioritized_task.length_minutes
-                minutes_allocated += prioritized_task.length_minutes
-            else:
-                tasks_backlog.add(prioritized_task)
+    all_tasks = get_all_tasks(user)
+    while i < len(all_tasks):
+        task = all_tasks[i]
+        if task.id not in task_ids_to_hide \
+                and not task.completed_today():
+            if task.due_date <= today():
+                if task.length_minutes <= (minutes_left_to_schedule + 5):
+                    tasks_to_do.add(task)
+                    minutes_left_to_schedule -= task.length_minutes
+                    minutes_allocated += task.length_minutes
+                else:
+                    tasks_backlog.add(task)
+            elif not task.is_repeating() and task.due_date <= (today() + timedelta(days=1)):
+                nonrecurring_tasks_coming_up.add(task)
         i += 1
 
     ordering = [t.name for t in get_task_order_from_db("dependencies", user)[0]]
@@ -221,6 +229,7 @@ def get_homepage_info(user=current_user):
         "tasks_completed": list(tasks_completed),
         "tasks_to_do": [task for _, task in sorted_tasks_to_do],
         "tasks_backlog": list(tasks_backlog),
+        "nonrecurring_tasks_coming_up": list(nonrecurring_tasks_coming_up),
         "times": times,
         "num_unsorted_tasks": len(unprioritized_tasks),
         "percentage": min(100, max(1, percent_done))
@@ -236,6 +245,7 @@ def homepage():
                            tasks_completed=info['tasks_completed'],
                            tasks_to_do=info['tasks_to_do'],
                            tasks_backlog=info['tasks_backlog'],
+                           nonrecurring_tasks_coming_up=info['nonrecurring_tasks_coming_up'],
                            times=info['times'],
                            num_unsorted_tasks=info['num_unsorted_tasks'],
                            percentage=info['percentage'])
