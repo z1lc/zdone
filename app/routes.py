@@ -189,6 +189,7 @@ def get_homepage_info(user=current_user):
         except ValueError:
             pass
     minutes_left_to_schedule = total_minutes - minutes_completed_today
+
     i = 0
     minutes_allocated = 0
     all_tasks = get_all_tasks(user)

@@ -194,7 +194,7 @@
         </td>
     </tr>
     {% for sub_task in task.sub_tasks %}
-    {% if sub_task.completed_date == None or sub_task.completed_date <= task.due_date %}
+    {% if sub_task.completed_date == None %}
     <tr class="subTask {{ task.service }}-{{ task.id }}" id="{{ sub_task.service }}-{{ sub_task.id }}">
         <td class="pie"></td>
         <td class="subTaskName">{{ sub_task.name }}{% if sub_task.note %}<br><span
