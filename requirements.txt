@@ -1,11 +1,10 @@
 urlextract
-requests-oauthlib==1.2.0
 requests
 wtforms
 python-dateutil
 habitipy
 pytz
--e git+https://github.com/z1lc/toodledo-python.git#egg=toodledo
+git+git://github.com/z1lc/toodledo-python.git@f77d4b97c56e610f9c6d5f6f11da49ed3dfabc72
 Flask
 gunicorn
 psycopg2-binary
