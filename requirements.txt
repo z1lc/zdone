@@ -4,7 +4,7 @@ wtforms
 python-dateutil
 habitipy
 pytz
-git+https://github.com/z1lc/toodledo-python.git
+toodledo
 Flask
 gunicorn
 psycopg2-binary
