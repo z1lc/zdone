@@ -1,4 +1,5 @@
 urlextract
+requests-oauthlib
 requests
 wtforms
 python-dateutil
