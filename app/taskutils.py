@@ -101,7 +101,8 @@ def complete_toodledo_task(task_id, user=current_user):
 def get_toodledo_tasks(redis_client, user=current_user) -> List[ZDTask]:
     if 'toodledo' not in g:
         account = get_toodledo(user).GetAccount()
-        server_last_mod = max(account.lastEditTask.timestamp(), account.lastDeleteTask.timestamp())
+        last_deleted = account.lastDeleteTask or datetime.datetime.now()
+        server_last_mod = max(account.lastEditTask.timestamp(), last_deleted.timestamp())
         db_last_mod = redis_client.get("toodledo:" + user.username + ":last_mod")
         if db_last_mod is None or float(db_last_mod) < server_last_mod:
             # TODO: add support for repeat
@@ -119,12 +120,13 @@ def get_toodledo_tasks(redis_client, user=current_user) -> List[ZDTask]:
         zd_tasks = []
         parent_id_to_subtask_list: Dict[int, List[ZDSubTask]] = collections.defaultdict(list)
         for task in full_api_response:
-            if task.parent != 0:
+            if hasattr(task, "parent") and task.parent != 0:
                 parent_id_to_subtask_list[task.parent].append(
                     ZDSubTask(str(task.id_), task.title, task.completedDate, task.note, "toodledo"))
 
         for task in full_api_response:
-            if task.parent == 0 and (task.completedDate is None or task.completedDate == today()):
+            if (not hasattr(task, "parent") or task.parent == 0) and \
+                    (task.completedDate is None or task.completedDate == today()):
                 zd_tasks.append(
                     ZDTask(str(task.id_), task.title, float(task.length), task.dueDate, task.completedDate,
                            task.repeat, task.note, "toodledo", parent_id_to_subtask_list[task.id_]))
