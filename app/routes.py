@@ -197,14 +197,15 @@ def get_homepage_info(user=current_user):
         task = all_tasks[i]
         if task.id not in task_ids_to_hide \
                 and not task.completed_today():
-            if task.due_date <= today():
+            if task.due_date is not None and task.due_date <= today():
                 if task.length_minutes <= (minutes_left_to_schedule + 5):
                     tasks_to_do.add(task)
                     minutes_left_to_schedule -= task.length_minutes
                     minutes_allocated += task.length_minutes
                 else:
                     tasks_backlog.add(task)
-            elif not task.is_repeating() and task.due_date <= (today() + timedelta(days=1)):
+            elif not task.is_repeating() and \
+                    (task.due_date is not None and task.due_date <= (today() + timedelta(days=1))):
                 nonrecurring_tasks_coming_up.add(task)
         i += 1
 
@@ -226,15 +227,29 @@ def get_homepage_info(user=current_user):
     }
     denom = times['minutes_completed_today'] + times['minutes_allocated']
     percent_done = int(times['minutes_completed_today'] * 100 / denom) if denom > 0 else 0
+    tasks_without_required_fields = get_tasks_without_required_fields(all_tasks)
     return {
         "tasks_completed": list(tasks_completed),
         "tasks_to_do": [task for _, task in sorted_tasks_to_do],
         "tasks_backlog": list(tasks_backlog),
+        "tasks_without_required_fields": tasks_without_required_fields,
+        "num_tasks_without_required_fields": len(tasks_without_required_fields),
         "nonrecurring_tasks_coming_up": list(nonrecurring_tasks_coming_up),
         "times": times,
         "num_unsorted_tasks": len(unprioritized_tasks),
         "percentage": min(100, max(1, percent_done))
     }
+
+
+def get_tasks_without_required_fields(all_tasks):
+    bad_tasks = []
+    for task in all_tasks:
+        if task.completed_date is None:
+            if (task.length_minutes is None or task.length_minutes == 0) or \
+                    task.due_date is None:
+                bad_tasks.append(task)
+
+    return bad_tasks
 
 
 @app.route('/')
@@ -246,6 +261,8 @@ def homepage():
                            tasks_completed=info['tasks_completed'],
                            tasks_to_do=info['tasks_to_do'],
                            tasks_backlog=info['tasks_backlog'],
+                           tasks_without_required_fields=info['tasks_without_required_fields'],
+                           num_tasks_without_required_fields=info['num_tasks_without_required_fields'],
                            nonrecurring_tasks_coming_up=info['nonrecurring_tasks_coming_up'],
                            times=info['times'],
                            num_unsorted_tasks=info['num_unsorted_tasks'],

@@ -160,6 +160,8 @@
 {% block body %}
 {% if num_unsorted_tasks > 0 %}
 <a href="/priorities"><h1 class="badge1" data-badge="{{ num_unsorted_tasks }}">zdone</h1></a>
+{% elif num_tasks_without_required_fields > 0 %}
+<a href="https://tasks.toodledo.com/saved/354943"><h1 class="badge1" data-badge="{{ num_tasks_without_required_fields }}">zdone</h1></a>
 {% else %}
 <h1>zdone</h1>
 {% endif %}
