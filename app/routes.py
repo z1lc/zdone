@@ -62,6 +62,8 @@ TOODLEDO_UNORDERED_TASKS_PLACEHOLDER = ZDTask(
 @login_required
 def show_dependencies():
     dependencies_ordered, dependencies_to_order = get_task_order_from_db("dependencies")
+
+    # insert the Toodledo placeholder in case it's not already in the ordering saved in db
     if TOODLEDO_UNORDERED_TASKS_PLACEHOLDER not in dependencies_ordered:
         index_insert = 0
         for i, e in enumerate(dependencies_ordered):

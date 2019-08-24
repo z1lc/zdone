@@ -46,13 +46,8 @@
   $(function () {
     $("#unsorted, #sorted").sortable({
       placeholder: "ui-state-highlight",
-    /* @formatter:off */
-      {% if type == 'dependencies' %}
-        cancel: ".nosort",
-      {% endif %}
       connectWith: ".connectedSortable"
     }).disableSelection();
-      /* @formatter:on */
     $("#sorted").on("sortupdate", function (event, ui) {
       $.ajax({
         contentType: "application/json",
@@ -79,7 +74,7 @@
             {% endif %}</h1>
         <ul id="sorted" class="connectedSortable">
             {% for task in sorted_tasks %}
-            <li class="ui-state-default {{ task.service }} {% if task.service in ['habitica'] %}nosort{% endif %}">
+            <li class="ui-state-default {{ task.service }}">
                 <b>{{ task.length_minutes }}m</b> <span class="taskTitle">{{ task.name }}</span>
             </li>
             {% endfor %}
@@ -89,7 +84,7 @@
         <h1>To be Sorted</h1>
         <ul id="unsorted" class="connectedSortable">
             {% for task in unsorted_tasks %}
-            <li class="ui-state-default {{ task.service }} {% if task.service in ['habitica'] %}nosort{% endif %}">
+            <li class="ui-state-default {{ task.service }}">
                 <b>{{ task.length_minutes }}m</b> <span class="taskTitle">{{ task.name }}</span>
             </li>
             {% endfor %}
