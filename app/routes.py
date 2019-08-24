@@ -136,7 +136,7 @@ def update_dependencies():
     return success()
 
 
-def do_update_task(update, service, task_id, user=current_user):
+def do_update_task(update, service, task_id, subtask_id, user=current_user):
     if update == "defer":
         redis_client.append("hidden:" + user.username + ":" + str(today()), (task_id + "|||").encode())
         redis_client.expire("hidden:" + user.username + ":" + str(today()), timedelta(days=7))
@@ -144,9 +144,12 @@ def do_update_task(update, service, task_id, user=current_user):
         redis_client.delete("toodledo:" + user.username + ":last_mod")
     elif update == "complete":
         if service == "habitica":
-            complete_habitica_task(task_id, user)
+            complete_habitica_task(task_id, subtask_id, user)
         elif service == "toodledo":
-            complete_toodledo_task(task_id, user)
+            if subtask_id:
+                complete_toodledo_task(subtask_id, user)
+            else:
+                complete_toodledo_task(task_id, user)
         else:
             return jsonify({
                 'result': 'failure',
@@ -168,8 +171,9 @@ def update_task():
     update = req["update"]
     service = req["service"]
     task_id = req["id"]
+    subtask_id = req["subtask_id"] if "subtask_id" in req else ""
 
-    return do_update_task(update, service, task_id)
+    return do_update_task(update, service, task_id, subtask_id)
 
 
 def get_homepage_info(user=current_user):
@@ -303,9 +307,10 @@ def api_update_task():
             update = req["update"]
             service = req["service"]
             task_id = req["id"]
+            subtask_id = req["subtask_id"] if "subtask_id" in req else ""
 
             try:
-                return do_update_task(update, service, task_id, user)
+                return do_update_task(update, service, subtask_id, task_id, user)
             except Exception as e:
                 return jsonify({
                     'result': 'failure',

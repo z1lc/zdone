@@ -65,6 +65,15 @@ def get_habitica_tasks(user=current_user) -> List[ZDTask]:
                         break
                     i += 1
 
+            sub_tasks = []
+            for subtask in habit['checklist']:
+                sub_tasks.append(ZDSubTask(
+                    subtask['id'],
+                    subtask['text'],
+                    today() if subtask['completed'] else None,
+                    "",
+                    "habitica"))
+
             task = ZDTask(
                 habit['_id'],
                 habit['text'],
@@ -75,15 +84,18 @@ def get_habitica_tasks(user=current_user) -> List[ZDTask]:
                 "FREQ=DAILY",
                 "",
                 'habitica',
-                [])
+                sub_tasks)
             habit_list.append(task)
             g.habitica = habit_list
 
     return g.habitica
 
 
-def complete_habitica_task(task_id, user=current_user):
-    get_habitica(user).tasks[task_id].score.up.post()
+def complete_habitica_task(task_id, subtask_id, user=current_user):
+    if subtask_id:
+        get_habitica(user).tasks[task_id].checklist[subtask_id].score.post()
+    else:
+        get_habitica(user).tasks[task_id].score.up.post()
 
 
 def complete_toodledo_task(task_id, user=current_user):

@@ -122,17 +122,31 @@
     }
 </style>
 <script>
-  function completeItem(service, id) {
-    $("#" + service + "-" + id).find(".check").css("color", "green");
-    updateItem(service, id, "complete")
+  function getSelector(service, id, subtask_id, use_class_selector = false) {
+    let toReturn = "";
+    if (use_class_selector) {
+      toReturn += "."
+    } else {
+      toReturn += "#"
+    }
+    toReturn += service + "-" + id;
+    if (subtask_id !== "") {
+      toReturn += "-" + subtask_id
+    }
+    return toReturn
   }
 
-  function deferItem(service, id) {
-    $("#" + service + "-" + id).find(".defer").css("color", "#111198");
-    updateItem(service, id, "defer")
+  function completeItem(service, id, subtask_id) {
+    $(getSelector(service, id, subtask_id)).find(".check").css("color", "green");
+    updateItem(service, id, subtask_id, "complete")
   }
 
-  function updateItem(service, id, update_action) {
+  function deferItem(service, id, subtask_id) {
+    $(getSelector(service, id, subtask_id)).find(".defer").css("color", "#111198");
+    updateItem(service, id, subtask_id, "defer")
+  }
+
+  function updateItem(service, id, subtask_id, update_action) {
     if (service === "toodledo" || service === "habitica") {
       $
         .ajax({
@@ -140,14 +154,15 @@
           data: JSON.stringify({
             "service": service,
             "id": id,
+            "subtask_id": subtask_id,
             "update": update_action
           }),
           type: "POST",
           url: "update_task"
         })
         .done(function () {
-          $("#" + service + "-" + id).slideUp();
-          $("." + service + "-" + id).slideUp();
+          $(getSelector(service, id, subtask_id)).slideUp();
+          $(getSelector(service, id, subtask_id, true)).slideUp();
         });
     } else {
       alert("Unexpected service '" + service + "'!")
@@ -161,7 +176,9 @@
 {% if num_unsorted_tasks > 0 %}
 <a href="/priorities"><h1 class="badge1" data-badge="{{ num_unsorted_tasks }}">zdone</h1></a>
 {% elif num_tasks_without_required_fields > 0 %}
-<a href="https://tasks.toodledo.com/saved/354943"><h1 class="badge1" data-badge="{{ num_tasks_without_required_fields }}">zdone</h1></a>
+<a href="https://tasks.toodledo.com/saved/354943"><h1 class="badge1"
+                                                      data-badge="{{ num_tasks_without_required_fields }}">zdone</h1>
+</a>
 {% else %}
 <h1>zdone</h1>
 {% endif %}
@@ -191,19 +208,20 @@
                 class="note">{{ task.note|safe }}</span>{% endif %}
         </td>
         <td class="buttons"><i class="fas fa-angle-double-right defer"
-                               onclick="deferItem('{{ task.service }}', '{{ task.id }}')"></i><i
-                class="fas fa-check check" onclick="completeItem('{{ task.service }}', '{{ task.id }}')"></i>
+                               onclick="deferItem('{{ task.service }}', '{{ task.id }}', '')"></i><i
+                class="fas fa-check check" onclick="completeItem('{{ task.service }}', '{{ task.id }}', '')"></i>
         </td>
     </tr>
     {% for sub_task in task.sub_tasks %}
     {% if sub_task.completed_date == None %}
-    <tr class="subTask {{ task.service }}-{{ task.id }}" id="{{ sub_task.service }}-{{ sub_task.id }}">
+    <tr class="subTask {{ task.service }}-{{ task.id }}" id="{{ sub_task.service }}-{{ task.id }}-{{ sub_task.id }}">
         <td class="pie"></td>
         <td class="subTaskName">{{ sub_task.name }}{% if sub_task.note %}<br><span
                 class="note">{{ sub_task.note|safe }}</span>{% endif %}
         </td>
         <td class="buttons"><i class="fas fa-check check"
-                               onclick="completeItem('{{ sub_task.service }}', '{{ sub_task.id }}')"></i></td>
+                               onclick="completeItem('{{ sub_task.service }}', '{{task.id}}', '{{ sub_task.id }}')"></i>
+        </td>
     </tr>
     {% endif %}
     {% endfor %}
