@@ -310,7 +310,7 @@ def api_update_task():
             subtask_id = req["subtask_id"] if "subtask_id" in req else None
 
             try:
-                return do_update_task(update, service, subtask_id, task_id, user)
+                return do_update_task(update, service, task_id, subtask_id, user)
             except Exception as e:
                 return jsonify({
                     'result': 'failure',
