@@ -307,7 +307,7 @@ def api_update_task():
             update = req["update"]
             service = req["service"]
             task_id = req["id"]
-            subtask_id = req["subtask_id"] if "subtask_id" in req else ""
+            subtask_id = req["subtask_id"] if "subtask_id" in req else None
 
             try:
                 return do_update_task(update, service, subtask_id, task_id, user)
