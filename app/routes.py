@@ -165,7 +165,7 @@ def do_update_task(update, service, task_id, subtask_id, user=current_user):
 
 
 def do_update_time(time, user=current_user):
-    user.maximum_minutes_per_day = time
+    user.maximum_minutes_per_day = max(0, min(1440, time))
     db.session.commit()
     return success()
 
