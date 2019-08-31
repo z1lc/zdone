@@ -120,6 +120,19 @@
         font-size: 12px;
         text-align: right;
     }
+
+    #noMoreTasks {
+        text-align: center;
+    }
+    div.footer {
+        color: gray;
+        font-size: 10px;
+        text-align: right;
+        margin-right: 12px;
+    }
+    div.footer a {
+        text-decoration: none;
+    }
 </style>
 <script>
   function getSelector(service, id, subtask_id, use_class_selector = false) {
@@ -168,6 +181,21 @@
       alert("Unexpected service '" + service + "'!")
     }
   }
+
+  function setTimeAndReload(new_time) {
+    $
+      .ajax({
+        contentType: "application/json",
+        data: JSON.stringify({
+          "maximum_minutes_per_day": new_time
+        }),
+        type: "POST",
+        url: "update_time"
+      })
+      .done(function () {
+        document.location.reload(true);
+      });
+  }
 </script>
 <script src="//kit.fontawesome.com/874826286d.js"></script>
 {% endblock %}
@@ -193,6 +221,13 @@
     -->
 </div>
 <hr>
+{% if num_tasks_to_do == 0 %}
+<div id="noMoreTasks">
+    No more tasks!<br>
+    Increase time limit by 60 minutes?<br><br>
+    <a href="javascript:void(0)" onclick="setTimeAndReload({{ times[" maximum_minutes_per_day"] }} + 60)">Yes</a>
+</div>
+{% endif %}
 <table class="tasks">
     {% for task in tasks_to_do %}
     <tr class="task" id="{{ task.service }}-{{ task.id }}">
@@ -235,5 +270,7 @@
     </tr>
     {% endfor %}
 </table>
+<hr>
+<div class="footer"><a href="javascript:void(0)" onclick="setTimeAndReload(prompt('New time limit'));">SETTINGS</a></div>
 
 {% endblock %}

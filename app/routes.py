@@ -164,6 +164,12 @@ def do_update_task(update, service, task_id, subtask_id, user=current_user):
     return success()
 
 
+def do_update_time(time, user=current_user):
+    user.maximum_minutes_per_day = time
+    db.session.commit()
+    return success()
+
+
 @app.route('/update_task', methods=['POST'])
 @login_required
 def update_task():
@@ -174,6 +180,12 @@ def update_task():
     subtask_id = req["subtask_id"] if "subtask_id" in req else None
 
     return do_update_task(update, service, task_id, subtask_id)
+
+
+@app.route('/update_time', methods=['POST'])
+@login_required
+def update_time():
+    return do_update_time(request.get_json()["maximum_minutes_per_day"])
 
 
 def get_homepage_info(user=current_user):
@@ -188,12 +200,7 @@ def get_homepage_info(user=current_user):
     task_ids_to_hide = redis_client.get("hidden:" + user.username + ":" + str(today()))
     task_ids_to_hide = [] if task_ids_to_hide is None else task_ids_to_hide.decode().split("|||")
 
-    total_minutes = DEFAULT_TOTAL_MINUTES
-    if request.args.get('time') is not None:
-        try:
-            total_minutes = float(request.args.get('time'))
-        except ValueError:
-            pass
+    total_minutes = user.maximum_minutes_per_day
     minutes_left_to_schedule = total_minutes - minutes_completed_today
 
     i = 0
@@ -229,7 +236,8 @@ def get_homepage_info(user=current_user):
 
     times = {
         'minutes_completed_today': minutes_completed_today,
-        'minutes_allocated': minutes_allocated
+        'minutes_allocated': minutes_allocated,
+        'maximum_minutes_per_day': user.maximum_minutes_per_day
     }
     denom = times['minutes_completed_today'] + times['minutes_allocated']
     percent_done = int(times['minutes_completed_today'] * 100 / denom) if denom > 0 else 0
@@ -239,7 +247,6 @@ def get_homepage_info(user=current_user):
         "tasks_to_do": [task for _, task in sorted_tasks_to_do],
         "tasks_backlog": list(tasks_backlog),
         "tasks_without_required_fields": tasks_without_required_fields,
-        "num_tasks_without_required_fields": len(tasks_without_required_fields),
         "nonrecurring_tasks_coming_up": list(nonrecurring_tasks_coming_up),
         "times": times,
         "num_unsorted_tasks": len(unprioritized_tasks),
@@ -266,9 +273,10 @@ def homepage():
     return render_template('index.html',
                            tasks_completed=info['tasks_completed'],
                            tasks_to_do=info['tasks_to_do'],
+                           num_tasks_to_do=len(info['tasks_to_do']),
                            tasks_backlog=info['tasks_backlog'],
                            tasks_without_required_fields=info['tasks_without_required_fields'],
-                           num_tasks_without_required_fields=info['num_tasks_without_required_fields'],
+                           num_tasks_without_required_fields=len(info['tasks_without_required_fields']),
                            nonrecurring_tasks_coming_up=info['nonrecurring_tasks_coming_up'],
                            times=info['times'],
                            num_unsorted_tasks=info['num_unsorted_tasks'],
@@ -311,6 +319,30 @@ def api_update_task():
 
             try:
                 return do_update_task(update, service, task_id, subtask_id, user)
+            except Exception as e:
+                return jsonify({
+                    'result': 'failure',
+                    'reason': str(e)
+                }), 400
+
+
+@app.route('/api/update_time', methods=['POST'])
+def api_update_time():
+    user = validate_api_key(request.headers.get('x-api-key'))
+    if not user:
+        return api_key_failure()
+    else:
+        req = request.get_json()
+        if not req or "maximum_minutes_per_day" not in req:
+            return jsonify({
+                'result': 'failure',
+                'reason': 'Request body must be application/json with key \'time\'.'
+            }), 400
+        else:
+            time = req["maximum_minutes_per_day"]
+
+            try:
+                return do_update_time(time, user)
             except Exception as e:
                 return jsonify({
                     'result': 'failure',

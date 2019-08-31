@@ -11,6 +11,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(128), index=True, unique=True)
     password_hash = db.Column(db.String(128))
+    maximum_minutes_per_day = db.Column(db.Integer, nullable=False, server_default='120')
 
     # import uuid ; uuid.uuid4()
     api_key = db.Column(db.String(128), unique=True)
