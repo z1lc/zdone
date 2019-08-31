@@ -124,12 +124,14 @@
     #noMoreTasks {
         text-align: center;
     }
+
     div.footer {
         color: gray;
         font-size: 10px;
         text-align: right;
         margin-right: 12px;
     }
+
     div.footer a {
         text-decoration: none;
     }
@@ -183,18 +185,20 @@
   }
 
   function setTimeAndReload(new_time) {
-    $
-      .ajax({
-        contentType: "application/json",
-        data: JSON.stringify({
-          "maximum_minutes_per_day": new_time
-        }),
-        type: "POST",
-        url: "update_time"
-      })
-      .done(function () {
-        document.location.reload(true);
-      });
+    if (new_time !== null && new_time !== '' && !isNaN(new_time)) {
+      $
+        .ajax({
+          contentType: "application/json",
+          data: JSON.stringify({
+            "maximum_minutes_per_day": new_time
+          }),
+          type: "POST",
+          url: "update_time"
+        })
+        .done(function () {
+          document.location.reload(true);
+        });
+    }
   }
 </script>
 <script src="//kit.fontawesome.com/874826286d.js"></script>
@@ -271,6 +275,8 @@
     {% endfor %}
 </table>
 <hr>
-<div class="footer"><a href="javascript:void(0)" onclick="setTimeAndReload(prompt('New time limit'));">SETTINGS</a></div>
+<div class="footer"><a href="javascript:void(0)"
+                       onclick="setTimeAndReload(prompt('Time limit:', '{{ times['maximum_minutes_per_day'] }}'));">SETTINGS</a>
+</div>
 
 {% endblock %}
