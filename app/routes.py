@@ -250,7 +250,8 @@ def get_homepage_info(user=current_user):
         "nonrecurring_tasks_coming_up": list(nonrecurring_tasks_coming_up),
         "times": times,
         "num_unsorted_tasks": len(unprioritized_tasks),
-        "percentage": min(100, max(1, percent_done))
+        "percentage": min(100, max(1, percent_done)),
+        "background": "red!important" if times['minutes_completed_today'] < 30 else "#2196F3!important"
     }
 
 
@@ -280,7 +281,8 @@ def homepage():
                            nonrecurring_tasks_coming_up=info['nonrecurring_tasks_coming_up'],
                            times=info['times'],
                            num_unsorted_tasks=info['num_unsorted_tasks'],
-                           percentage=info['percentage'])
+                           percentage=info['percentage'],
+                           background=info['background'])
 
 
 def validate_api_key(api_key):
