@@ -146,7 +146,7 @@ def do_update_task(update, service, task_id, subtask_id, user=current_user):
         socketio.emit('task completion', {
             'service': service,
             'task_id': task_id,
-            'subtask_id': subtask_id,
+            'subtask_id': subtask_id if subtask_id else '',
         })
         if service == "habitica":
             complete_habitica_task(task_id, subtask_id, user)
