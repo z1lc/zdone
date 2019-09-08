@@ -14,3 +14,4 @@ flask-redis
 flask_login
 flask_migrate
 flask_wtf
+flask_socketio
