@@ -9,7 +9,7 @@ from flask_login import login_required
 from werkzeug.urls import url_parse
 from werkzeug.utils import redirect
 
-from . import redis_client, app, db
+from . import redis_client, app, db, socketio
 from .forms import LoginForm
 from .models import User
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task
@@ -143,6 +143,11 @@ def do_update_task(update, service, task_id, subtask_id, user=current_user):
         # can no longer use cached tasks since we have to re-sort
         redis_client.delete("toodledo:" + user.username + ":last_mod")
     elif update == "complete":
+        socketio.emit('task completion', {
+            'service': service,
+            'task_id': task_id,
+            'subtask_id': subtask_id,
+        })
         if service == "habitica":
             complete_habitica_task(task_id, subtask_id, user)
         elif service == "toodledo":

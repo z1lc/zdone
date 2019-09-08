@@ -201,6 +201,12 @@
         });
     }
   }
+
+  var socket = io();
+  socket.on('task completion', function (msg) {
+    $(getSelector(msg['service'], msg['task_id'], msg['subtask_id'])).slideUp();
+    $(getSelector(msg['service'], msg['task_id'], msg['subtask_id'], true)).slideUp();
+  });
 </script>
 <script src="//kit.fontawesome.com/874826286d.js"></script>
 {% endblock %}
@@ -230,7 +236,7 @@
 <div id="noMoreTasks">
     No more tasks!<br>
     Increase time limit by 60 minutes?<br><br>
-    <a href="javascript:void(0)" onclick="setTimeAndReload({{ times[" maximum_minutes_per_day"] }} + 60)">Yes</a>
+    <a href="javascript:void(0)" onclick="setTimeAndReload({{ times['maximum_minutes_per_day'] }} + 60)">Yes</a>
 </div>
 {% endif %}
 <table class="tasks">
