@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block within_head %}
+<script src="https://browser.sentry-cdn.com/5.6.3/bundle.min.js" integrity="sha384-/Cqa/8kaWn7emdqIBLk3AkFMAHBk0LObErtMhO+hr52CntkaurEnihPmqYj3uJho" crossorigin="anonymous"></script>
+
+{% if sentry_event_id %}
+<script>
+  Sentry.init({ dsn: 'https://4dbd095718e34cb7bc4f7d64ecf488c4@sentry.io/1678958' });
+  Sentry.showReportDialog({ eventId: '{{ sentry_event_id }}' })
+</script>
+{% endif %}
+{% endblock %}

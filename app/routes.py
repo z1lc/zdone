@@ -6,6 +6,7 @@ from flask import render_template, request, make_response, jsonify
 from flask import url_for, flash
 from flask_login import current_user, login_user, logout_user
 from flask_login import login_required
+from sentry_sdk import last_event_id
 from werkzeug.urls import url_parse
 from werkzeug.utils import redirect
 
@@ -17,6 +18,11 @@ from .util import today
 from .ztasks import ZDTask
 
 DEFAULT_TOTAL_MINUTES = 120
+
+
+@app.errorhandler(500)
+def server_error_handler(error):
+    return render_template("500.html", sentry_event_id=last_event_id()), 500
 
 
 @app.route('/login', methods=['GET', 'POST'])
