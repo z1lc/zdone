@@ -13,7 +13,8 @@ from app.config import Config
 
 sentry_sdk.init(
     dsn="https://4dbd095718e34cb7bc4f7d64ecf488c4@sentry.io/1678958",
-    integrations=[FlaskIntegration()]
+    integrations=[FlaskIntegration()],
+    send_default_pii=True
 )
 
 app = Flask(__name__)
