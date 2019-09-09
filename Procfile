@@ -1,1 +1,1 @@
-web: gunicorn --worker-class eventlet -w 1 --log-file=- app:app
+web: newrelic-admin run-program gunicorn --worker-class eventlet -w 1 --log-file=- app:app
