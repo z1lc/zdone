@@ -10,7 +10,7 @@ class TestNeedsToCronHabitica(TestCase):
 
     @patch('app.taskutils.today')
     def test_needs_to_cron_habitica(self, test_today):
-        test_today.return_value = datetime.datetime(year=2019, month=9, day=8)
+        test_today.return_value = datetime.date(year=2019, month=9, day=8)
         dailys = [
             {'repeat': {'m': True, 't': True, 'w': True, 'th': True, 'f': True, 's': True, 'su': True}, 'challenge': {},
              'group': {'approval': {'required': False, 'approved': False, 'requested': False}, 'assignedUsers': [],
@@ -101,5 +101,5 @@ class TestNeedsToCronHabitica(TestCase):
 
         self.assertFalse(taskutils.needs_to_cron_habitica(dailys))
 
-        test_today.return_value = datetime.datetime(year=2019, month=9, day=7)
+        test_today.return_value = datetime.date(year=2019, month=9, day=7)
         self.assertTrue(taskutils.needs_to_cron_habitica(dailys))

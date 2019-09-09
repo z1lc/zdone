@@ -40,7 +40,7 @@ def get_toodledo(user=current_user):
 def needs_to_cron_habitica(dailys):
     habits_repeating_every_day = [h for h in dailys if all(h['repeat'].values())]
     first_next_due = habits_repeating_every_day[0]['nextDue'][0]
-    return parser.parse(first_next_due, '').date() != (today() + datetime.timedelta(days=1)).date()
+    return parser.parse(first_next_due, '').date() != today() + datetime.timedelta(days=1)
 
 
 def get_habitica_tasks(user=current_user) -> List[ZDTask]:
