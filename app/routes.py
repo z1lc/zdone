@@ -355,3 +355,8 @@ def api_update_time():
                     'result': 'failure',
                     'reason': str(e)
                 }), 400
+
+
+@app.route('/debug-sentry')
+def trigger_error():
+    division_by_zero = 1 / 0
