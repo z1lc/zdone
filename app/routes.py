@@ -349,7 +349,7 @@ def api_update_time():
         if not req or "maximum_minutes_per_day" not in req:
             return jsonify({
                 'result': 'failure',
-                'reason': 'Request body must be application/json with key \'time\'.'
+                'reason': 'Request body must be application/json with key \'maximum_minutes_per_day\'.'
             }), 400
         else:
             time = req["maximum_minutes_per_day"]
