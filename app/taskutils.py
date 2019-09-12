@@ -58,7 +58,7 @@ def get_habitica_tasks(user=current_user) -> List[ZDTask]:
         for habit in dailys:
             if habit['repeat'][habitica_day_string] and not habit['completed']:
                 due = today()
-            else:
+            elif any(habit['repeat'].values()):  # filter out tasks that are never due
                 due = parser.parse(habit['nextDue'][0], '').date()
 
             completed_date = None
