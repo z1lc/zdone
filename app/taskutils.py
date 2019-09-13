@@ -58,8 +58,11 @@ def get_habitica_tasks(user=current_user) -> List[ZDTask]:
         for habit in dailys:
             if habit['repeat'][habitica_day_string] and not habit['completed']:
                 due = today()
-            elif any(habit['repeat'].values()):  # filter out tasks that are never due
-                due = parser.parse(habit['nextDue'][0], '').date()
+            else:
+                if any(habit['repeat'].values()):
+                    due = parser.parse(habit['nextDue'][0], '').date()
+                else:  # filter out tasks that are never due
+                    continue
 
             completed_date = None
             if habit['completed']:
@@ -83,15 +86,19 @@ def get_habitica_tasks(user=current_user) -> List[ZDTask]:
                     "",
                     "habitica"))
 
+            time_and_notes = habit['notes'].split("\n")
+            time = float(time_and_notes[0]) if re.match("^\\d+(\\.\\d+)?$", time_and_notes[0]) else 0
+            notes = "\n".join(time_and_notes[1:])
+
             task = ZDTask(
                 habit['_id'],
                 habit['text'],
                 # use notes field in habitica for estimated minutes
-                float(habit['notes']) if re.match("^\\d+(\\.\\d+)?$", habit['notes']) else 0,
+                time,
                 due,
                 completed_date,
                 "FREQ=DAILY",
-                "",
+                notes,
                 'habitica',
                 sub_tasks)
             habit_list.append(task)
