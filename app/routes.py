@@ -222,7 +222,8 @@ def get_homepage_info(user=current_user):
         if task.id not in task_ids_to_hide \
                 and not task.completed_today():
             if task.due_date is not None and task.due_date <= today():
-                if task.length_minutes <= (minutes_left_to_schedule + 5):
+                # add 4 minutes to allow some space for non-round-number tasks to be scheduled
+                if task.length_minutes <= (minutes_left_to_schedule + 4):
                     tasks_to_do.add(task)
                     minutes_left_to_schedule -= task.length_minutes
                     minutes_allocated += task.length_minutes
