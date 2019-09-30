@@ -29,13 +29,11 @@
     {% endif %}
 
     <div class="w3-container top-container">
+        <div style="position: absolute; right: 7px; top: 20px; font-family: 'Open Sans Light'; font-size: 16px;">{{ times['minutes_allocated_rounded'] }}</div>
         <div class="w3-light-grey w3-round-large">
             <div class="w3-container w3-blue w3-round"></div>
         </div>
-        <!--
-        <div style="display: inline-block;">{{ times['minutes_completed_today'] }}m done</div>
-        <div style="float: right; display: inline-block;">{{ times['minutes_allocated'] }}m</div>
-        -->
+<!--        <div style="display: inline-block;">{{ times['minutes_completed_today'] }}m done</div>-->
     </div>
     <hr>
     {% if num_tasks_to_do == 0 %}
