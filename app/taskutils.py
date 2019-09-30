@@ -38,9 +38,12 @@ def get_toodledo(user=current_user):
 
 
 def needs_to_cron_habitica(dailys):
-    habits_repeating_every_day = [h for h in dailys if all(h['repeat'].values())]
-    first_next_due = habits_repeating_every_day[0]['nextDue'][0]
-    return parser.parse(first_next_due, '').date() != today() + datetime.timedelta(days=1)
+    for habit in dailys:
+        if all(habit['repeat'].values()):  # repeats every day
+            if parser.parse(habit['nextDue'][0], '').date() != today() + datetime.timedelta(days=1):
+                # if any of the habits have a nextDue that isn't tomorrow, we need to cron
+                return True
+    return False
 
 
 def get_habitica_tasks(user=current_user) -> List[ZDTask]:
