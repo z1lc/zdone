@@ -2,66 +2,8 @@
 
 {% block within_head %}
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-<style>
-    body {
-        max-width: 100%;
-    }
-
-    #unsorted, #sorted {
-        min-height: 20px;
-        list-style-type: none;
-        padding: 5px 0 0 0;
-    }
-
-    #unsorted li, #sorted li {
-        margin: 0 5px 5px 5px;
-        padding: 5px;
-        font-size: 1em;
-    }
-
-    #grid {
-        display: grid;
-        grid-template-columns: 50% 50%;
-        grid-template-rows: auto;
-        margin: 0 10px 0 10px;
-    }
-
-    .ui-state-highlight {
-        height: 1.5em;
-        line-height: 1.2em;
-    }
-
-    li.toodledo {
-        background-color: #c8dcfa;
-        color: #163c60
-    }
-
-    li.habitica {
-        background-color: #432874;
-        color: white;
-    }
-</style>
 <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-<script>
-  $(function () {
-    $("#unsorted, #sorted").sortable({
-      placeholder: "ui-state-highlight",
-      connectWith: ".connectedSortable"
-    }).disableSelection();
-    $("#sorted").on("sortupdate", function (event, ui) {
-      $.ajax({
-        contentType: "application/json",
-        data: JSON.stringify({
-          "{{ type }}": $("#sorted span.taskTitle").toArray()
-            .map(e => $(e).text())
-            .join("|||")
-        }),
-        type: "POST",
-        url: "set_{{ type }}"
-      });
-    });
-  });
-</script>
+<script src="{{ url_for('static',filename='scripts/priorities_and_dependencies.js') }}"></script>
 {% endblock %}
 
 {% block body %}
