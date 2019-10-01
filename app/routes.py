@@ -283,7 +283,8 @@ def get_tasks_without_required_fields(all_tasks):
 @login_required
 def homepage():
     info = get_homepage_info()
-    info['times']['minutes_allocated_rounded'] = round(info['times']['minutes_allocated'])
+    info['times']['minutes_total_rounded'] = \
+        round(info['times']['minutes_allocated'] + info['times']['minutes_completed_today'])
     return render_template('index.html',
                            tasks_completed=info['tasks_completed'],
                            tasks_to_do=info['tasks_to_do'],
