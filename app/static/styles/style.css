@@ -75,7 +75,7 @@ pie {
 }
 
 table.tasks {
-  margin-right: 10px;
+  margin: 0 10px 0 10px;
 }
 
 td.pie {
