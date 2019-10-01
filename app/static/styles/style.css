@@ -69,10 +69,9 @@ pie {
   border-radius: 50%;
   background-color: black;
   border: 2px solid black;
-  top: 1px;
+  top: 2px;
   position: relative;
-  margin-right: 6px;
-  margin-left: 19px;
+  margin-right: 4px;
 }
 
 table.tasks {
@@ -81,6 +80,7 @@ table.tasks {
 
 td.pie {
   width: 5%;
+  min-width: 40px;
 }
 
 td.buttons {
@@ -108,14 +108,14 @@ span.note {
 
 td.pie {
   position: relative;
+  text-align: right;
 }
 
 td.pie i {
-  position: absolute;
+  display: inline-block;
   font-size: 13px;
   color: black;
-  bottom: 12px;
-  right: 30px;
+  margin-right: 6px;
 }
 
 td.date {
