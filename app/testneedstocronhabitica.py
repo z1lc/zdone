@@ -101,5 +101,5 @@ class TestNeedsToCronHabitica(TestCase):
 
         self.assertFalse(taskutils.needs_to_cron_habitica(dailys))
 
-        test_today.return_value = datetime.date(year=2019, month=9, day=7)
+        test_today.return_value = datetime.date(year=2019, month=9, day=9)
         self.assertTrue(taskutils.needs_to_cron_habitica(dailys))
