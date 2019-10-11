@@ -149,11 +149,6 @@ def do_update_task(update, service, task_id, subtask_id, user=current_user):
         # can no longer use cached tasks since we have to re-sort
         redis_client.delete("toodledo:" + user.username + ":last_mod")
     elif update == "complete":
-        socketio.emit('task completion', {
-            'service': service,
-            'task_id': task_id,
-            'subtask_id': subtask_id if subtask_id else '',
-        })
         if service == "habitica":
             complete_habitica_task(task_id, subtask_id, user)
         elif service == "toodledo":
@@ -172,6 +167,11 @@ def do_update_task(update, service, task_id, subtask_id, user=current_user):
             'reason': 'unexpected update type "' + update + '"'
         }), 400
 
+    socketio.emit('hide task', {
+        'service': service,
+        'task_id': task_id,
+        'subtask_id': subtask_id if subtask_id else '',
+    })
     return success()
 
 

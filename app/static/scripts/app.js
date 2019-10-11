@@ -63,7 +63,7 @@ function setTimeAndReload(new_time) {
 }
 
 var socket = io();
-socket.on('task completion', function (msg) {
+socket.on('hide task', function (msg) {
   $(getSelector(msg['service'], msg['task_id'], msg['subtask_id'])).slideUp();
   $(getSelector(msg['service'], msg['task_id'], msg['subtask_id'], true)).slideUp();
 });
