@@ -285,6 +285,8 @@ def homepage():
     info = get_homepage_info()
     info['times']['minutes_total_rounded'] = \
         round(info['times']['minutes_allocated'] + info['times']['minutes_completed_today'])
+    info['times']['minutes_completed_today_rounded'] = \
+        round(info['times']['minutes_completed_today'])
     return render_template('index.html',
                            tasks_completed=info['tasks_completed'],
                            tasks_to_do=info['tasks_to_do'],
