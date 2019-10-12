@@ -13,7 +13,8 @@ from werkzeug.utils import redirect
 from . import redis_client, app, db, socketio
 from .forms import LoginForm
 from .models import User
-from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task
+from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
+    add_toodledo_task
 from .util import today
 from .ztasks import ZDTask
 
@@ -191,6 +192,18 @@ def update_task():
     subtask_id = req["subtask_id"] if "subtask_id" in req else None
 
     return do_update_task(update, service, task_id, subtask_id)
+
+
+@app.route('/add_task', methods=['POST'])
+@login_required
+def add_task():
+    req = request.get_json()
+    name = req["name"]
+    due_date = req["due_date"]
+    length_minutes = req["length_minutes"]
+
+    add_toodledo_task(name, due_date, length_minutes)
+    return success()
 
 
 @app.route('/update_time', methods=['POST'])
