@@ -64,7 +64,9 @@
         <div style="position: absolute; right: 4px; top: 20px; font-family: 'Open Sans Light'; font-size: 16px;">{{ times['minutes_total_rounded'] }}</div>
         <div class="w3-light-grey w3-round-large">
             <div style="position: relative" class="w3-container w3-blue w3-round">
+                {% if times['minutes_completed_today_rounded'] >= 30 %}
                 <div style="position: absolute; right: 3px; font-family: 'Open Sans Light'; font-size: 16px;">{{ times['minutes_completed_today_rounded'] }}</div>
+                {% endif %}
             </div>
         </div>
     </div>
