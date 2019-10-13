@@ -5,8 +5,12 @@ body {
   line-height: 1.1em;
 }
 
-button, button:focus {
-  outline: 0 !important;
+:focus {
+  outline: none !important;
+}
+
+::-moz-focus-inner {
+  border: 0 !important;
 }
 
 /* homepage */
