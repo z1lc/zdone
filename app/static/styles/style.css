@@ -5,6 +5,10 @@ body {
   line-height: 1.1em;
 }
 
+button, button:focus {
+  outline: 0 !important;
+}
+
 /* homepage */
 
 div#app {
