@@ -48,6 +48,7 @@
     </form>
 </div>
 <div id="app">
+<div id="header">
     {% if num_unsorted_tasks > 0 %}
     <a href="/priorities"><h1 class="badge1 zdone" data-badge="{{ num_unsorted_tasks }}">zdone</h1></a>
     {% elif num_tasks_without_required_fields > 0 %}
@@ -68,6 +69,8 @@
         </div>
     </div>
     <hr>
+</div>
+<div id="tasks">
     {% if num_tasks_to_do == 0 %}
     <div id="noMoreTasks">
         No more tasks!<br>
@@ -121,5 +124,6 @@
         <a href="javascript:void(0)"
            onclick="setTimeAndReload(prompt('Time limit:', '{{ times['maximum_minutes_per_day'] }}'));">SETTINGS</a>
     </div>
+</div>
 </div>
 {% endblock %}

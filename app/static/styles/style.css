@@ -20,6 +20,17 @@ div#app {
   margin: 0 auto;
 }
 
+div#header {
+  position: fixed;
+  width: 500px;
+  background-image: linear-gradient(rgba(255,255,255,1) 85%, rgba(255,255,255,0));
+  z-index: 999;
+}
+
+div#tasks {
+  padding-top: 65px;
+}
+
 .gray {
   color: gray;
 }
