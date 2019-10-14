@@ -24,7 +24,7 @@ div#app {
   color: gray;
 }
 
-h1 {
+h1.zdone {
   float: left;
   display: block;
   margin: 15px 0 10px 10px;

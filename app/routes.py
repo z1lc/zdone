@@ -294,7 +294,7 @@ def get_tasks_without_required_fields(all_tasks):
 @app.route('/')
 @app.route("/index")
 @login_required
-def homepage():
+def index():
     info = get_homepage_info()
     info['times']['minutes_total_rounded'] = \
         round(info['times']['minutes_allocated'] + info['times']['minutes_completed_today'])

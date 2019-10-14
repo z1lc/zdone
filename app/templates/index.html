@@ -49,14 +49,14 @@
 </div>
 <div id="app">
     {% if num_unsorted_tasks > 0 %}
-    <a href="/priorities"><h1 class="badge1" data-badge="{{ num_unsorted_tasks }}">zdone</h1></a>
+    <a href="/priorities"><h1 class="badge1 zdone" data-badge="{{ num_unsorted_tasks }}">zdone</h1></a>
     {% elif num_tasks_without_required_fields > 0 %}
-    <a href="https://tasks.toodledo.com/saved/354943"><h1 class="badge1"
+    <a href="https://tasks.toodledo.com/saved/354943"><h1 class="badge1 zdone"
                                                           data-badge="{{ num_tasks_without_required_fields }}">
         zdone</h1>
     </a>
     {% else %}
-    <h1>zdone</h1>
+    <h1 class="zdone">zdone</h1>
     {% endif %}
     <div class="w3-container top-container">
         <button id="create-task" style="display: inline-block; position: absolute; left: -35px; height: 24px;">+</button>
