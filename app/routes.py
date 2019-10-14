@@ -166,13 +166,16 @@ def do_update_task(update, service, task_id, subtask_id, user=current_user):
             'reason': 'unexpected update type "' + update + '"'
         }), 400
 
+    length = 0
+    if not subtask_id:
+        length = \
+            [t.length_minutes for i, t in enumerate(get_all_tasks(user)) if t.service == service and t.id == task_id][0]
     socketio.emit('hide task', {
         'update': update,
         'service': service,
         'task_id': task_id,
         'subtask_id': subtask_id if subtask_id else '',
-        'length_minutes':
-            [t.length_minutes for i, t in enumerate(get_all_tasks()) if t.service == service and t.id == task_id][0]
+        'length_minutes': length
     })
     return success()
 
