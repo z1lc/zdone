@@ -43,8 +43,6 @@ $(function () {
 
     valid = valid && checkLength(title, "task title", 1, 100);
 
-    valid = valid && checkRegexp(title, /^[a-z]([0-9a-z\-_\s])*$/i, "Title may consist of a-z, 0-9, underscores, spaces and must begin with a letter.");
-
     if (valid) {
       $
         .ajax({
