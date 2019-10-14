@@ -18,8 +18,6 @@ from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica
 from .util import today
 from .ztasks import ZDTask
 
-DEFAULT_TOTAL_MINUTES = 120
-
 
 @app.errorhandler(500)
 def server_error_handler(error):
