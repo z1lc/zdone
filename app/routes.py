@@ -167,9 +167,12 @@ def do_update_task(update, service, task_id, subtask_id, user=current_user):
         }), 400
 
     socketio.emit('hide task', {
+        'update': update,
         'service': service,
         'task_id': task_id,
         'subtask_id': subtask_id if subtask_id else '',
+        'length_minutes':
+            [t.length_minutes for i, t in enumerate(get_all_tasks()) if t.service == service and t.id == task_id][0]
     })
     return success()
 
