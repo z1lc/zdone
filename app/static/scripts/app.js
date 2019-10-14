@@ -12,14 +12,38 @@ function getSelector(service, id, subtask_id, use_class_selector = false) {
   return toReturn
 }
 
-function completeItem(service, id, subtask_id) {
-  $(getSelector(service, id, subtask_id)).find(".check").css("color", "green");
-  updateItem(service, id, subtask_id, "complete")
+function animateProgressBar(completedMinutes, deferredMinutes) {
+  let $minCompleted = $("#minutes_completed");
+  let $minTotal = $("#minutes_total");
+
+  let newMinCompleted = parseInt($minCompleted.text()) + completedMinutes;
+  let newMinTotal = parseInt($minTotal.text()) - deferredMinutes;
+
+  $minCompleted.text(newMinCompleted);
+  $minTotal.text(newMinTotal);
+  let toAnimateProgressBar = {
+    width: ((newMinCompleted / newMinTotal * 100) + '%')
+  };
+
+  let toAnimateMinutesCompleted = {};
+  if (newMinCompleted >= 30 || newMinCompleted === newMinTotal) {
+    toAnimateProgressBar['backgroundColor'] = '#2196F3 !important';
+    toAnimateMinutesCompleted['opacity'] = 1.0;
+  }
+  $("#progress_bar").animate(toAnimateProgressBar, 1000);
+  $minCompleted.animate(toAnimateMinutesCompleted, 1000);
 }
 
-function deferItem(service, id, subtask_id) {
+function completeItem(service, id, subtask_id, length = 0) {
+  $(getSelector(service, id, subtask_id)).find(".check").css("color", "green");
+  updateItem(service, id, subtask_id, "complete");
+  animateProgressBar(length, 0);
+}
+
+function deferItem(service, id, subtask_id, length = 0) {
   $(getSelector(service, id, subtask_id)).find(".defer").css("color", "#111198");
-  updateItem(service, id, subtask_id, "defer")
+  updateItem(service, id, subtask_id, "defer");
+  animateProgressBar(0, length);
 }
 
 function updateItem(service, id, subtask_id, update_action) {

@@ -8,7 +8,6 @@
         width: {{ percentage }}%;
         height: 24px;
         padding: 0;
-        background-color: {{ background }};
     }
     /* @formatter:on */
     label, input { display:block; }
@@ -61,12 +60,10 @@
     {% endif %}
     <div class="w3-container top-container">
         <button id="create-task" style="display: inline-block; position: absolute; left: -35px; height: 24px;">+</button>
-        <div style="position: absolute; right: 4px; top: 20px; font-family: 'Open Sans Light'; font-size: 16px;">{{ times['minutes_total_rounded'] }}</div>
+        <div id="minutes_total" style="position: absolute; right: 4px; top: 20px; font-family: 'Open Sans Light'; font-size: 16px;">{{ times['minutes_total_rounded'] }}</div>
         <div class="w3-light-grey w3-round-large">
-            <div style="position: relative" class="w3-container w3-blue w3-round">
-                {% if times['minutes_completed_today_rounded'] >= 30 %}
-                <div style="position: absolute; right: 3px; font-family: 'Open Sans Light'; font-size: 16px;">{{ times['minutes_completed_today_rounded'] }}</div>
-                {% endif %}
+            <div id="progress_bar" style="position: relative; background-color: {{ background }};" class="w3-container w3-blue w3-round">
+                <div id="minutes_completed" style="position: absolute; right: 3px; font-family: 'Open Sans Light'; font-size: 16px;{% if times['minutes_completed_today_rounded'] < 30 %} opacity: 0.0;{% endif %}">{{ times['minutes_completed_today_rounded'] }}</div>
             </div>
         </div>
     </div>
@@ -90,8 +87,8 @@
                     class="note">{{ task.note|safe }}</span>{% endif %}
             </td>
             <td class="buttons"><i class="fas fa-angle-double-right defer"
-                                   onclick="deferItem('{{ task.service }}', '{{ task.id }}', '')"></i><i
-                    class="fas fa-check check" onclick="completeItem('{{ task.service }}', '{{ task.id }}', '')"></i>
+                                   onclick="deferItem('{{ task.service }}', '{{ task.id }}', '', {{ task.length_minutes }})"></i><i
+                    class="fas fa-check check" onclick="completeItem('{{ task.service }}', '{{ task.id }}', '', {{ task.length_minutes }})"></i>
             </td>
         </tr>
         {% for sub_task in task.sub_tasks %}
@@ -120,6 +117,7 @@
     </table>
     <hr>
     <div class="footer">
+        <a href="/logout">LOGOUT</a> |
         <a href="javascript:void(0)"
            onclick="setTimeAndReload(prompt('Time limit:', '{{ times['maximum_minutes_per_day'] }}'));">SETTINGS</a>
     </div>
