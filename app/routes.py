@@ -170,7 +170,7 @@ def do_update_task(update, service, task_id, subtask_id, user=current_user):
     if not subtask_id:
         length = \
             [t.length_minutes for i, t in enumerate(get_all_tasks(user)) if t.service == service and t.id == task_id][0]
-    socketio.emit('hide task', {
+    socketio.emit(current_user.api_key, {
         'update': update,
         'service': service,
         'task_id': task_id,
@@ -305,6 +305,7 @@ def index():
     info['times']['minutes_completed_today_rounded'] = \
         round(info['times']['minutes_completed_today'])
     return render_template('index.html',
+                           api_key=current_user.api_key,
                            tasks_completed=info['tasks_completed'],
                            tasks_to_do=info['tasks_to_do'],
                            num_tasks_to_do=len(info['tasks_to_do']),

@@ -108,7 +108,7 @@ function setTimeAndReload(new_time) {
 }
 
 let socket = io();
-socket.on('hide task', function (msg) {
+socket.on($('script[src*=app]').attr('data-api-key'), function (msg) {
   let idSelector = getSelector(msg['service'], msg['task_id'], msg['subtask_id']);
   animateProgressBar(idSelector, msg['update'], msg['length_minutes']);
   $(idSelector).slideUp();
