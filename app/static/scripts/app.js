@@ -13,14 +13,19 @@ function getSelector(service, id, subtask_id, use_class_selector = false) {
 }
 
 function animateProgressBar(completedMinutes, deferredMinutes) {
+  let defaultProps = {duration: 1000, queue: false};
   let $minCompleted = $("#minutes_completed");
   let $minTotal = $("#minutes_total");
 
   let newMinCompleted = parseInt($minCompleted.text()) + completedMinutes;
   let newMinTotal = parseInt($minTotal.text()) - deferredMinutes;
 
-  $minCompleted.text(newMinCompleted);
-  $minTotal.text(newMinTotal);
+  $minCompleted
+    .prop('number', parseInt($minCompleted.text()))
+    .animateNumber({number: newMinCompleted}, defaultProps);
+  $minTotal
+    .prop('number', parseInt($minTotal.text()))
+    .animateNumber({number: newMinTotal}, defaultProps);
   let toAnimateProgressBar = {
     width: ((newMinCompleted / newMinTotal * 100) + '%')
   };
@@ -30,8 +35,8 @@ function animateProgressBar(completedMinutes, deferredMinutes) {
     toAnimateProgressBar['backgroundColor'] = '#2196F3 !important';
     toAnimateMinutesCompleted['opacity'] = 1.0;
   }
-  $("#progress_bar").animate(toAnimateProgressBar, 1000);
-  $minCompleted.animate(toAnimateMinutesCompleted, 1000);
+  $("#progress_bar").animate(toAnimateProgressBar, defaultProps);
+  $minCompleted.animate(toAnimateMinutesCompleted, defaultProps);
 }
 
 function completeItem(service, id, subtask_id, length = 0) {

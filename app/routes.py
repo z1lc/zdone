@@ -275,7 +275,7 @@ def get_homepage_info(user=current_user):
         "nonrecurring_tasks_coming_up": list(nonrecurring_tasks_coming_up),
         "times": times,
         "num_unsorted_tasks": len(unprioritized_tasks),
-        "percentage": min(100, max(1, percent_done)),
+        "percentage": min(100, max(0, percent_done)),
         "background": "red !important" if times['minutes_completed_today'] < 30 else "#2196F3 !important"
     }
 

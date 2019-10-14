@@ -38,7 +38,8 @@ def get_toodledo(user=current_user):
 
 
 def needs_to_cron_habitica(dailys):
-    most_recent_completed_at = max([max(daily['history'], key=lambda v: v['date'])['date'] for daily in dailys])
+    dailys_with_history = [daily for daily in dailys if len(daily['history']) > 0]
+    most_recent_completed_at = max([max(daily['history'], key=lambda v: v['date'])['date'] for daily in dailys_with_history])
     most_recent_completed_at = datetime.datetime.fromtimestamp(int(most_recent_completed_at / 1000),
                                                                tz=pytz.timezone('US/Pacific'))
     # need to cron if most recent completed at is not today
