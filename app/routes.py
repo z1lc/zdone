@@ -305,6 +305,7 @@ def index():
     info['times']['minutes_completed_today_rounded'] = \
         round(info['times']['minutes_completed_today'])
     return render_template('index.html',
+                           today=today(),
                            api_key=current_user.api_key,
                            tasks_completed=info['tasks_completed'],
                            tasks_to_do=info['tasks_to_do'],
