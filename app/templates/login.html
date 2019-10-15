@@ -1,5 +1,14 @@
 {% extends "base.html" %}
 
+{% block within_head %}
+    <style>
+    body {
+        max-width: 400px;
+        margin: auto;
+    }
+    </style>
+{% endblock %}
+
 {% block body %}
 <h1>Sign In</h1>
 <form action="" method="post" novalidate>

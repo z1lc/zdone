@@ -38,12 +38,12 @@ def get_toodledo(user=current_user):
 
 
 def needs_to_cron_habitica(dailys):
-    for habit in dailys:
-        if all(habit['repeat'].values()):  # repeats every day
-            if parser.parse(habit['nextDue'][0], '').date() != today() + datetime.timedelta(days=1):
-                # if any of the habits have a nextDue that isn't tomorrow, we need to cron
-                return True
-    return False
+    dailys_with_history = [daily for daily in dailys if len(daily['history']) > 0]
+    most_recent_completed_at = max([max(daily['history'], key=lambda v: v['date'])['date'] for daily in dailys_with_history])
+    most_recent_completed_at = datetime.datetime.fromtimestamp(int(most_recent_completed_at / 1000),
+                                                               tz=pytz.timezone('US/Pacific'))
+    # need to cron if most recent completed at is not today
+    return most_recent_completed_at.date() < today()
 
 
 def get_habitica_tasks(user=current_user) -> List[ZDTask]:
@@ -125,6 +125,17 @@ def complete_toodledo_task(task_id, user=current_user):
         "reschedule": "1"
     }]
     endpoint = "http://api.toodledo.com/3/tasks/edit.php?access_token={access_token}&tasks={tasks}".format(
+        access_token=loads(user.toodledo_token_json)["access_token"], tasks=dumps(tasks))
+    requests.post(url=endpoint)
+
+
+def add_toodledo_task(name, due_date, length_minutes, user=current_user):
+    tasks = [{
+        "title": name,
+        "duedate": int(parser.parse(due_date).timestamp()),
+        "duration": length_minutes
+    }]
+    endpoint = "http://api.toodledo.com/3/tasks/add.php?access_token={access_token}&tasks={tasks}".format(
         access_token=loads(user.toodledo_token_json)["access_token"], tasks=dumps(tasks))
     requests.post(url=endpoint)
 

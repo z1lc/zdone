@@ -5,6 +5,14 @@ body {
   line-height: 1.1em;
 }
 
+:focus {
+  outline: none !important;
+}
+
+::-moz-focus-inner {
+  border: 0 !important;
+}
+
 /* homepage */
 
 div#app {
@@ -12,11 +20,22 @@ div#app {
   margin: 0 auto;
 }
 
+div#header {
+  position: fixed;
+  width: 500px;
+  background-image: linear-gradient(rgba(255,255,255,1) 85%, rgba(255,255,255,0));
+  z-index: 999;
+}
+
+div#tasks {
+  padding-top: 65px;
+}
+
 .gray {
   color: gray;
 }
 
-h1 {
+h1.zdone {
   float: left;
   display: block;
   margin: 15px 0 10px 10px;

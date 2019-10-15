@@ -1,41 +1,76 @@
 {% extends "base.html" %}
 
 {% block within_head %}
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <style>
     /* @formatter:off */
     div.w3-container.w3-blue.w3-round {
         width: {{ percentage }}%;
         height: 24px;
         padding: 0;
-        background-color: {{ background }};
     }
     /* @formatter:on */
+    label, input { display:block; }
+    input.text { margin-bottom:12px; padding: .4em; }
+    fieldset { padding:0; border:0; margin-top:5px; }
+    div#users-contain { width: 350px; margin: 20px 0; }
+    div#users-contain table { margin: 1em 0; border-collapse: collapse; width: 100%; }
+    div#users-contain table td, div#users-contain table th { border: 1px solid #eee; padding: .6em 10px; text-align: left; }
+    .ui-dialog .ui-state-error { padding: .3em; }
+    .validateTips { border: 1px solid transparent; padding: 0.3em; display: none; }
+    .ui-button { padding: 0 8px }
 </style>
-<script src="{{ url_for('static',filename='scripts/app.js') }}"></script>
+<script data-api-key="{{ api_key }}" src="{{ url_for('static',filename='scripts/app.js') }}"></script>
+<script src="{{ url_for('static',filename='scripts/add_task_dialog.js') }}"></script>
 <script src="//kit.fontawesome.com/874826286d.js"></script>
+<script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 {% endblock %}
 
 {% block body %}
+<div id="dialog-form" title="Create Toodledo Task">
+    <p class="validateTips"></p>
+
+    <form autocomplete="off">
+        <fieldset>
+            <table><tr><td colspan="2">
+                <label for="title">Task Title</label>
+                <input type="text" name="title" id="title" value="" class="text ui-widget-content ui-corner-all" style="width: 390px;">
+            </td></tr><tr><td width="50%" style="padding-right: 5px">
+                <label for="due_date">Due Date</label>
+                <input type="date" name="due_date" id="due_date" value="2019-10-11" min="2019-10-11" class="text ui-widget-content ui-corner-all">
+            </td><td width="50%" style="padding-left: 5px;">
+                <label for="length_minutes">Length</label>
+                <input type="number" name="length_minutes" id="length_minutes" value="30" class="text ui-widget-content ui-corner-all" style="width: 80px; display: inline-block;"> minutes
+            </td></tr></table>
+            <!-- Allow form submission with keyboard without duplicating the dialog button -->
+            <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+        </fieldset>
+    </form>
+</div>
 <div id="app">
+<div id="header">
     {% if num_unsorted_tasks > 0 %}
-    <a href="/priorities"><h1 class="badge1" data-badge="{{ num_unsorted_tasks }}">zdone</h1></a>
+    <a href="/priorities"><h1 class="badge1 zdone" data-badge="{{ num_unsorted_tasks }}">zdone</h1></a>
     {% elif num_tasks_without_required_fields > 0 %}
-    <a href="https://tasks.toodledo.com/saved/354943"><h1 class="badge1"
+    <a href="https://tasks.toodledo.com/saved/354943"><h1 class="badge1 zdone"
                                                           data-badge="{{ num_tasks_without_required_fields }}">
         zdone</h1>
     </a>
     {% else %}
-    <h1>zdone</h1>
+    <h1 class="zdone">zdone</h1>
     {% endif %}
-
     <div class="w3-container top-container">
-        <div style="position: absolute; right: 7px; top: 20px; font-family: 'Open Sans Light'; font-size: 16px;">{{ times['minutes_total_rounded'] }}</div>
+        <button id="create-task" style="display: inline-block; position: absolute; left: -35px; height: 24px;">+</button>
+        <div id="minutes_total" style="position: absolute; right: 4px; top: 20px; font-family: 'Open Sans Light'; font-size: 16px;">{{ times['minutes_total_rounded'] }}</div>
         <div class="w3-light-grey w3-round-large">
-            <div class="w3-container w3-blue w3-round"></div>
+            <div id="progress_bar" style="position: relative; background-color: {{ background }};" class="w3-container w3-blue w3-round">
+                <div id="minutes_completed" style="position: absolute; right: 3px; font-family: 'Open Sans Light'; font-size: 16px;{% if times['minutes_completed_today_rounded'] < 30 %} opacity: 0.0;{% endif %}">{{ times['minutes_completed_today_rounded'] }}</div>
+            </div>
         </div>
-<!--        <div style="display: inline-block;">{{ times['minutes_completed_today'] }}m done</div>-->
     </div>
     <hr>
+</div>
+<div id="tasks">
     {% if num_tasks_to_do == 0 %}
     <div id="noMoreTasks">
         No more tasks!<br>
@@ -55,8 +90,8 @@
                     class="note">{{ task.note|safe }}</span>{% endif %}
             </td>
             <td class="buttons"><i class="fas fa-angle-double-right defer"
-                                   onclick="deferItem('{{ task.service }}', '{{ task.id }}', '')"></i><i
-                    class="fas fa-check check" onclick="completeItem('{{ task.service }}', '{{ task.id }}', '')"></i>
+                                   onclick="deferItem('{{ task.service }}', '{{ task.id }}', '', {{ task.length_minutes }})"></i><i
+                    class="fas fa-check check" onclick="completeItem('{{ task.service }}', '{{ task.id }}', '', {{ task.length_minutes }})"></i>
             </td>
         </tr>
         {% for sub_task in task.sub_tasks %}
@@ -85,8 +120,10 @@
     </table>
     <hr>
     <div class="footer">
+        <a href="/logout">LOGOUT</a> |
         <a href="javascript:void(0)"
            onclick="setTimeAndReload(prompt('Time limit:', '{{ times['maximum_minutes_per_day'] }}'));">SETTINGS</a>
     </div>
+</div>
 </div>
 {% endblock %}

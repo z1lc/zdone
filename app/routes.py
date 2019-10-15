@@ -13,11 +13,10 @@ from werkzeug.utils import redirect
 from . import redis_client, app, db, socketio
 from .forms import LoginForm
 from .models import User
-from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task
+from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
+    add_toodledo_task
 from .util import today
 from .ztasks import ZDTask
-
-DEFAULT_TOTAL_MINUTES = 120
 
 
 @app.errorhandler(500)
@@ -149,11 +148,6 @@ def do_update_task(update, service, task_id, subtask_id, user=current_user):
         # can no longer use cached tasks since we have to re-sort
         redis_client.delete("toodledo:" + user.username + ":last_mod")
     elif update == "complete":
-        socketio.emit('task completion', {
-            'service': service,
-            'task_id': task_id,
-            'subtask_id': subtask_id if subtask_id else '',
-        })
         if service == "habitica":
             complete_habitica_task(task_id, subtask_id, user)
         elif service == "toodledo":
@@ -172,6 +166,17 @@ def do_update_task(update, service, task_id, subtask_id, user=current_user):
             'reason': 'unexpected update type "' + update + '"'
         }), 400
 
+    length = 0
+    if not subtask_id:
+        length = \
+            [t.length_minutes for i, t in enumerate(get_all_tasks(user)) if t.service == service and t.id == task_id][0]
+    socketio.emit(current_user.api_key, {
+        'update': update,
+        'service': service,
+        'task_id': task_id,
+        'subtask_id': subtask_id if subtask_id else '',
+        'length_minutes': length
+    })
     return success()
 
 
@@ -191,6 +196,18 @@ def update_task():
     subtask_id = req["subtask_id"] if "subtask_id" in req else None
 
     return do_update_task(update, service, task_id, subtask_id)
+
+
+@app.route('/add_task', methods=['POST'])
+@login_required
+def add_task():
+    req = request.get_json()
+    name = req["name"]
+    due_date = req["due_date"]
+    length_minutes = req["length_minutes"]
+
+    add_toodledo_task(name, due_date, length_minutes)
+    return success()
 
 
 @app.route('/update_time', methods=['POST'])
@@ -262,8 +279,8 @@ def get_homepage_info(user=current_user):
         "nonrecurring_tasks_coming_up": list(nonrecurring_tasks_coming_up),
         "times": times,
         "num_unsorted_tasks": len(unprioritized_tasks),
-        "percentage": min(100, max(1, percent_done)),
-        "background": "red!important" if times['minutes_completed_today'] < 30 else "#2196F3!important"
+        "percentage": min(100, max(0, percent_done)),
+        "background": "red !important" if times['minutes_completed_today'] < 30 else "#2196F3 !important"
     }
 
 
@@ -281,11 +298,14 @@ def get_tasks_without_required_fields(all_tasks):
 @app.route('/')
 @app.route("/index")
 @login_required
-def homepage():
+def index():
     info = get_homepage_info()
     info['times']['minutes_total_rounded'] = \
         round(info['times']['minutes_allocated'] + info['times']['minutes_completed_today'])
+    info['times']['minutes_completed_today_rounded'] = \
+        round(info['times']['minutes_completed_today'])
     return render_template('index.html',
+                           api_key=current_user.api_key,
                            tasks_completed=info['tasks_completed'],
                            tasks_to_do=info['tasks_to_do'],
                            num_tasks_to_do=len(info['tasks_to_do']),
