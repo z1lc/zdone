@@ -170,7 +170,7 @@ def do_update_task(update, service, task_id, subtask_id, user=current_user):
     if not subtask_id:
         length = \
             [t.length_minutes for i, t in enumerate(get_all_tasks(user)) if t.service == service and t.id == task_id][0]
-    socketio.emit(current_user.api_key, {
+    socketio.emit(user.api_key, {
         'update': update,
         'service': service,
         'task_id': task_id,
