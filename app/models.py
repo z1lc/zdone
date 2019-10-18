@@ -24,6 +24,9 @@ class User(UserMixin, db.Model):
     dependencies = db.Column(db.Text)
     priorities = db.Column(db.Text)
 
+    trello_api_key = db.Column(db.String(128))
+    trello_api_access_token = db.Column(db.String(128))
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
