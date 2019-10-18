@@ -135,8 +135,8 @@
         {% for trello_list in trello_lists %}
         <div class="trello_list" id="trello-{{ trello_list.name.replace(' ', '') }}">
             {% for card in trello_list.list_cards() %}
-                {{ card.name }}{% if card.description %}<br><div
-                class="note">{{ htmlize(card.description)|safe }}</div>{% endif %}
+                {{ card.name }}{% if card.description %}<div
+                class="note">{{ htmlize(card.description)|safe }}</div>{% else %}<br>{% endif %}
             {% endfor %}
         </div>
         {% endfor %}
