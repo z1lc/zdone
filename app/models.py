@@ -25,6 +25,7 @@ class User(UserMixin, db.Model):
     priorities = db.Column(db.Text)
 
     trello_api_key = db.Column(db.String(128))
+    # https://trello.com/1/authorize?expiration=never&name=zdone&scope=read,write&response_type=token&key=API_KEY
     trello_api_access_token = db.Column(db.String(128))
 
     def set_password(self, password):
