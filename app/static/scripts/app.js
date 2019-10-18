@@ -1,15 +1,15 @@
 let animatedIds = new Set();
 
-function getSelector(service, id, subtask_id, use_class_selector = false) {
+function getSelector(service, id, subtaskId, useClassSelector = false) {
   let toReturn = "";
-  if (use_class_selector) {
+  if (useClassSelector) {
     toReturn += "."
   } else {
     toReturn += "#"
   }
   toReturn += service + "-" + id;
-  if (subtask_id !== "") {
-    toReturn += "-" + subtask_id
+  if (subtaskId !== "") {
+    toReturn += "-" + subtaskId
   }
   return toReturn
 }
@@ -53,21 +53,21 @@ function animateProgressBar(id, action, minutes) {
   $minCompleted.animate(toAnimateMinutesCompleted, defaultProps);
 }
 
-function completeItem(service, id, subtask_id, length = 0) {
-  let idSelector = getSelector(service, id, subtask_id);
+function completeItem(service, id, subtaskId, length = 0) {
+  let idSelector = getSelector(service, id, subtaskId);
   $(idSelector).find(".check").css("color", "green");
-  updateItem(service, id, subtask_id, "complete");
+  updateItem(service, id, subtaskId, "complete");
   animateProgressBar(idSelector, 'complete', length);
 }
 
-function deferItem(service, id, subtask_id, length = 0) {
-  let idSelector = getSelector(service, id, subtask_id);
+function deferItem(service, id, subtaskId, length = 0) {
+  let idSelector = getSelector(service, id, subtaskId);
   $(idSelector).find(".defer").css("color", "#111198");
-  updateItem(service, id, subtask_id, "defer");
+  updateItem(service, id, subtaskId, "defer");
   animateProgressBar(idSelector, 'defer', length);
 }
 
-function updateItem(service, id, subtask_id, update_action) {
+function updateItem(service, id, subtaskId, updateAction) {
   if (service === "toodledo" || service === "habitica") {
     $
       .ajax({
@@ -75,28 +75,28 @@ function updateItem(service, id, subtask_id, update_action) {
         data: JSON.stringify({
           "service": service,
           "id": id,
-          "subtask_id": subtask_id,
-          "update": update_action
+          "subtask_id": subtaskId,
+          "update": updateAction
         }),
         type: "POST",
         url: "update_task"
       })
       .done(function () {
-        $(getSelector(service, id, subtask_id)).slideUp();
-        $(getSelector(service, id, subtask_id, true)).slideUp();
+        $(getSelector(service, id, subtaskId)).slideUp();
+        $(getSelector(service, id, subtaskId, true)).slideUp();
       });
   } else {
     alert("Unexpected service '" + service + "'!")
   }
 }
 
-function setTimeAndReload(new_time) {
-  if (new_time !== null && new_time !== '' && !isNaN(new_time)) {
+function setTimeAndReload(newTime) {
+  if (newTime !== null && newTime !== '' && !isNaN(newTime)) {
     $
       .ajax({
         contentType: "application/json",
         data: JSON.stringify({
-          "maximum_minutes_per_day": new_time
+          "maximum_minutes_per_day": newTime
         }),
         type: "POST",
         url: "update_time"
