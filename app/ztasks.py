@@ -66,7 +66,6 @@ class ZDTask:
 
 
 def htmlize_note(raw_note):
-    urls = extractor.find_urls(raw_note)
-    for url in urls:
+    for url in set(extractor.find_urls(raw_note)):
         raw_note = raw_note.replace(url, "<a href=\"{url}\" target=\"_blank\">{url}</a>".format(url=url))
     return raw_note.replace("\n", "<br>")

@@ -19,3 +19,4 @@ eventlet
 sentry-sdk[flask]
 newrelic
 mock
+py-trello

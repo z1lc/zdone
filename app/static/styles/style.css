@@ -23,7 +23,7 @@ div#app {
 div#header {
   position: fixed;
   width: 500px;
-  background-image: linear-gradient(rgba(255,255,255,1) 85%, rgba(255,255,255,0));
+  background-image: linear-gradient(rgba(255, 255, 255, 1) 85%, rgba(255, 255, 255, 0));
   z-index: 999;
 }
 
@@ -116,8 +116,9 @@ td.subTaskName {
   font-size: 15px;
 }
 
-span.note {
+div.note {
   font-size: 10px;
+  line-height: 1.4em;
 }
 
 .fas {
@@ -191,4 +192,8 @@ li.toodledo {
 li.habitica {
   background-color: #432874;
   color: white;
+}
+
+.trello_list {
+  display: none;
 }

@@ -86,8 +86,8 @@
                     aria-hidden="true" class="fa fa-sync"></i>{% endif %}{% if task.length_minutes > 0 %}<pie
                     style="background-image: {{ task.get_pie_background_image() }}"></pie>{% endif %}
             </td>
-            <td class="taskName">{{ task.name }}{% if task.note %}<br><span
-                    class="note">{{ task.note|safe }}</span>{% endif %}
+            <td class="taskName">{{ task.name }}{% if task.note %}<br><div
+                    class="note">{{ task.note|safe }}</div>{% endif %}
             </td>
             <td class="buttons"><i class="fas fa-angle-double-right defer"
                                    onclick="deferItem('{{ task.service }}', '{{ task.id }}', '', {{ task.length_minutes }})"></i><i
@@ -99,8 +99,8 @@
         <tr class="subTask {{ task.service }}-{{ task.id }}"
             id="{{ sub_task.service }}-{{ task.id }}-{{ sub_task.id }}">
             <td class="pie"></td>
-            <td class="subTaskName">{{ sub_task.name }}{% if sub_task.note %}<br><span
-                    class="note">{{ sub_task.note|safe }}</span>{% endif %}
+            <td class="subTaskName">{{ sub_task.name }}{% if sub_task.note %}<br><div
+                    class="note">{{ sub_task.note|safe }}</div>{% endif %}
             </td>
             <td class="buttons"><i class="fas fa-check check"
                                    onclick="completeItem('{{ sub_task.service }}', '{{task.id}}', '{{ sub_task.id }}')"></i>
@@ -125,5 +125,21 @@
            onclick="setTimeAndReload(prompt('Time limit:', '{{ times['maximum_minutes_per_day'] }}'));">SETTINGS</a>
     </div>
 </div>
+    <hr>
+    <div id="trello_lists">
+    <select id="trello_lists_select" onchange="showTrelloList(this)">
+    {% for trello_list in trello_lists %}
+        <option value="{{ trello_list.name.replace(' ', '') }}">{{ trello_list.name }}</option>
+    {% endfor %}
+    </select>
+        {% for trello_list in trello_lists %}
+        <div class="trello_list" id="trello-{{ trello_list.name.replace(' ', '') }}">
+            {% for card in trello_list.list_cards() %}
+                {{ card.name }}{% if card.description %}<br><div
+                class="note">{{ htmlize(card.description)|safe }}</div>{% endif %}
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}

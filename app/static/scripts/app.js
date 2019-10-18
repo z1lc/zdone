@@ -107,10 +107,20 @@ function setTimeAndReload(newTime) {
   }
 }
 
+function showTrelloList(optionElement) {
+  $('#trello_lists').find('div.trello_list').slideUp();
+  $('#trello_lists').find('div#trello-' + optionElement.value.replace(/ /g,"")).slideDown();
+}
+
+
 let socket = io();
 socket.on($('script[src*=app]').attr('data-api-key'), function (msg) {
   let idSelector = getSelector(msg['service'], msg['task_id'], msg['subtask_id']);
   animateProgressBar(idSelector, msg['update'], msg['length_minutes']);
   $(idSelector).slideUp();
   $(getSelector(msg['service'], msg['task_id'], msg['subtask_id'], true)).slideUp();
+});
+
+$(function () {
+  $('#trello_lists').find('div#trello-' + $('#trello_lists_select').find(':selected').val()).slideDown();
 });

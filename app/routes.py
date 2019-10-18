@@ -7,6 +7,7 @@ from flask import url_for, flash
 from flask_login import current_user, login_user, logout_user
 from flask_login import login_required
 from sentry_sdk import last_event_id
+from trello import TrelloClient
 from werkzeug.urls import url_parse
 from werkzeug.utils import redirect
 
@@ -16,7 +17,7 @@ from .models import User
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
 from .util import today
-from .ztasks import ZDTask
+from .ztasks import ZDTask, htmlize_note
 
 
 @app.errorhandler(500)
@@ -295,6 +296,24 @@ def get_tasks_without_required_fields(all_tasks):
     return bad_tasks
 
 
+def get_open_trello_lists():
+    client = TrelloClient(
+        api_key=current_user.trello_api_key,
+        api_secret=current_user.trello_api_access_token
+    )
+    backlog_board = [board for board in client.list_boards() if board.name == 'Backlogs'][0]
+
+    return backlog_board.list_lists('open')
+
+
+@app.context_processor
+def utility_processor():
+    def htmlize(raw_note):
+        return htmlize_note(raw_note)
+
+    return dict(htmlize=htmlize)
+
+
 @app.route('/')
 @app.route("/index")
 @login_required
@@ -305,6 +324,7 @@ def index():
     info['times']['minutes_completed_today_rounded'] = \
         round(info['times']['minutes_completed_today'])
     return render_template('index.html',
+                           trello_lists=get_open_trello_lists(),
                            today=today(),
                            api_key=current_user.api_key,
                            tasks_completed=info['tasks_completed'],
