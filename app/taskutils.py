@@ -11,6 +11,7 @@ from dateutil import parser
 from flask import g
 from flask_login import current_user
 from habitipy import Habitipy
+from requests import HTTPError
 from toodledo import Toodledo
 
 from app import kv
@@ -48,13 +49,17 @@ def needs_to_cron_habitica(dailys):
 
 def get_habitica_tasks(user=current_user) -> List[ZDTask]:
     if 'habitica' not in g:
+        g.habitica = []
         # https://habitica.fandom.com/wiki/Cron
         # cron rolls over to next day in the case of uncompleted dailys yesterday
         # however, seems to send back 502's occasionally if called frequently.
-        dailys = get_habitica(user).tasks.user.get(type='dailys')
-        if needs_to_cron_habitica(dailys):
-            get_habitica(user).cron.post()
+        try:
             dailys = get_habitica(user).tasks.user.get(type='dailys')
+            if needs_to_cron_habitica(dailys):
+                get_habitica(user).cron.post()
+                dailys = get_habitica(user).tasks.user.get(type='dailys')
+        except HTTPError:
+            dailys = []
 
         habit_list = []
         habitica_day_string = {0: "m", 1: "t", 2: "w", 3: "th", 4: "f", 5: "s", 6: "su"}[today().weekday()]
