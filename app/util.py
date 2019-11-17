@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytz
 
 
 def today():
-    return datetime.now(pytz.timezone('US/Pacific')).date()
+    return (datetime.now(pytz.timezone('US/Pacific')) - timedelta(hours=3)).date()
