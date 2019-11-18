@@ -219,12 +219,12 @@ def update_time():
 
 def get_homepage_info(user=current_user):
     minutes_completed_today = 0
-    tasks_completed, tasks_to_do, tasks_backlog, nonrecurring_tasks_coming_up = set(), set(), set(), set()
+    tasks_completed, tasks_to_do, tasks_backlog, nonrecurring_tasks_coming_up = [], [], [], []
     prioritized_tasks, unprioritized_tasks = get_task_order_from_db("priorities", user)
     for task in prioritized_tasks:
-        if task.completed_today():
+        if task.completed_today() and task not in tasks_completed:
             minutes_completed_today += task.length_minutes
-            tasks_completed.add(task)
+            tasks_completed.append(task)
 
     task_ids_to_hide = redis_client.get("hidden:" + user.username + ":" + str(today()))
     task_ids_to_hide = [] if task_ids_to_hide is None else task_ids_to_hide.decode().split("|||")
@@ -241,15 +241,16 @@ def get_homepage_info(user=current_user):
                 and not task.completed_today():
             if task.due_date is not None and task.due_date <= today():
                 # add 4 minutes to allow some space for non-round-number tasks to be scheduled
-                if task.length_minutes <= (minutes_left_to_schedule + 4):
-                    tasks_to_do.add(task)
+                if task.length_minutes <= (minutes_left_to_schedule + 4) and task not in tasks_to_do:
+                    tasks_to_do.append(task)
                     minutes_left_to_schedule -= task.length_minutes
                     minutes_allocated += task.length_minutes
-                else:
-                    tasks_backlog.add(task)
+                elif task not in tasks_backlog:
+                    tasks_backlog.append(task)
             elif not task.is_repeating() and \
-                    (task.due_date is not None and task.due_date <= (today() + timedelta(days=1))):
-                nonrecurring_tasks_coming_up.add(task)
+                    (task.due_date is not None and task.due_date <= (today() + timedelta(days=1))) and \
+                    task not in nonrecurring_tasks_coming_up:
+                nonrecurring_tasks_coming_up.append(task)
         i += 1
 
     ordering = [t.name for t in get_task_order_from_db("dependencies", user)[0]]
