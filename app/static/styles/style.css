@@ -166,6 +166,10 @@ div.footer a {
   padding: 5px 0 0 0;
 }
 
+#unsorted ul, #sorted ul {
+  height: 100%;
+}
+
 #unsorted li, #sorted li {
   margin: 0 5px 5px 5px;
   padding: 5px;
