@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block within_head %}
+<script src="{{ url_for('static',filename='scripts/easytimer.min.js') }}"></script>
+<script>
+  $.ajaxSetup({
+    headers: {
+      'x-api-key': "07360bb7-89e2-44e0-add6-2ba723c11370"
+    }
+  });
+  let tasks;
+  let stillPositive;
+  let totalSeconds;
+  let timer;
+
+  function nextTask() {
+    let task = tasks.shift();
+    totalSeconds = task.length_minutes * 60;
+    timer = new easytimer.Timer();
+    stillPositive = true;
+    timer.start({countdown: true, startValues: {seconds: totalSeconds}});
+    $('#countdownExample .values').html(timer.getTimeValues().toString());
+    $('#countdownExample .name').html(task.name);
+
+    timer.addEventListener('secondsUpdated', function (e) {
+      $('#countdownExample .values').html(timer.getTimeValues().toString());
+    });
+
+    timer.addEventListener('targetAchieved', function (e) {
+      $('#countdownExample .values').css('color', 'red');
+      stillPositive = false;
+      timer.start({precision: 'seconds'});
+    });
+  }
+
+  $(function () {
+    $.get(
+      "/api",
+      function (data) {
+        tasks = data["tasks_to_do"];
+        nextTask();
+      }
+    );
+    $("button").click(function (event) {
+      let durationSeconds = 0;
+      if (stillPositive) {
+        durationSeconds = totalSeconds - timer.getTotalTimeValues().seconds;
+      } else {
+        durationSeconds = totalSeconds + timer.getTotalTimeValues().seconds;
+      }
+      console.log(durationSeconds);
+      nextTask();
+      event.preventDefault();
+    });
+  });
+</script>
+<style>
+    #countdownExample {
+        margin: 0 auto;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div id="countdownExample">
+    <div class="name">Loading task...</div>
+    <div class="values"></div>
+    <button>Complete</button>
+</div>
+{% endblock %}

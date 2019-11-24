@@ -16,6 +16,8 @@ class User(UserMixin, db.Model):
     # import uuid ; uuid.uuid4()
     api_key = db.Column(db.String(128), unique=True)
 
+    # https://api.toodledo.com/3/account/authorize.php?response_type=code&client_id=ztasks&state=MY_STATE&scope=basic tasks notes outlines lists share write folders
+    # complete auth via Postman (see http://api.toodledo.com/3/account/index.php for full info)
     toodledo_token_json = db.Column(db.String(512))
 
     habitica_user_id = db.Column(db.String(128))

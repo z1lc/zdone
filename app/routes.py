@@ -304,13 +304,15 @@ def get_tasks_without_required_fields(all_tasks):
 
 
 def get_open_trello_lists():
-    client = TrelloClient(
-        api_key=current_user.trello_api_key,
-        api_secret=current_user.trello_api_access_token
-    )
-    backlog_board = [board for board in client.list_boards() if board.name == 'Backlogs'][0]
+    if current_user.trello_api_key and current_user.trello_api_access_token:
+        client = TrelloClient(
+            api_key=current_user.trello_api_key,
+            api_secret=current_user.trello_api_access_token
+        )
+        backlog_board = [board for board in client.list_boards() if board.name == 'Backlogs'][0]
 
-    return backlog_board.list_lists('open')
+        return backlog_board.list_lists('open')
+    return []
 
 
 @app.context_processor
@@ -319,6 +321,12 @@ def utility_processor():
         return htmlize_note(raw_note)
 
     return dict(htmlize=htmlize)
+
+
+@app.route('/maintenance')
+@login_required
+def maintenance():
+    return render_template('maintenance.html')
 
 
 @app.route('/')
