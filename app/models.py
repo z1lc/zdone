@@ -38,6 +38,16 @@ class User(UserMixin, db.Model):
         return '<User {}>'.format(self.username)
 
 
+class TaskCompletion(db.Model):
+    __tablename__ = "task_completions"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    service = db.Column(db.String(128), nullable=False)
+    task_id = db.Column(db.String(128), nullable=False)
+    subtask_id = db.Column(db.String(128))
+    duration_seconds = db.Column(db.Integer)
+
+
 @login.user_loader
 def load_user(id) -> User:
     return User.query.get(int(id))
