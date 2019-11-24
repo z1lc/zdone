@@ -16,6 +16,7 @@
   let timer;
 
   function nextTask() {
+    $('#countdownExample .values').css('color', 'black');
     task = tasks.shift();
     totalSeconds = task.length_minutes * 60;
     timer = new easytimer.Timer();
