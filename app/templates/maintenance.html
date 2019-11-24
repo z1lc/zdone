@@ -2,25 +2,31 @@
 
 {% block within_head %}
 <script src="{{ url_for('static',filename='scripts/easytimer.min.js') }}"></script>
+<script data-api-key="{{ api_key }}" src="{{ url_for('static',filename='scripts/app.js') }}"></script>
 <script>
   $.ajaxSetup({
     headers: {
       'x-api-key': "{{ api_key }}"
     }
   });
+  let task;
   let tasks;
   let stillPositive;
   let totalSeconds;
   let timer;
 
   function nextTask() {
-    let task = tasks.shift();
+    task = tasks.shift();
     totalSeconds = task.length_minutes * 60;
     timer = new easytimer.Timer();
     stillPositive = true;
     timer.start({countdown: true, startValues: {seconds: totalSeconds}});
     $('#countdownExample .values').html(timer.getTimeValues().toString());
     $('#countdownExample .name').html(task.name);
+    let subtasksHtml = "<ul>";
+    task.sub_tasks.forEach(subTask => subtasksHtml += "<li>" + subTask.name + "</li>");
+    subtasksHtml += "</ul>";
+    $('#countdownExample .subtasks').html(subtasksHtml);
 
     timer.addEventListener('secondsUpdated', function (e) {
       $('#countdownExample .values').html(timer.getTimeValues().toString());
@@ -49,10 +55,12 @@
       } else {
         durationSeconds = totalSeconds + timer.getTotalTimeValues().seconds;
       }
+      completeItem(task.service, task.id, task.subtask_id, 0, durationSeconds);
       nextTask();
       event.preventDefault();
     });
     $("button#defer").click(function (event) {
+      deferItem(task.service, task.id, task.subtask_id);
       nextTask();
       event.preventDefault();
     });
@@ -66,7 +74,7 @@
     .name {
         font-weight: bold;
     }
-    div.name, div.values, div.button {
+    #countdownExample > div {
         margin: 20px;
     }
     div.button {
@@ -81,6 +89,7 @@
 {% block body %}
 <div id="countdownExample">
     <div class="name">Loading tasks...</div>
+    <div class="subtasks"></div>
     <div class="values"></div>
     <div class="button">
         <button id="defer">Defer</button> &nbsp;

@@ -53,10 +53,10 @@ function animateProgressBar(id, action, minutes) {
   $minCompleted.animate(toAnimateMinutesCompleted, defaultProps);
 }
 
-function completeItem(service, id, subtaskId, length = 0) {
+function completeItem(service, id, subtaskId, length = 0, durationSeconds) {
   let idSelector = getSelector(service, id, subtaskId);
   $(idSelector).find(".check").css("color", "green");
-  updateItem(service, id, subtaskId, "complete");
+  updateItem(service, id, subtaskId, "complete", durationSeconds);
   animateProgressBar(idSelector, 'complete', length);
 }
 
@@ -67,7 +67,7 @@ function deferItem(service, id, subtaskId, length = 0) {
   animateProgressBar(idSelector, 'defer', length);
 }
 
-function updateItem(service, id, subtaskId, updateAction) {
+function updateItem(service, id, subtaskId, updateAction, durationSeconds) {
   if (service === "toodledo" || service === "habitica") {
     $
       .ajax({
@@ -76,7 +76,8 @@ function updateItem(service, id, subtaskId, updateAction) {
           "service": service,
           "id": id,
           "subtask_id": subtaskId,
-          "update": updateAction
+          "update": updateAction,
+          "duration_seconds": durationSeconds
         }),
         type: "POST",
         url: "update_task"
