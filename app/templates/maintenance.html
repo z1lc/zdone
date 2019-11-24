@@ -38,17 +38,21 @@
       "/api",
       function (data) {
         tasks = data["tasks_to_do"];
+        $('div.button').css('visibility', 'visible');
         nextTask();
       }
     );
-    $("button").click(function (event) {
+    $("button#complete").click(function (event) {
       let durationSeconds = 0;
       if (stillPositive) {
         durationSeconds = totalSeconds - timer.getTotalTimeValues().seconds;
       } else {
         durationSeconds = totalSeconds + timer.getTotalTimeValues().seconds;
       }
-      console.log(durationSeconds);
+      nextTask();
+      event.preventDefault();
+    });
+    $("button#defer").click(function (event) {
       nextTask();
       event.preventDefault();
     });
@@ -59,13 +63,26 @@
         margin: 0 auto;
         text-align: center;
     }
+    .name {
+        font-weight: bold;
+    }
+    div.name, div.values, div.button {
+        margin: 10px;
+    }
+    div.button {
+        visibility: hidden;
+    }
 </style>
 {% endblock %}
 
 {% block body %}
 <div id="countdownExample">
-    <div class="name">Loading task...</div>
+    <div class="name">Loading tasks...</div>
     <div class="values"></div>
-    <button>Complete</button>
+    <div class="button">
+        <button id="defer">Defer</button>
+        <button id="complete">Complete</button>
+    </div>
+
 </div>
 {% endblock %}
