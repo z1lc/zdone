@@ -326,7 +326,8 @@ def utility_processor():
 @app.route('/maintenance')
 @login_required
 def maintenance():
-    return render_template('maintenance.html')
+    return render_template('maintenance.html',
+                           api_key=current_user.api_key)
 
 
 @app.route('/')
