@@ -46,6 +46,7 @@ class TaskCompletion(db.Model):
     task_id = db.Column(db.String(128), nullable=False)
     subtask_id = db.Column(db.String(128))
     duration_seconds = db.Column(db.Integer)
+    at = db.Column(db.DateTime)
 
 
 @login.user_loader

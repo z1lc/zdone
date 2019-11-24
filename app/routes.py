@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from json import dumps
 from typing import List, Tuple
 
@@ -13,7 +13,7 @@ from werkzeug.utils import redirect
 
 from . import redis_client, app, db, socketio
 from .forms import LoginForm
-from .models import User
+from .models import User, TaskCompletion
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
 from .util import today
@@ -161,6 +161,11 @@ def do_update_task(update, service, task_id, subtask_id, user=current_user):
                 'result': 'failure',
                 'reason': 'unexpected service type "' + service + '"'
             }), 400
+
+        task_completion = TaskCompletion(user_id=user.id, service=service, task_id=task_id, subtask_id=subtask_id,
+                                         duration_seconds=0, at=datetime.now())
+        db.session.add(task_completion)
+        db.session.commit()
     else:
         return jsonify({
             'result': 'failure',
