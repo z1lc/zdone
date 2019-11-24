@@ -142,7 +142,7 @@ def update_dependencies():
     return success()
 
 
-def do_update_task(update, service, task_id, subtask_id, user=current_user):
+def do_update_task(update, service, task_id, subtask_id, duration_seconds=0, user=current_user):
     if update == "defer":
         redis_client.append("hidden:" + user.username + ":" + str(today()), (task_id + "|||").encode())
         redis_client.expire("hidden:" + user.username + ":" + str(today()), timedelta(days=7))
@@ -163,7 +163,7 @@ def do_update_task(update, service, task_id, subtask_id, user=current_user):
             }), 400
 
         task_completion = TaskCompletion(user_id=user.id, service=service, task_id=task_id, subtask_id=subtask_id,
-                                         duration_seconds=0, at=datetime.now())
+                                         duration_seconds=duration_seconds, at=datetime.now())
         db.session.add(task_completion)
         db.session.commit()
     else:
@@ -200,8 +200,9 @@ def update_task():
     service = req["service"]
     task_id = req["id"]
     subtask_id = req["subtask_id"] if "subtask_id" in req else None
+    duration_seconds = req["duration_seconds"] if "duration_seconds" in req else None
 
-    return do_update_task(update, service, task_id, subtask_id)
+    return do_update_task(update, service, task_id, subtask_id, duration_seconds)
 
 
 @app.route('/add_task', methods=['POST'])
@@ -379,9 +380,10 @@ def api_update_task():
             service = req["service"]
             task_id = req["id"]
             subtask_id = req["subtask_id"] if "subtask_id" in req else None
+            duration_seconds = req["duration_seconds"] if "duration_seconds" in req else None
 
             try:
-                return do_update_task(update, service, task_id, subtask_id, user)
+                return do_update_task(update, service, task_id, subtask_id, duration_seconds, user)
             except Exception as e:
                 return jsonify({
                     'result': 'failure',
