@@ -64,13 +64,19 @@
       } else {
         durationSeconds = totalSeconds + timer.getTotalTimeValues().seconds;
       }
-      completeItem(task.service, task.id, task.subtask_id, 0, durationSeconds);
+      completeItem(task.service, task.id, task.subtask_id, task.length_minutes, durationSeconds);
       nextTask();
       event.preventDefault();
     });
     $("button#defer").click(function (event) {
       timer.stop();
-      deferItem(task.service, task.id, task.subtask_id);
+      deferItem(task.service, task.id, task.subtask_id, task.length_minutes);
+      nextTask();
+      event.preventDefault();
+    });
+    $("button#completeAsOrig").click(function (event) {
+      timer.stop();
+      completeItem(task.service, task.id, task.subtask_id, task.length_minutes, task.length_minutes);
       nextTask();
       event.preventDefault();
     });
@@ -116,7 +122,8 @@
     <div class="values"></div>
     <div class="button">
         <button id="defer">Defer</button> &nbsp;
-        <button id="complete">Complete</button><br><br>
+        <button id="complete">Complete</button>
+        <br><br>
         <button id="completeAsOrig"></button>
     </div>
 
