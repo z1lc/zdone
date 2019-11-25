@@ -50,6 +50,7 @@
       }
     );
     $("button#complete").click(function (event) {
+      timer.stop();
       let durationSeconds = 0;
       if (stillPositive) {
         durationSeconds = totalSeconds - timer.getTotalTimeValues().seconds;
@@ -61,6 +62,7 @@
       event.preventDefault();
     });
     $("button#defer").click(function (event) {
+      timer.stop();
       deferItem(task.service, task.id, task.subtask_id);
       nextTask();
       event.preventDefault();
