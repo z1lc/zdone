@@ -25,6 +25,7 @@
     timer.start({countdown: true, startValues: {seconds: totalSeconds}});
     $('#countdownExample .values').html(timer.getTimeValues().toString());
     $('#countdownExample .name').html(task.name);
+    $('#completeAsOrig').html("Complete as " + task.length_minutes + "m");
     let subtasksHtml = "";
     task.sub_tasks.forEach(subTask => {
       if (subTask.completed_date === null) {
@@ -100,6 +101,11 @@
     body {
         font-size: 40px;
     }
+
+    #completeAsOrig {
+        font-size: 20px;
+        line-height: 20px;
+    }
 </style>
 {% endblock %}
 
@@ -110,7 +116,8 @@
     <div class="values"></div>
     <div class="button">
         <button id="defer">Defer</button> &nbsp;
-        <button id="complete">Complete</button>
+        <button id="complete">Complete</button><br><br>
+        <button id="completeAsOrig"></button>
     </div>
 
 </div>
