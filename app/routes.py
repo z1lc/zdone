@@ -14,6 +14,7 @@ from werkzeug.utils import redirect
 from . import redis_client, app, db, socketio
 from .forms import LoginForm
 from .models import User, TaskCompletion
+from .spotify import get_artists, get_top_track_uris, play_track, spotify_callback
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
 from .util import today
@@ -328,6 +329,51 @@ def utility_processor():
 def maintenance():
     return render_template('maintenance.html',
                            api_key=current_user.api_key)
+
+
+@app.route('/spotify/auth')
+@login_required
+def spotify_auth():
+    return spotify_callback(request.url)
+
+
+@app.route('/spotify/top_liked')
+@login_required
+def spotify():
+    artists = get_artists()
+    if isinstance(artists, dict):
+        return render_template('spotify.html',
+                               potential_artists=artists['artists'],
+                               correct_artist=artists['correct_artist'])
+    else:
+        return artists
+
+
+@app.route('/spotify/anki_import')
+@login_required
+def spotify_anki_import():
+    return get_top_track_uris()
+
+
+@app.route("/api/play_track", methods=['POST'])
+def api_play_song():
+    req = request.get_json()
+    if not req or "track_uri" not in req:
+        return jsonify({
+            'result': 'failure',
+            'reason': 'Request body must be application/json with key \'track_uri\'.'
+        }), 400
+    else:
+        track_uri = req["track_uri"]
+        offset = req["offset"] if "offset" in req else None
+
+        try:
+            return play_track(track_uri, offset)
+        except Exception as e:
+            return jsonify({
+                'result': 'failure',
+                'reason': str(e)
+            }), 400
 
 
 @app.route('/')

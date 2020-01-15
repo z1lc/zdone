@@ -20,3 +20,5 @@ sentry-sdk[flask]
 newrelic
 mock
 py-trello
+git+git://github.com/z1lc/spotipy.git
+ebisu

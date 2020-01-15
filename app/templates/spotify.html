@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block within_head %}
+<style>
+    div#container {
+        width: 300px;
+        margin: auto;
+        text-align: center;
+    }
+
+    div.selection {
+        border: 2px solid black;
+        padding: 2px;
+        margin: 5px;
+    }
+</style>
+<script>
+  function sleep(time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
+  }
+
+  function answerQuestion(correct_artist, guess) {
+    let $sel = $('div.' + guess.split(" ")[0]);
+    if (correct_artist === guess) {
+      $sel.css("background-color", "green");
+      sleep(1000).then(() => {
+        location.reload();
+      });
+    } else {
+      $sel.css("background-color", "red");
+    }
+  }
+</script>
+{% endblock %}
+
+{% block body %}
+<div id="container">
+    Who is the artist?<br>
+    {% for artist in potential_artists %}
+    <div class="selection {{ artist }}" onclick="answerQuestion('{{ correct_artist }}', '{{ artist }}')">{{artist}}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
