@@ -19,6 +19,23 @@ ARTISTS = [
     'spotify:artist:41X1TR6hrK8Q2ZCpp2EqCz',  # bbno$
     'spotify:artist:4Zdbr0JJj9SXMDJfus1mNs',  # Ali Bakgor
     'spotify:artist:356FCJoyYWyzONni54Dgrv',  # Jerry Folk
+    'spotify:artist:75cW8FFekyCjj0mfZM1Gfb',  # Flamingosis
+    'spotify:artist:57dN52uHvrHOxijzpIgu3E',  # Ratatat
+    'spotify:artist:5TgQ66WuWkoQ2xYxaSTnVP',  # Netsky
+    'spotify:artist:1TtJ8j22Roc24e2Jx3OcU4',  # Purity Ring
+    'spotify:artist:6DPYiyq5kWVQS4RGwxzPC7',  # Dr. Dre
+    'spotify:artist:1RCoE2Dq19lePKhPzt9vM5',  # The Hush Sound
+    'spotify:artist:6TQj5BFPooTa08A7pk8AQ1',  # Kaskade
+    'spotify:artist:3q7HBObVc0L8jNeTe5Gofh',  # 50 Cent
+    'spotify:artist:7CajNmpbOovFoOoasH2HaY',  # Calvin Harris
+    'spotify:artist:2CIMQHirSU0MQqyYHq0eOx',  # deadmau5
+    'spotify:artist:2o5jDhtHVPhrJdv3cEQ99Z',  # Tiësto
+    'spotify:artist:2YOYua8FpudSEiB9s88IgQ',  # Yung Gravy
+    'spotify:artist:4tZwfgrHOc3mvqYlEYSvVi',  # Daft Punk
+    'spotify:artist:378dH6EszOLFShpRzAQkVM',  # Lindsey Stirling
+    'spotify:artist:137W8MRPWKqSmrBGDBFSop',  # Wiz Khalifa
+    'spotify:artist:1h6Cn3P4NGzXbaXidqURXs',  # Swedish House Mafia
+    'spotify:artist:5K4W6rqBFWDnAN6FQUkS6x',  # Kanye West
 ]
 NUM_TOP_TRACKS = 3
 
