@@ -332,13 +332,11 @@ def maintenance():
 
 
 @app.route('/spotify/auth')
-@login_required
 def spotify_auth():
     return spotify_callback(request.url)
 
 
 @app.route('/spotify/top_liked')
-@login_required
 def spotify():
     artists = get_artists()
     if isinstance(artists, dict):
@@ -350,7 +348,6 @@ def spotify():
 
 
 @app.route('/spotify/anki_import')
-@login_required
 def spotify_anki_import():
     return get_top_track_uris()
 
