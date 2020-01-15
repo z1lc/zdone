@@ -13,7 +13,6 @@ ARTISTS = [
     'spotify:artist:3TVXtAsR1Inumwj472S9r4',  # drake
     'spotify:artist:24DO0PijjITGIEWsO8XaPs',  # nora en pure
     'spotify:artist:7GMot9WvBYqhhJz92vhBp6',  # EDX
-    'spotify:artist:1KpCi9BOfviCVhmpI4G2sY',  # Tchami
     'spotify:artist:5INjqkS1o8h1imAzPqGZBb',  # Tame Impala
     'spotify:artist:5nki7yRhxgM509M5ADlN1p',  # Oliver Heldens
     'spotify:artist:41X1TR6hrK8Q2ZCpp2EqCz',  # bbno$
@@ -36,6 +35,19 @@ ARTISTS = [
     'spotify:artist:137W8MRPWKqSmrBGDBFSop',  # Wiz Khalifa
     'spotify:artist:1h6Cn3P4NGzXbaXidqURXs',  # Swedish House Mafia
     'spotify:artist:5K4W6rqBFWDnAN6FQUkS6x',  # Kanye West
+    'spotify:artist:06HL4z0CvFAxyc27GXpf02',  # Taylor Swift
+
+    ## Coachella 2020
+    'spotify:artist:4r63FhuTkUYltbVAg5TQnk',  # DaBaby
+    'spotify:artist:2RqrWplViWHSGLzlhmDcbt',  # Yaeji
+    'spotify:artist:1KpCi9BOfviCVhmpI4G2sY',  # Tchami
+    'spotify:artist:6PfSUFtkMVoDkx4MQkzOi3',  # 100 gecs
+    'spotify:artist:4O15NlyKLIASxsJ0PrXPfz',  # Lil Uzi Vert
+    'spotify:artist:61lyPtntblHJvA7FMMhi7E',  # Duke Dumont
+    # 'spotify:artist:205i7E8fNVfojowcQSfK9m',  # Dom Dolla
+    # 'spotify:artist:6nxWCVXbOlEVRexSbLsTer',  # Flume
+    'spotify:artist:37hAfseJWi0G3Scife12Il',  # City Girls
+    'spotify:artist:1URnnhqYAYcrqrcwql10ft',  # 21 Savage
 ]
 NUM_TOP_TRACKS = 3
 
@@ -104,7 +116,7 @@ def get_top_track_uris():
 
             output.append(csv_line)
 
-    return "".join(output)
+    return "".join(set(output))
     # return sp.artist_top_tracks(artist_id=artists[0])
 
 
