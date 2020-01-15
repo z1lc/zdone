@@ -8,9 +8,19 @@ from app import kv
 
 SCOPES = 'user-read-playback-state user-modify-playback-state user-library-read user-top-read'
 
-artists = [
-    '27gtK7m9vYwCyJ04zz0kIb'
+ARTISTS = [
+    'spotify:artist:27gtK7m9vYwCyJ04zz0kIb',  # lane 8
+    'spotify:artist:3TVXtAsR1Inumwj472S9r4',  # drake
+    'spotify:artist:24DO0PijjITGIEWsO8XaPs',  # nora en pure
+    'spotify:artist:7GMot9WvBYqhhJz92vhBp6',  # EDX
+    'spotify:artist:1KpCi9BOfviCVhmpI4G2sY',  # Tchami
+    'spotify:artist:5INjqkS1o8h1imAzPqGZBb',  # Tame Impala
+    'spotify:artist:5nki7yRhxgM509M5ADlN1p',  # Oliver Heldens
+    'spotify:artist:41X1TR6hrK8Q2ZCpp2EqCz',  # bbno$
+    'spotify:artist:4Zdbr0JJj9SXMDJfus1mNs',  # Ali Bakgor
+    'spotify:artist:356FCJoyYWyzONni54Dgrv',  # Jerry Folk
 ]
+NUM_TOP_TRACKS = 3
 
 
 def spotify_callback(full_url):
@@ -63,8 +73,8 @@ def play_track(track_uri, offset=None):
 def get_top_track_uris():
     sp = get_spotify()
     output = []
-    for artist in artists:
-        for top_track in sp.artist_top_tracks(artist_id=artist)['tracks']:
+    for artist in ARTISTS:
+        for top_track in sp.artist_top_tracks(artist_id=artist)['tracks'][:NUM_TOP_TRACKS]:
             csv_line = "\""
             csv_line += top_track['uri'] + "\",\""
             csv_line += top_track['name'] + "\",\""
@@ -77,7 +87,7 @@ def get_top_track_uris():
 
             output.append(csv_line)
 
-    return output
+    return "".join(output)
     # return sp.artist_top_tracks(artist_id=artists[0])
 
 
