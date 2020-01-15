@@ -352,17 +352,17 @@ def spotify_anki_import():
     return get_top_track_uris()
 
 
-@app.route("/api/play_track", methods=['POST'])
+@app.route("/api/play_track")
 def api_play_song():
-    req = request.get_json()
-    if not req or "track_uri" not in req:
+    args = request.args
+    if not args or "track_uri" not in args:
         return jsonify({
             'result': 'failure',
             'reason': 'Request body must be application/json with key \'track_uri\'.'
         }), 400
     else:
-        track_uri = req["track_uri"]
-        offset = req["offset"] if "offset" in req else None
+        track_uri = args.get('track_uri')
+        offset = args.get('offset') if "offset" in args else None
 
         try:
             return play_track(track_uri, offset)
