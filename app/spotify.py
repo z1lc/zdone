@@ -73,11 +73,11 @@ def get_top_track_uris():
                 inner_artists.append(inner_artist['name'])
             csv_line += ", ".join(inner_artists) + "\",\""
             csv_line += top_track['album']['name'] + "\",\""
-            csv_line += "<img src=\"" + top_track['album']['images'][0]['url'] + "\">"
+            csv_line += "<img src='" + top_track['album']['images'][0]['url'] + "'>\n"
 
             output.append(csv_line)
 
-    return "<br>".join(output)
+    return output
     # return sp.artist_top_tracks(artist_id=artists[0])
 
 
