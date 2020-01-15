@@ -1,8 +1,8 @@
 import random
+from random import randrange
 
 import spotipy
 from spotipy import oauth2
-from random import randrange
 
 from app import kv
 
@@ -57,19 +57,28 @@ def play_track(track_uri, offset=None):
     track = sp.track(track_uri)
     start = randrange(10000, track['duration_ms'] - 10000) if offset is None else offset
     sp.start_playback(uris=[track_uri], position_ms=start)
+    return ""
 
 
 def get_top_track_uris():
     sp = get_spotify()
-    track_uris = []
+    output = []
     for artist in artists:
-        track_uris.extend([track['uri'] for track in sp.artist_top_tracks(artist_id=artist)['tracks']])
+        for top_track in sp.artist_top_tracks(artist_id=artist)['tracks']:
+            csv_line = "\""
+            csv_line += top_track['uri'] + "\",\""
+            csv_line += top_track['name'] + "\",\""
+            inner_artists = []
+            for inner_artist in top_track['artists']:
+                inner_artists.append(inner_artist['name'])
+            csv_line += ", ".join(inner_artists) + "\",\""
+            csv_line += top_track['album']['name'] + "\",\""
+            csv_line += "<img src=\"" + top_track['album']['images'][0] + "\">"
 
-    output = ""
-    for track_uri in track_uris:
-        output += track_uri + "<br>"
-    # return output
-    return sp.artist_top_tracks(artist_id=artists[0])
+            output.append(csv_line)
+
+    return "<br>".join(output)
+    # return sp.artist_top_tracks(artist_id=artists[0])
 
 
 def get_artists():
