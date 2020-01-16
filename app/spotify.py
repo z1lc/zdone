@@ -36,6 +36,24 @@ ARTISTS = [
     'spotify:artist:1h6Cn3P4NGzXbaXidqURXs',  # Swedish House Mafia
     'spotify:artist:5K4W6rqBFWDnAN6FQUkS6x',  # Kanye West
     'spotify:artist:06HL4z0CvFAxyc27GXpf02',  # Taylor Swift
+    'spotify:artist:3gi5McAv9c0qTjJ5jSmbL0',  # A.L.I.S.O.N
+    'spotify:artist:3ifxHfYz2pqHku0bwx8H5J',  # Amtrac
+    'spotify:artist:2tEyBfwGBfQgLXeAJW0MgC',  # Baltra
+    'spotify:artist:7DuTB6wdzqFJGFLSH17k8e',  # Bhad Bhabie
+    'spotify:artist:5Nngx6kSXmrSiL248sEwmT',  # Calippo
+    'spotify:artist:4kYSro6naA4h99UJvo89HB',  # Cardi B
+    'spotify:artist:5wwnitxvqbrtiGk3QW3BuN',  # COMPUTER DATA
+    'spotify:artist:6eUKZXaKkcviH0Ku9w2n3V',  # Ed Sheeran
+    'spotify:artist:7HkdQ0gt53LP4zmHsL0nap',  # Ella Mai
+    'spotify:artist:1wzBqAvtFexgKHjt7i3ena',  # Fred V & Grafix
+    'spotify:artist:2exebQUDoIoT0dXA8BcN1P',  # Home
+    'spotify:artist:0nUF7iT0e6D5xEl743Jfu3',  # Icarus
+    'spotify:artist:1gPhS1zisyXr5dHTYZyiMe',  # Kevin Gates
+    'spotify:artist:3wyVrVrFCkukjdVIdirGVY',  # Lil Pump
+    'spotify:artist:4IDMgbEiCgt9G7PRN62mrV',  # Memorex Memories
+    'spotify:artist:1Ma3pJzPIrAyYPNRkp3SUF',  # Ross from Friends
+    'spotify:artist:5Pb27ujIyYb33zBqVysBkj',  # RUFUS DU SOL
+    'spotify:artist:6AUl0ykLLpvTktob97x9hO',  # Tee Grizzley
 
     ## Coachella 2020
     'spotify:artist:4r63FhuTkUYltbVAg5TQnk',  # DaBaby
