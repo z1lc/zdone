@@ -120,22 +120,40 @@ def play_track(track_uri, offset=None):
 def get_top_track_uris():
     sp = get_spotify()
     output = []
+
+    # get liked tracks with artists that are in ARTISTS
+    while True:
+        results = sp.current_user_saved_tracks(limit=50)
+        for item in results['items']:
+            track = item['track']
+            artists = [artist['uri'] for artist in track['artists']]
+            for artist in artists:
+                if artist in ARTISTS:
+                    output.append(create_csv_line(track))
+                    break
+        if len(results) < 50:
+            break
+
+    # get top 3 tracks for each artist in ARTISTS
     for artist in ARTISTS:
         for top_track in sp.artist_top_tracks(artist_id=artist)['tracks'][:NUM_TOP_TRACKS]:
-            csv_line = "\""
-            csv_line += top_track['uri'] + "\",\""
-            csv_line += top_track['name'] + "\",\""
-            inner_artists = []
-            for inner_artist in top_track['artists']:
-                inner_artists.append(inner_artist['name'])
-            csv_line += ", ".join(inner_artists) + "\",\""
-            csv_line += top_track['album']['name'] + "\",\""
-            csv_line += "<img src='" + top_track['album']['images'][0]['url'] + "'>\"\n"
-
-            output.append(csv_line)
+            output.append(create_csv_line(top_track))
 
     return "".join(set(output))
     # return sp.artist_top_tracks(artist_id=artists[0])
+
+
+def create_csv_line(track):
+    csv_line = "\""
+    csv_line += track['uri'] + "\",\""
+    csv_line += track['name'] + "\",\""
+    inner_artists = []
+    for inner_artist in track['artists']:
+        inner_artists.append(inner_artist['name'])
+    csv_line += ", ".join(inner_artists) + "\",\""
+    csv_line += track['album']['name'] + "\",\""
+    csv_line += "<img src='" + track['album']['images'][0]['url'] + "'>\"\n"
+    return csv_line
 
 
 def get_artists():
