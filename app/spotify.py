@@ -113,7 +113,7 @@ def get_spotify():
 def play_track(track_uri, offset=None):
     sp = get_spotify()
     if isinstance(sp, str):
-        redis_client.append("last_spotify_track", track_uri.encode())
+        redis_client.set("last_spotify_track", track_uri.encode())
         redis_client.expire("last_spotify_track", timedelta(seconds=10))
         return redirect(sp)
     track = sp.track(track_uri)

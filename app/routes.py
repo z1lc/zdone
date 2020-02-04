@@ -338,8 +338,7 @@ def spotify_auth():
     last_spotify_track = redis_client.get("last_spotify_track")
     if last_spotify_track:
         play_track(last_spotify_track.decode())
-    else:
-        return "successfully auth'd"
+    return "successfully auth'd"
 
 
 @app.route('/spotify/top_liked')
