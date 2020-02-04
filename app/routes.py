@@ -361,19 +361,13 @@ def api_play_song():
     if not args or "track_uri" not in args:
         return jsonify({
             'result': 'failure',
-            'reason': 'Request body must be application/json with key \'track_uri\'.'
+            'reason': 'Request must set parameter \'track_uri\'.'
         }), 400
     else:
         track_uri = args.get('track_uri')
         offset = args.get('offset') if "offset" in args else None
 
-        try:
-            return play_track(track_uri, offset)
-        except Exception as e:
-            return jsonify({
-                'result': 'failure',
-                'reason': str(e)
-            }), 400
+        return play_track(track_uri, offset)
 
 
 @app.route('/')
