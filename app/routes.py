@@ -2,14 +2,13 @@ from datetime import timedelta, datetime
 from json import dumps
 from typing import List, Tuple
 
-from flask import render_template, request, make_response, jsonify
+from flask import render_template, request, make_response, jsonify, redirect
 from flask import url_for, flash
 from flask_login import current_user, login_user, logout_user
 from flask_login import login_required
 from sentry_sdk import last_event_id
 from trello import TrelloClient
 from werkzeug.urls import url_parse
-from werkzeug.utils import redirect
 
 from . import redis_client, app, db, socketio
 from .forms import LoginForm
@@ -335,7 +334,7 @@ def maintenance():
 def spotify_auth():
     maybe_url = maybe_get_spotify_authorize_url(request.url)
     if maybe_url:
-        redirect(maybe_url)
+        redirect(maybe_url, 302)
     return "successfully auth'd"
 
 
