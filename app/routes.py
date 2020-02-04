@@ -366,7 +366,7 @@ def api_play_song():
         track_uri = args.get('track_uri')
         offset = args.get('offset') if "offset" in args else None
 
-        return play_track(track_uri, offset)
+        return play_track(request.url, track_uri, offset)
 
 
 @app.route('/')
