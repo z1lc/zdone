@@ -1,3 +1,4 @@
+import json
 import random
 from datetime import timedelta
 from random import randrange
@@ -72,6 +73,21 @@ ARTISTS = [
 NUM_TOP_TRACKS = 3
 
 
+def save_token_info(token_info):
+    kv.put('spotify_token_info', json.dumps(token_info))
+
+
+def get_cached_token_info(sp_oauth):
+    maybe_token_info = kv.get('spotify_token_info')
+    if maybe_token_info:
+        token_info = json.loads(maybe_token_info)
+        if sp_oauth.is_token_expired(token_info):
+            token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
+            save_token_info(token_info)
+        return token_info
+    return None
+
+
 def maybe_get_spotify_authorize_url(full_url):
     username = "rsanek"
     sp_oauth = oauth2.SpotifyOAuth(
@@ -81,7 +97,7 @@ def maybe_get_spotify_authorize_url(full_url):
         redirect_uri="https://www.zdone.co/spotify/auth" if "zdone" in full_url else "http://127.0.0.1:5000/spotify/auth",
         cache_path=".cache-" + username)
 
-    token_info = sp_oauth.get_cached_token()
+    token_info = get_cached_token_info(sp_oauth)
 
     if not token_info:
         if "code" not in full_url:
@@ -89,6 +105,7 @@ def maybe_get_spotify_authorize_url(full_url):
         else:
             code = sp_oauth.parse_response_code(full_url)
             token_info = sp_oauth.get_access_token(code)
+            save_token_info(token_info)
     return ""
 
 
@@ -101,7 +118,7 @@ def get_spotify(full_url):
         redirect_uri="https://www.zdone.co/spotify/auth" if "zdone" in full_url else "http://127.0.0.1:5000/spotify/auth",
         cache_path=".cache-" + username)
 
-    token_info = sp_oauth.get_cached_token()
+    token_info = get_cached_token_info(sp_oauth)
 
     if not token_info:
         return sp_oauth.get_authorize_url()
