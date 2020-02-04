@@ -1,11 +1,12 @@
 import random
+from datetime import timedelta
 from random import randrange
 
 import spotipy
 from flask import redirect
 from spotipy import oauth2
 
-from app import kv
+from app import kv, redis_client
 
 SCOPES = 'user-read-playback-state user-modify-playback-state user-library-read user-top-read'
 
@@ -91,13 +92,13 @@ def maybe_get_spotify_authorize_url(full_url):
     return ""
 
 
-def get_spotify(redirect_to="https://www.zdone.co/spotify/auth"):
+def get_spotify():
     username = "rsanek"
     sp_oauth = oauth2.SpotifyOAuth(
         scope=SCOPES,
         client_id="03f34cada5cc46a5929be06ff7532321",
         client_secret=kv.get('SPOTIFY_CLIENT_SECRET'),
-        redirect_uri=redirect_to,
+        redirect_uri="https://www.zdone.co/spotify/auth",
         cache_path=".cache-" + username)
 
     token_info = sp_oauth.get_cached_token()
@@ -109,9 +110,11 @@ def get_spotify(redirect_to="https://www.zdone.co/spotify/auth"):
         return sp
 
 
-def play_track(redirect_url, track_uri, offset=None):
-    sp = get_spotify(redirect_url)
+def play_track(track_uri, offset=None):
+    sp = get_spotify()
     if isinstance(sp, str):
+        redis_client.append("last_spotify_track", track_uri.encode())
+        redis_client.expire("last_spotify_track", timedelta(seconds=10))
         return redirect(sp)
     track = sp.track(track_uri)
     start = randrange(10000, track['duration_ms'] - 10000) if offset is None else offset
