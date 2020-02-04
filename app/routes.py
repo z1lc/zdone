@@ -334,7 +334,7 @@ def maintenance():
 def spotify_auth():
     maybe_url = maybe_get_spotify_authorize_url(request.url)
     if maybe_url:
-        redirect(maybe_url, 302)
+        return redirect(maybe_url, 302)
     return "successfully auth'd"
 
 
