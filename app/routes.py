@@ -337,7 +337,7 @@ def spotify_auth():
         return redirect(maybe_url, 302)
     last_spotify_track = redis_client.get("last_spotify_track")
     if last_spotify_track:
-        play_track(last_spotify_track.decode())
+        play_track(request.url, last_spotify_track.decode())
     return "successfully auth'd"
 
 
@@ -369,7 +369,7 @@ def api_play_song():
         track_uri = args.get('track_uri')
         offset = args.get('offset') if "offset" in args else None
 
-        return play_track(track_uri, offset)
+        return play_track(request.url, track_uri, offset)
 
 
 @app.route('/')

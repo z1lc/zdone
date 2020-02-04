@@ -78,7 +78,7 @@ def maybe_get_spotify_authorize_url(full_url):
         scope=SCOPES,
         client_id="03f34cada5cc46a5929be06ff7532321",
         client_secret=kv.get('SPOTIFY_CLIENT_SECRET'),
-        redirect_uri="https://www.zdone.co/spotify/auth",
+        redirect_uri="https://www.zdone.co/spotify/auth" if "zdone" in full_url else "http://127.0.0.1:5000/spotify/auth",
         cache_path=".cache-" + username)
 
     token_info = sp_oauth.get_cached_token()
@@ -92,13 +92,13 @@ def maybe_get_spotify_authorize_url(full_url):
     return ""
 
 
-def get_spotify():
+def get_spotify(full_url):
     username = "rsanek"
     sp_oauth = oauth2.SpotifyOAuth(
         scope=SCOPES,
         client_id="03f34cada5cc46a5929be06ff7532321",
         client_secret=kv.get('SPOTIFY_CLIENT_SECRET'),
-        redirect_uri="https://www.zdone.co/spotify/auth",
+        redirect_uri="https://www.zdone.co/spotify/auth" if "zdone" in full_url else "http://127.0.0.1:5000/spotify/auth",
         cache_path=".cache-" + username)
 
     token_info = sp_oauth.get_cached_token()
@@ -110,8 +110,8 @@ def get_spotify():
         return sp
 
 
-def play_track(track_uri, offset=None):
-    sp = get_spotify()
+def play_track(full_url, track_uri, offset=None):
+    sp = get_spotify(full_url)
     if isinstance(sp, str):
         redis_client.set("last_spotify_track", track_uri.encode())
         redis_client.expire("last_spotify_track", timedelta(seconds=10))
@@ -123,7 +123,7 @@ def play_track(track_uri, offset=None):
 
 
 def get_top_track_uris():
-    sp = get_spotify()
+    sp = get_spotify("zdone")
     output = []
 
     # get liked tracks with artists that are in ARTISTS
