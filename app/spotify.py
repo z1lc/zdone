@@ -70,7 +70,7 @@ ARTISTS = [
 NUM_TOP_TRACKS = 3
 
 
-def spotify_callback(full_url):
+def maybe_get_spotify_authorize_url(full_url):
     username = "rsanek"
     sp_oauth = oauth2.SpotifyOAuth(
         scope=SCOPES,
@@ -83,11 +83,11 @@ def spotify_callback(full_url):
 
     if not token_info:
         if "code" not in full_url:
-            return "Go to <a href='" + sp_oauth.get_authorize_url() + "'>" + sp_oauth.get_authorize_url() + "</a>"
+            return sp_oauth.get_authorize_url()
         else:
             code = sp_oauth.parse_response_code(full_url)
             token_info = sp_oauth.get_access_token(code)
-    return "successfully auth'd"
+    return ""
 
 
 def get_spotify():

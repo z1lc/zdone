@@ -14,7 +14,7 @@ from werkzeug.utils import redirect
 from . import redis_client, app, db, socketio
 from .forms import LoginForm
 from .models import User, TaskCompletion
-from .spotify import get_artists, get_top_track_uris, play_track, spotify_callback
+from .spotify import get_artists, get_top_track_uris, play_track, maybe_get_spotify_authorize_url
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
 from .util import today
@@ -333,7 +333,10 @@ def maintenance():
 
 @app.route('/spotify/auth')
 def spotify_auth():
-    return spotify_callback(request.url)
+    maybe_url = maybe_get_spotify_authorize_url(request.url)
+    if maybe_url:
+        redirect(maybe_url)
+    return "successfully auth'd"
 
 
 @app.route('/spotify/top_liked')
