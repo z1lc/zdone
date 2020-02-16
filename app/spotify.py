@@ -144,24 +144,20 @@ def get_top_track_uris():
     output = []
 
     # get liked tracks with artists that are in ARTISTS
+    results = list()
+    offset = 0
     while True:
-        results = list()
-        offset = 0
-        while True:
-            saved = sp.current_user_saved_tracks(limit=50, offset=offset)
-            results.extend(saved['items'])
-            offset += 50
-            if len(saved) < 50:
-                break
-        for item in results:
-            track = item['track']
-            artists = [artist['uri'] for artist in track['artists']]
-            for artist in artists:
-                if artist in ARTISTS:
-                    output.append(create_csv_line(track))
-                    break
-        if len(results) < 50:
+        saved = sp.current_user_saved_tracks(limit=50, offset=offset)
+        results.extend(saved['items'])
+        offset += 50
+        if len(saved['items']) < 50:
             break
+    for item in results:
+        track = item['track']
+        artists = [artist['uri'] for artist in track['artists']]
+        for artist in artists:
+            if artist in ARTISTS:
+                output.append(create_csv_line(track))
 
     # get top 3 tracks for each artist in ARTISTS
     for artist in ARTISTS:
