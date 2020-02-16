@@ -149,11 +149,11 @@ def get_top_track_uris():
         offset = 0
         while True:
             saved = sp.current_user_saved_tracks(limit=50, offset=offset)
-            results.extend(saved)
+            results.extend(saved['items'])
             offset += 50
             if len(saved) < 50:
                 break
-        for item in results['items']:
+        for item in results:
             track = item['track']
             artists = [artist['uri'] for artist in track['artists']]
             for artist in artists:
