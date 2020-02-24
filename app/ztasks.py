@@ -1,6 +1,9 @@
 import datetime
+import re
 from typing import List
 
+import dateutil
+from dateutil.rrule import rrule
 from urlextract import URLExtract
 
 from app.util import today
@@ -9,15 +12,15 @@ extractor = URLExtract()
 
 
 class ZDSubTask:
-    def __init__(self, id_: str, name: str, completed_date: datetime, note: str, service: str):
+    def __init__(self, id_: str, name: str, completed_datetime: datetime, note: str, service: str):
         self.id = id_
         self.name = name
-        self.completed_date = completed_date
+        self.completed_datetime = completed_datetime
         self.note = htmlize_note(note)
         self.service = service
 
     def completed_today(self):
-        return self.completed_date == today()
+        return self.completed_datetime == today()
 
 
 class ZDTask:
@@ -25,8 +28,8 @@ class ZDTask:
                  id_: str,
                  name: str,
                  length_minutes: float,
-                 due_date: datetime,
-                 completed_date: datetime,
+                 due_date: datetime.date,
+                 completed_datetime: datetime,
                  repeat: str,
                  note: str,
                  service: str,
@@ -35,11 +38,25 @@ class ZDTask:
         self.name = name
         self.length_minutes = length_minutes
         self.due_date = due_date
-        self.completed_date = completed_date
+        self.completed_datetime = completed_datetime
         self.repeat = repeat
         self.note = htmlize_note(note)
         self.service = service
         self.sub_tasks = sub_tasks
+        self.interval = 0
+        self.skew = 0
+
+        if self.repeat:
+            dummy_start_date = datetime.datetime(2020, 1, 1)
+            self.repeat = re.sub(';FROMCOMP', '', self.repeat)
+            if 'COUNT' not in self.repeat:
+                self.repeat += ';COUNT=2'
+            next_dates = list(dateutil.rrule.rrulestr(self.repeat, dtstart=dummy_start_date))
+            self.interval = (next_dates[1] - next_dates[0]).days if len(next_dates) > 1 else 0
+            compared_to = self.due_date
+            if service == "habitica" and self.completed_datetime:
+                compared_to = self.completed_datetime.date() + datetime.timedelta(days=1)
+            self.skew = (today() - compared_to).days / self.interval if compared_to <= today() else 0
 
     def get_pie_background_image(self):
         # https://stackoverflow.com/a/21206274
@@ -56,10 +73,10 @@ class ZDTask:
 
     def __repr__(self):
         return "{" + self.service + "_task" + ", ".join(
-            [self.id, self.name, str(self.length_minutes), str(self.due_date), str(self.completed_date)]) + "}"
+            [self.id, self.name, str(self.length_minutes), str(self.due_date), str(self.completed_datetime)]) + "}"
 
     def completed_today(self):
-        return self.completed_date == today()
+        return self.completed_datetime == today()
 
     def is_repeating(self):
         return self.repeat != ""

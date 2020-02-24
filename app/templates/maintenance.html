@@ -28,7 +28,7 @@
     $('#completeAsOrig').html("Complete as " + task.length_minutes + "m");
     let subtasksHtml = "";
     task.sub_tasks.forEach(subTask => {
-      if (subTask.completed_date === null) {
+      if (subTask.completed_datetime === null) {
         subtasksHtml += "<div class='subtask " + getSelector(subTask.service, task.id, subTask.id, true).slice(1) + "'>" +
           "<i class=\"fas fa-check check\" onclick=\"completeItem('" + subTask.service
           + "', '" + task.id + "', '" + subTask.id + "')\"></i>" + subTask.name + "</div>";

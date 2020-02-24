@@ -72,15 +72,15 @@ def get_habitica_tasks(user=current_user) -> List[ZDTask]:
                 else:  # filter out tasks that are never due
                     continue
 
-            completed_date = None
+            completed_datetime = None
             if habit['completed']:
-                completed_date = today()
+                completed_datetime = today()
             else:
                 sorted_history = sorted(habit['history'], key=lambda date_plus_val: -date_plus_val['date'])
                 i = 1
                 while i < len(sorted_history):
                     if sorted_history[i - 1]['value'] > sorted_history[i]['value']:
-                        completed_date = datetime.datetime.fromtimestamp(int(sorted_history[i - 1]['date'] / 1000),
+                        completed_datetime = datetime.datetime.fromtimestamp(int(sorted_history[i - 1]['date'] / 1000),
                                                                          tz=pytz.timezone('US/Pacific'))
                         break
                     i += 1
@@ -104,7 +104,7 @@ def get_habitica_tasks(user=current_user) -> List[ZDTask]:
                 # use notes field in habitica for estimated minutes
                 time,
                 due,
-                completed_date,
+                completed_datetime,
                 "FREQ=DAILY",
                 notes,
                 'habitica',

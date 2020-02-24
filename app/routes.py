@@ -64,6 +64,22 @@ TOODLEDO_UNORDERED_TASKS_PLACEHOLDER = ZDTask(
     "-1", "[all unordered Toodledo Tasks]", 0, None, None, "", "", "unorderedToodledo", [])
 
 
+@app.route('/list')
+@login_required
+def enhanced_list():
+    tasks = get_all_tasks(current_user)
+    tasks.sort(key=lambda t: t.skew, reverse=True)
+    to_return = "<table><tr><th>Name</th><th>Due Date</th><th>Last Success</th><th>Interval</th><th>Skew</th></tr>"
+    for task in tasks:
+        to_print = [task.name, str(task.due_date), str(task.completed_datetime), str(task.interval),
+                    str(int(round(task.skew * 100, 0))) + '%']
+        to_return += '<tr>'
+        for p in to_print:
+            to_return += '<td>' + p + '</td>'
+        to_return += '</tr>'
+    return to_return + "</table>"
+
+
 @app.route('/dependencies')
 @login_required
 def show_dependencies():
@@ -295,7 +311,7 @@ def get_homepage_info(user=current_user):
 def get_tasks_without_required_fields(all_tasks):
     bad_tasks = []
     for task in all_tasks:
-        if task.completed_date is None:
+        if task.completed_datetime is None:
             if (task.length_minutes is None or task.length_minutes == 0) or \
                     task.due_date is None:
                 bad_tasks.append(task)
