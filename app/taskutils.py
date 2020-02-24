@@ -16,7 +16,7 @@ from toodledo import Toodledo
 
 from app import kv
 from app.storage import TokenStoragePostgres
-from app.util import today
+from app.util import today, today_datetime
 from app.ztasks import ZDTask, ZDSubTask
 
 
@@ -74,7 +74,7 @@ def get_habitica_tasks(user=current_user) -> List[ZDTask]:
 
             completed_datetime = None
             if habit['completed']:
-                completed_datetime = today()
+                completed_datetime = today_datetime()
             else:
                 sorted_history = sorted(habit['history'], key=lambda date_plus_val: -date_plus_val['date'])
                 i = 1
