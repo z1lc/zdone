@@ -257,6 +257,8 @@ def get_homepage_info(user=current_user):
     i = 0
     minutes_allocated = 0
     all_tasks = get_all_tasks(user)
+    # try sorting by skew
+    all_tasks.sort(key=lambda t: t.skew, reverse=True)
     while i < len(all_tasks):
         task = all_tasks[i]
         if task.id not in task_ids_to_hide \
