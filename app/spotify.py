@@ -57,6 +57,8 @@ ARTISTS = [
     'spotify:artist:1Ma3pJzPIrAyYPNRkp3SUF',  # Ross from Friends
     'spotify:artist:5Pb27ujIyYb33zBqVysBkj',  # RUFUS DU SOL
     'spotify:artist:6AUl0ykLLpvTktob97x9hO',  # Tee Grizzley
+    'spotify:artist:4LLpKhyESsyAXpc4laK94U',  # Mac Miller
+    'spotify:artist:7nwUJBm0HE4ZxD3f5cy5ok',  # Aretha Franklin
 
     ## Coachella 2020
     'spotify:artist:4r63FhuTkUYltbVAg5TQnk',  # DaBaby
@@ -69,6 +71,25 @@ ARTISTS = [
     # 'spotify:artist:6nxWCVXbOlEVRexSbLsTer',  # Flume
     'spotify:artist:37hAfseJWi0G3Scife12Il',  # City Girls
     'spotify:artist:1URnnhqYAYcrqrcwql10ft',  # 21 Savage
+
+    ## Artists from friends
+    'spotify:artist:6qgnBH6iDM91ipVXv28OMu',  # Kaytranada
+    'spotify:artist:7KGI0OwY8iAL5rI5p47YyK',  # Tora
+    'spotify:artist:2jldyAonkBDiBG0cNtLgZz',  # Richard Muller
+    'spotify:artist:7ltDVBr6mKbRvohxheJ9h1',  # Rosalia
+    'spotify:artist:4V8Sr092TqfHkfAA5fXXqG',  # Luis Fonsi
+    'spotify:artist:78pqktwsz3pr1uOZYe7tkH',  # Zuzana Navarová
+    'spotify:artist:0k17h0D3J5VfsdmQ1iZtE9',  # Pink Floyd
+    'spotify:artist:2Kx7MNY7cI1ENniW7vT30N',  # Norah Jones
+    'spotify:artist:0EeHVtSdrYibpGDVHjWEpe',  # Mannheim Steamroller
+    'spotify:artist:6uothxMWeLWIhsGeF7cyo4',  # Enya
+    'spotify:artist:3DmG65yHQsMms7WAvrZOdt',  # Enigma
+    'spotify:artist:562Od3CffWedyz2BbeYWVn',  # Mike Oldfield
+    'spotify:artist:3iCEJiyLrmF5bHH6w1vIz6',  # Amethystium
+    'spotify:artist:7C4sUpWGlTy7IANjruj02I',  # Peter Gabriel
+    'spotify:artist:3WrFJ7ztbogyGnTHbHJFl2',  # The Beatles
+    'spotify:artist:70cRZdQywnSFp9pnc2WTCE',  # Simon & Garfunkel
+    'spotify:artist:3lPQ2Fk5JOwGWAF3ORFCqH',  # John Mellencamp
 ]
 NUM_TOP_TRACKS = 3
 
