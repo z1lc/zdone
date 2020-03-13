@@ -68,7 +68,7 @@ TOODLEDO_UNORDERED_TASKS_PLACEHOLDER = ZDTask(
 @login_required
 def enhanced_list():
     tasks = get_all_tasks(current_user)
-    tasks.sort(key=lambda t: t.skew, reverse=True)
+    tasks.sort(key=lambda t: (t.skew, -t.interval), reverse=True)
     to_return = "<table><tr><th>Name</th><th>Due Date</th><th>Last Success</th><th>Interval</th><th>Skew</th></tr>"
     for task in tasks:
         to_print = [task.name, str(task.due_date), str(task.completed_datetime), str(task.interval),
@@ -239,7 +239,7 @@ def update_time():
     return do_update_time(request.get_json()["maximum_minutes_per_day"])
 
 
-def get_homepage_info(user=current_user):
+def get_homepage_info(user=current_user, skew_sort=False):
     minutes_completed_today = 0
     tasks_completed, tasks_to_do, tasks_backlog, nonrecurring_tasks_coming_up = [], [], [], []
     prioritized_tasks, unprioritized_tasks = get_task_order_from_db("priorities", user)
@@ -258,7 +258,8 @@ def get_homepage_info(user=current_user):
     minutes_allocated = 0
     all_tasks = get_all_tasks(user)
     # try sorting by skew
-    all_tasks.sort(key=lambda t: t.skew, reverse=True)
+    if skew_sort:
+        all_tasks.sort(key=lambda t: (t.skew, -t.interval), reverse=True)
     while i < len(all_tasks):
         task = all_tasks[i]
         if task.id not in task_ids_to_hide \
@@ -299,7 +300,7 @@ def get_homepage_info(user=current_user):
     tasks_without_required_fields = get_tasks_without_required_fields(all_tasks)
     return {
         "tasks_completed": list(tasks_completed),
-        "tasks_to_do": [task for _, task in sorted_tasks_to_do],
+        "tasks_to_do": tasks_to_do if skew_sort else [task for _, task in sorted_tasks_to_do],
         "tasks_backlog": list(tasks_backlog),
         "tasks_without_required_fields": tasks_without_required_fields,
         "nonrecurring_tasks_coming_up": list(nonrecurring_tasks_coming_up),
@@ -394,7 +395,7 @@ def api_play_song():
 @app.route("/index")
 @login_required
 def index():
-    info = get_homepage_info()
+    info = get_homepage_info(skew_sort="sort" in request.args)
     info['times']['minutes_total_rounded'] = \
         round(info['times']['minutes_allocated'] + info['times']['minutes_completed_today'])
     info['times']['minutes_completed_today_rounded'] = \
