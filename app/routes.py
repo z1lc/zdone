@@ -427,7 +427,7 @@ def api():
     if not user:
         return api_key_failure()
     else:
-        r = dumps(get_homepage_info(user))
+        r = dumps(get_homepage_info(user, "sort" in request.args))
         r = make_response(r)
         r.mimetype = 'application/json'
         return r, 200
