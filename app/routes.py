@@ -391,7 +391,15 @@ def spotify():
 @app.route('/spotify/anki_import')
 @login_required
 def spotify_anki_import():
-    return get_top_track_uris(current_user)
+    maybe_uris = get_top_track_uris(current_user)
+    if not maybe_uris:
+        return "User {0} is not authenticated. If you'd like to auth, please go to " \
+               "<a href='/spotify/auth'>/spotify/auth</a>.".format(current_user.username)
+    else:
+        output = make_response(get_top_track_uris(current_user))
+        output.headers["Content-Disposition"] = "attachment; filename=spotify_songs_as_anki_notes.csv"
+        output.headers["Content-type"] = "text/csv"
+        return output
 
 
 @app.route("/api/play_track")

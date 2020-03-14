@@ -161,6 +161,8 @@ def play_track(full_url, track_uri, user, offset=None):
 
 def get_top_track_uris(user):
     sp = get_spotify("zdone", user)
+    if isinstance(sp, str):
+        return None
     output = []
 
     # get liked tracks with artists that are in ARTISTS
