@@ -405,16 +405,17 @@ def spotify_anki_import():
 @app.route("/api/play_track")
 def api_play_song():
     args = request.args
-    if not args or "track_uri" not in args:
+    if not args or "track_uri" not in args or "api_key" not in args:
         return jsonify({
             'result': 'failure',
-            'reason': 'Request must set parameter \'track_uri\'.'
+            'reason': 'Request must set parameters \'track_uri\' and \'api_key\'.'
         }), 400
     else:
         track_uri = args.get('track_uri')
+        user = validate_api_key(args.get('api_key'))
         offset = args.get('offset') if "offset" in args else None
 
-        return play_track(request.url, track_uri, offset)
+        return play_track(request.url, track_uri, user, offset)
 
 
 @app.route('/')
