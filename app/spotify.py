@@ -7,7 +7,7 @@ import spotipy
 from flask import redirect
 from spotipy import oauth2
 
-from app import kv, redis_client
+from app import kv, redis_client, db
 
 SCOPES = 'user-read-playback-state user-modify-playback-state user-library-read user-top-read'
 
@@ -94,31 +94,31 @@ ARTISTS = [
 NUM_TOP_TRACKS = 3
 
 
-def save_token_info(token_info):
-    kv.put('spotify_token_info', json.dumps(token_info))
+def save_token_info(token_info, user):
+    user.spotify_token_json = json.dumps(token_info)
+    db.session.commit()
 
 
-def get_cached_token_info(sp_oauth):
-    maybe_token_info = kv.get('spotify_token_info')
+def get_cached_token_info(sp_oauth, user):
+    maybe_token_info = user.spotify_token_json
     if maybe_token_info:
         token_info = json.loads(maybe_token_info)
         if sp_oauth.is_token_expired(token_info):
             token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
-            save_token_info(token_info)
+            save_token_info(token_info, user)
         return token_info
     return None
 
 
-def maybe_get_spotify_authorize_url(full_url):
-    username = "rsanek"
+def maybe_get_spotify_authorize_url(full_url, user):
     sp_oauth = oauth2.SpotifyOAuth(
         scope=SCOPES,
         client_id="03f34cada5cc46a5929be06ff7532321",
         client_secret=kv.get('SPOTIFY_CLIENT_SECRET'),
         redirect_uri="https://www.zdone.co/spotify/auth" if "zdone" in full_url else "http://127.0.0.1:5000/spotify/auth",
-        cache_path=".cache-" + username)
+        cache_path=".cache-" + user.username)
 
-    token_info = get_cached_token_info(sp_oauth)
+    token_info = get_cached_token_info(sp_oauth, user)
 
     if not token_info:
         if "code" not in full_url:
@@ -126,20 +126,19 @@ def maybe_get_spotify_authorize_url(full_url):
         else:
             code = sp_oauth.parse_response_code(full_url)
             token_info = sp_oauth.get_access_token(code)
-            save_token_info(token_info)
+            save_token_info(token_info, user)
     return ""
 
 
-def get_spotify(full_url):
-    username = "rsanek"
+def get_spotify(full_url, user):
     sp_oauth = oauth2.SpotifyOAuth(
         scope=SCOPES,
         client_id="03f34cada5cc46a5929be06ff7532321",
         client_secret=kv.get('SPOTIFY_CLIENT_SECRET'),
         redirect_uri="https://www.zdone.co/spotify/auth" if "zdone" in full_url else "http://127.0.0.1:5000/spotify/auth",
-        cache_path=".cache-" + username)
+        cache_path=".cache-" + user.username)
 
-    token_info = get_cached_token_info(sp_oauth)
+    token_info = get_cached_token_info(sp_oauth, user)
 
     if not token_info:
         return sp_oauth.get_authorize_url()
@@ -148,8 +147,8 @@ def get_spotify(full_url):
         return sp
 
 
-def play_track(full_url, track_uri, offset=None):
-    sp = get_spotify(full_url)
+def play_track(full_url, track_uri, user, offset=None):
+    sp = get_spotify(full_url, user)
     if isinstance(sp, str):
         redis_client.set("last_spotify_track", track_uri.encode())
         redis_client.expire("last_spotify_track", timedelta(seconds=10))
@@ -160,8 +159,8 @@ def play_track(full_url, track_uri, offset=None):
     return ""
 
 
-def get_top_track_uris():
-    sp = get_spotify("zdone")
+def get_top_track_uris(user):
+    sp = get_spotify("zdone", user)
     output = []
 
     # get liked tracks with artists that are in ARTISTS
