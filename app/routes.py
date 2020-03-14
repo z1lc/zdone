@@ -449,7 +449,7 @@ def index():
 
 
 def validate_api_key(api_key):
-    return User.query.filter_by(api_key=api_key).first() if api_key else None
+    return User.query.filter_by(api_key=api_key).one() if api_key else None
 
 
 @app.route("/api")

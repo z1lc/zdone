@@ -8,89 +8,9 @@ from flask import redirect
 from spotipy import oauth2
 
 from app import kv, redis_client, db
+from app.models import ManagedSpotifyArtist
 
 SCOPES = 'user-read-playback-state user-modify-playback-state user-library-read user-top-read'
-
-ARTISTS = [
-    'spotify:artist:27gtK7m9vYwCyJ04zz0kIb',  # lane 8
-    'spotify:artist:3TVXtAsR1Inumwj472S9r4',  # drake
-    'spotify:artist:24DO0PijjITGIEWsO8XaPs',  # nora en pure
-    'spotify:artist:7GMot9WvBYqhhJz92vhBp6',  # EDX
-    'spotify:artist:5INjqkS1o8h1imAzPqGZBb',  # Tame Impala
-    'spotify:artist:5nki7yRhxgM509M5ADlN1p',  # Oliver Heldens
-    'spotify:artist:41X1TR6hrK8Q2ZCpp2EqCz',  # bbno$
-    'spotify:artist:4Zdbr0JJj9SXMDJfus1mNs',  # Ali Bakgor
-    'spotify:artist:356FCJoyYWyzONni54Dgrv',  # Jerry Folk
-    'spotify:artist:75cW8FFekyCjj0mfZM1Gfb',  # Flamingosis
-    'spotify:artist:57dN52uHvrHOxijzpIgu3E',  # Ratatat
-    'spotify:artist:5TgQ66WuWkoQ2xYxaSTnVP',  # Netsky
-    'spotify:artist:1TtJ8j22Roc24e2Jx3OcU4',  # Purity Ring
-    'spotify:artist:6DPYiyq5kWVQS4RGwxzPC7',  # Dr. Dre
-    'spotify:artist:1RCoE2Dq19lePKhPzt9vM5',  # The Hush Sound
-    'spotify:artist:6TQj5BFPooTa08A7pk8AQ1',  # Kaskade
-    'spotify:artist:3q7HBObVc0L8jNeTe5Gofh',  # 50 Cent
-    'spotify:artist:7CajNmpbOovFoOoasH2HaY',  # Calvin Harris
-    'spotify:artist:2CIMQHirSU0MQqyYHq0eOx',  # deadmau5
-    'spotify:artist:2o5jDhtHVPhrJdv3cEQ99Z',  # Tiësto
-    'spotify:artist:2YOYua8FpudSEiB9s88IgQ',  # Yung Gravy
-    'spotify:artist:4tZwfgrHOc3mvqYlEYSvVi',  # Daft Punk
-    'spotify:artist:378dH6EszOLFShpRzAQkVM',  # Lindsey Stirling
-    'spotify:artist:137W8MRPWKqSmrBGDBFSop',  # Wiz Khalifa
-    'spotify:artist:1h6Cn3P4NGzXbaXidqURXs',  # Swedish House Mafia
-    'spotify:artist:5K4W6rqBFWDnAN6FQUkS6x',  # Kanye West
-    'spotify:artist:06HL4z0CvFAxyc27GXpf02',  # Taylor Swift
-    'spotify:artist:3gi5McAv9c0qTjJ5jSmbL0',  # A.L.I.S.O.N
-    'spotify:artist:3ifxHfYz2pqHku0bwx8H5J',  # Amtrac
-    'spotify:artist:2tEyBfwGBfQgLXeAJW0MgC',  # Baltra
-    'spotify:artist:7DuTB6wdzqFJGFLSH17k8e',  # Bhad Bhabie
-    'spotify:artist:5Nngx6kSXmrSiL248sEwmT',  # Calippo
-    'spotify:artist:4kYSro6naA4h99UJvo89HB',  # Cardi B
-    'spotify:artist:5wwnitxvqbrtiGk3QW3BuN',  # COMPUTER DATA
-    'spotify:artist:6eUKZXaKkcviH0Ku9w2n3V',  # Ed Sheeran
-    'spotify:artist:7HkdQ0gt53LP4zmHsL0nap',  # Ella Mai
-    'spotify:artist:1wzBqAvtFexgKHjt7i3ena',  # Fred V & Grafix
-    'spotify:artist:2exebQUDoIoT0dXA8BcN1P',  # Home
-    'spotify:artist:0nUF7iT0e6D5xEl743Jfu3',  # Icarus
-    'spotify:artist:1gPhS1zisyXr5dHTYZyiMe',  # Kevin Gates
-    'spotify:artist:3wyVrVrFCkukjdVIdirGVY',  # Lil Pump
-    'spotify:artist:4IDMgbEiCgt9G7PRN62mrV',  # Memorex Memories
-    'spotify:artist:1Ma3pJzPIrAyYPNRkp3SUF',  # Ross from Friends
-    'spotify:artist:5Pb27ujIyYb33zBqVysBkj',  # RUFUS DU SOL
-    'spotify:artist:6AUl0ykLLpvTktob97x9hO',  # Tee Grizzley
-    'spotify:artist:4LLpKhyESsyAXpc4laK94U',  # Mac Miller
-    'spotify:artist:7nwUJBm0HE4ZxD3f5cy5ok',  # Aretha Franklin
-
-    ## Coachella 2020
-    'spotify:artist:4r63FhuTkUYltbVAg5TQnk',  # DaBaby
-    'spotify:artist:2RqrWplViWHSGLzlhmDcbt',  # Yaeji
-    'spotify:artist:1KpCi9BOfviCVhmpI4G2sY',  # Tchami
-    'spotify:artist:6PfSUFtkMVoDkx4MQkzOi3',  # 100 gecs
-    'spotify:artist:4O15NlyKLIASxsJ0PrXPfz',  # Lil Uzi Vert
-    'spotify:artist:61lyPtntblHJvA7FMMhi7E',  # Duke Dumont
-    # 'spotify:artist:205i7E8fNVfojowcQSfK9m',  # Dom Dolla
-    # 'spotify:artist:6nxWCVXbOlEVRexSbLsTer',  # Flume
-    'spotify:artist:37hAfseJWi0G3Scife12Il',  # City Girls
-    'spotify:artist:1URnnhqYAYcrqrcwql10ft',  # 21 Savage
-
-    ## Artists from friends
-    'spotify:artist:6qgnBH6iDM91ipVXv28OMu',  # Kaytranada
-    'spotify:artist:7KGI0OwY8iAL5rI5p47YyK',  # Tora
-    'spotify:artist:2jldyAonkBDiBG0cNtLgZz',  # Richard Muller
-    'spotify:artist:7ltDVBr6mKbRvohxheJ9h1',  # Rosalia
-    'spotify:artist:4V8Sr092TqfHkfAA5fXXqG',  # Luis Fonsi
-    'spotify:artist:78pqktwsz3pr1uOZYe7tkH',  # Zuzana Navarová
-    'spotify:artist:0k17h0D3J5VfsdmQ1iZtE9',  # Pink Floyd
-    'spotify:artist:2Kx7MNY7cI1ENniW7vT30N',  # Norah Jones
-    'spotify:artist:0EeHVtSdrYibpGDVHjWEpe',  # Mannheim Steamroller
-    'spotify:artist:6uothxMWeLWIhsGeF7cyo4',  # Enya
-    'spotify:artist:3DmG65yHQsMms7WAvrZOdt',  # Enigma
-    'spotify:artist:562Od3CffWedyz2BbeYWVn',  # Mike Oldfield
-    'spotify:artist:3iCEJiyLrmF5bHH6w1vIz6',  # Amethystium
-    'spotify:artist:7C4sUpWGlTy7IANjruj02I',  # Peter Gabriel
-    'spotify:artist:3WrFJ7ztbogyGnTHbHJFl2',  # The Beatles
-    'spotify:artist:70cRZdQywnSFp9pnc2WTCE',  # Simon & Garfunkel
-    'spotify:artist:3lPQ2Fk5JOwGWAF3ORFCqH',  # John Mellencamp
-]
 NUM_TOP_TRACKS = 3
 
 
@@ -164,6 +84,8 @@ def get_top_track_uris(user):
     if isinstance(sp, str):
         return None
     output = []
+    my_managed_artists = [artist.spotify_artist_uri for artist in
+                          ManagedSpotifyArtist.query.filter_by(user_id=user.id).all()]
 
     # get liked tracks with artists that are in ARTISTS
     results = list()
@@ -178,11 +100,11 @@ def get_top_track_uris(user):
         track = item['track']
         artists = [artist['uri'] for artist in track['artists']]
         for artist in artists:
-            if artist in ARTISTS:
+            if artist in my_managed_artists:
                 output.append(create_csv_line(track))
 
     # get top 3 tracks for each artist in ARTISTS
-    for artist in ARTISTS:
+    for artist in my_managed_artists:
         for top_track in sp.artist_top_tracks(artist_id=artist)['tracks'][:NUM_TOP_TRACKS]:
             output.append(create_csv_line(top_track))
 
