@@ -34,7 +34,7 @@ class User(UserMixin, db.Model):
     # https://trello.com/1/authorize?expiration=never&name=zdone&scope=read,write&response_type=token&key=API_KEY
     trello_api_access_token = db.Column(db.String(128))
 
-    spotify_token_json = db.Column(db.String(512))
+    spotify_token_json = db.Column(db.String(1024))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
