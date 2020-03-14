@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from . import login
 
+
 # to run a db migration (in regular command line in zdone working directory):
 # flask db migrate -m "comment explaining model change"
 # flask db upgrade
@@ -47,6 +48,15 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
+
+
+class ManagedSpotifyArtist(db.Model):
+    __tablename__ = "managed_spotify_artists"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    spotify_artist_uri = db.Column(db.String(128), nullable=False)
+    spotify_artist_name = db.Column(db.String(128))
+    comment = db.Column(db.String(128))
 
 
 class TaskCompletion(db.Model):
