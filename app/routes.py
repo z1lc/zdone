@@ -11,7 +11,7 @@ from trello import TrelloClient
 from werkzeug.urls import url_parse
 
 from . import redis_client, app, db, socketio
-from .forms import LoginForm
+from .forms import LoginForm, RegistrationForm
 from .models import User, TaskCompletion
 from .spotify import get_artists, get_top_track_uris, play_track, maybe_get_spotify_authorize_url
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
@@ -41,6 +41,22 @@ def login():
             next_page = url_for('index')
         return redirect(next_page)
     return render_template('login.html', title='Sign In', form=form)
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        user.create_api_key()
+        db.session.add(user)
+        db.session.commit()
+        flash('Congratulations, you are now a registered user! Your API key has been set to ' + user.api_key + '.')
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Register', form=form)
 
 
 @app.route('/logout')
@@ -350,13 +366,14 @@ def maintenance():
 
 
 @app.route('/spotify/auth')
+@login_required
 def spotify_auth():
-    maybe_url = maybe_get_spotify_authorize_url(request.url)
+    maybe_url = maybe_get_spotify_authorize_url(request.url, user=current_user)
     if maybe_url:
         return redirect(maybe_url, 302)
     last_spotify_track = redis_client.get("last_spotify_track")
     if last_spotify_track:
-        play_track(request.url, last_spotify_track.decode())
+        play_track(request.url, last_spotify_track.decode(), current_user)
     return "successfully auth'd"
 
 
@@ -372,8 +389,9 @@ def spotify():
 
 
 @app.route('/spotify/anki_import')
+@login_required
 def spotify_anki_import():
-    return get_top_track_uris()
+    return get_top_track_uris(current_user)
 
 
 @app.route("/api/play_track")
@@ -395,6 +413,10 @@ def api_play_song():
 @app.route("/index")
 @login_required
 def index():
+    if not current_user.toodledo_token_json:
+        return "Toodledo auth not set for user {0}!".format(current_user.username)
+    if not current_user.habitica_user_id or not current_user.habitica_api_token:
+        return "Habitica auth not set for user {0}!".format(current_user.username)
     info = get_homepage_info(skew_sort="sort" in request.args)
     info['times']['minutes_total_rounded'] = \
         round(info['times']['minutes_allocated'] + info['times']['minutes_completed_today'])
