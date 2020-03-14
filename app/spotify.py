@@ -115,12 +115,12 @@ def get_top_track_uris(user):
 def create_csv_line(track):
     csv_line = "\""
     csv_line += track['uri'] + "\",\""
-    csv_line += track['name'] + "\",\""
+    csv_line += track['name'].replace('"', '\'') + "\",\""
     inner_artists = []
     for inner_artist in track['artists']:
         inner_artists.append(inner_artist['name'])
-    csv_line += ", ".join(inner_artists) + "\",\""
-    csv_line += track['album']['name'] + "\",\""
+    csv_line += ", ".join(inner_artists).replace('"', '\'') + "\",\""
+    csv_line += track['album']['name'].replace('"', '\'') + "\",\""
     csv_line += "<img src='" + track['album']['images'][0]['url'] + "'>\"\n"
     return csv_line
 
