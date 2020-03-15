@@ -2,43 +2,66 @@
 
 {% block within_head %}
 <style>
-    div#container {
-        width: 300px;
+    body {
+        max-width: 800px;
         margin: auto;
-        text-align: center;
     }
-
-    div.selection {
-        border: 2px solid black;
-        padding: 2px;
-        margin: 5px;
+    img {
+        max-width:800px;
+    }
+    table {
+        font-size: 0.8em;
+    }
+    td {
+        padding: 10px;
     }
 </style>
 <script>
-  function sleep(time) {
-    return new Promise((resolve) => setTimeout(resolve, time));
-  }
-
-  function answerQuestion(correct_artist, guess) {
-    let $sel = $('div.' + guess.split(" ")[0]);
-    if (correct_artist === guess) {
-      $sel.css("background-color", "green");
-      sleep(1000).then(() => {
-        location.reload();
-      });
-    } else {
-      $sel.css("background-color", "red");
+  function setArtistAndReload(newArtist) {
+    if (newArtist !== null && newArtist.startsWith('spotify:artist:')) {
+      $
+        .ajax({
+          contentType: "application/json",
+          data: JSON.stringify({
+            "new_artist_spotify_uri": newArtist
+          }),
+          type: "POST",
+          url: "/spotify/add_artist"
+        })
+        .done(function () {
+          document.location.reload(true);
+        });
     }
   }
 </script>
 {% endblock %}
 
 {% block body %}
-<div id="container">
-    Who is the artist?<br>
-    {% for artist in potential_artists %}
-    <div class="selection {{ artist }}" onclick="answerQuestion('{{ correct_artist }}', '{{ artist }}')">{{artist}}
-    </div>
-    {% endfor %}
-</div>
+<h1>Spotify + Anki</h1>
+<h2>How to Import new Songs</h2>
+Download the <a href="/spotify/anki_import">latest CSV of songs</a> (be patient, this may take up to a minute). In Anki, use File > Import..., select the downloaded CSV file, and use the "Spotify Track" note type:<br>
+<img src="/static/images/import_spotify_track.png">
+<h2>How this app works</h2>
+This app uses the concept of an "artist under management": this is an artist that you have decided you'd like to be familiar with. Once you add a selection of such artists (see below), the app will automatically import the top 3 most-popular songs from their <a href="https://support.spotify.com/us/using_spotify/features/artist-profile/">profile page</a>, as well as <a href="https://support.spotify.com/us/article/what-is-your-music/">any songs that you've liked</a> from that artist.
+<h2>Artists Under Management</h2>
+<table>
+    <tr>
+        <th>Artist URI</th>
+        <th>Artist Name</th>
+        <th>Date Added</th>
+        <th>Comment</th>
+    </tr>
+{% for managed_artist in managed_artists %}
+    <tr>
+        <td>{{ managed_artist.spotify_artist_uri }}</td>
+        <td>{{ managed_artist.spotify_artist_name }}</td>
+        <td>{{ managed_artist.date_added }}</td>
+        <td>{{ managed_artist.comment }}</td>
+    </tr>
+{% endfor %}
+</table>
+<button id="add_new_artist" onclick="setArtistAndReload(prompt('Spotify Artist URI:', ''));">Add New Artist</button>
+<h2>How to Add a New Artist</h2>
+Search for the artist you'd like to add and go to their artist page. Then, click the three dots, go to Share, and click "Copy Spotify URI". Then back on this page, click the "Add New Artist" button (above) and paste the code into the popup. See below for a screenshot.<br>
+<img src="/static/images/how_to_find_spotify_artist_uri.png">
 {% endblock %}

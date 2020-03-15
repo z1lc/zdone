@@ -12,7 +12,7 @@ from werkzeug.urls import url_parse
 
 from . import redis_client, app, db, socketio
 from .forms import LoginForm, RegistrationForm
-from .models import User, TaskCompletion
+from .models import User, TaskCompletion, ManagedSpotifyArtist
 from .spotify import get_artists, get_top_track_uris, play_track, maybe_get_spotify_authorize_url
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
@@ -377,11 +377,29 @@ def spotify_auth():
     return "successfully auth'd"
 
 
+@app.route('/spotify')
+@login_required
+def spotify_home():
+    return render_template('spotify.html',
+                           managed_artists=ManagedSpotifyArtist.query.filter_by(user_id=current_user.id).all())
+
+
+@app.route('/spotify/add_artist', methods=['POST'])
+@login_required
+def add_artist():
+    artist = ManagedSpotifyArtist(user_id=current_user.id,
+                                  spotify_artist_uri=request.get_json()["new_artist_spotify_uri"],
+                                  date_added=today())
+    db.session.add(artist)
+    db.session.commit()
+    return success()
+
+
 @app.route('/spotify/top_liked')
 def spotify():
     artists = get_artists()
     if isinstance(artists, dict):
-        return render_template('spotify.html',
+        return render_template('spotify_quick_quiz.html',
                                potential_artists=artists['artists'],
                                correct_artist=artists['correct_artist'])
     else:
@@ -422,10 +440,13 @@ def api_play_song():
 @app.route("/index")
 @login_required
 def index():
+    maybe_not_set = ""
     if not current_user.toodledo_token_json:
-        return "Toodledo auth not set for user {0}!".format(current_user.username)
+        maybe_not_set += "Toodledo auth not set for user {0}!<br>".format(current_user.username)
     if not current_user.habitica_user_id or not current_user.habitica_api_token:
-        return "Habitica auth not set for user {0}!".format(current_user.username)
+        maybe_not_set += "Habitica auth not set for user {0}!<br>".format(current_user.username)
+    if maybe_not_set:
+        return maybe_not_set + '<br>Looking for <a href="/spotify">Spotify</a>?'
     info = get_homepage_info(skew_sort="sort" in request.args)
     info['times']['minutes_total_rounded'] = \
         round(info['times']['minutes_allocated'] + info['times']['minutes_completed_today'])

@@ -1,6 +1,7 @@
 import uuid
 
 from flask_login import UserMixin
+from sqlalchemy import func, UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from . import db
@@ -56,7 +57,9 @@ class ManagedSpotifyArtist(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     spotify_artist_uri = db.Column(db.String(128), nullable=False)
     spotify_artist_name = db.Column(db.String(128))
+    date_added = db.Column(db.Date, nullable=False, server_default=func.current_date())
     comment = db.Column(db.String(128))
+    __table_args__ = (UniqueConstraint('user_id', 'spotify_artist_uri', name='_user_id_and_spotify_artist_uri'),)
 
 
 class TaskCompletion(db.Model):

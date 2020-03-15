@@ -2,7 +2,6 @@ body {
   max-width: 100%;
   font-family: "Open Sans", Arial, Helvetica, sans-serif;
   font-size: 20px;
-  line-height: 1.1em;
 }
 
 :focus {
@@ -18,6 +17,7 @@ body {
 div#app {
   max-width: 500px;
   margin: 0 auto;
+  line-height: 1.1em;
 }
 
 div#header {
