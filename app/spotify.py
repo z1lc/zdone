@@ -5,6 +5,7 @@ from random import randrange
 
 import spotipy
 from flask import redirect
+from sentry_sdk import capture_exception
 from spotipy import oauth2
 
 from app import kv, redis_client, db
@@ -28,6 +29,18 @@ def get_cached_token_info(sp_oauth, user):
             save_token_info(token_info, user)
         return token_info
     return None
+
+
+def populate_null_artists(user):
+    try:
+        unpopulated_artists = ManagedSpotifyArtist.query.filter_by(spotify_artist_name=None).all()
+        sp = get_spotify("", user)
+        for artist in unpopulated_artists:
+            artist.spotify_artist_name = sp.artist(artist.spotify_artist_uri)['name']
+        db.session.commit()
+    except Exception as e:
+        capture_exception(e)
+    return
 
 
 def maybe_get_spotify_authorize_url(full_url, user):

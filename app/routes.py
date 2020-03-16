@@ -13,7 +13,7 @@ from werkzeug.urls import url_parse
 from . import redis_client, app, db, socketio
 from .forms import LoginForm, RegistrationForm
 from .models import User, TaskCompletion, ManagedSpotifyArtist
-from .spotify import get_artists, get_top_track_uris, play_track, maybe_get_spotify_authorize_url
+from .spotify import get_artists, get_top_track_uris, play_track, maybe_get_spotify_authorize_url, populate_null_artists
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
 from .util import today
@@ -380,6 +380,7 @@ def spotify_auth():
 @app.route('/spotify')
 @login_required
 def spotify_home():
+    populate_null_artists(current_user)
     return render_template('spotify.html',
                            managed_artists=ManagedSpotifyArtist.query.filter_by(user_id=current_user.id).all())
 
