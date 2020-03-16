@@ -381,8 +381,11 @@ def spotify_auth():
 @login_required
 def spotify_home():
     populate_null_artists(current_user)
-    return render_template('spotify.html',
-                           managed_artists=ManagedSpotifyArtist.query.filter_by(user_id=current_user.id).all())
+    managed_artists = ManagedSpotifyArtist.query \
+        .filter_by(user_id=current_user.id) \
+        .order_by(ManagedSpotifyArtist.id.asc()) \
+        .all()
+    return render_template('spotify.html', managed_artists=managed_artists)
 
 
 @app.route('/spotify/add_artist', methods=['POST'])

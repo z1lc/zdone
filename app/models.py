@@ -59,6 +59,7 @@ class ManagedSpotifyArtist(db.Model):
     spotify_artist_name = db.Column(db.String(128))
     date_added = db.Column(db.Date, nullable=False, server_default=func.current_date())
     comment = db.Column(db.String(128))
+    num_top_tracks = db.Column(db.Integer, server_default='3')
     __table_args__ = (UniqueConstraint('user_id', 'spotify_artist_uri', name='_user_id_and_spotify_artist_uri'),)
 
 

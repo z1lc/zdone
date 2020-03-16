@@ -97,8 +97,7 @@ def get_top_track_uris(user):
     if isinstance(sp, str):
         return None
     output = []
-    my_managed_artists = [artist.spotify_artist_uri for artist in
-                          ManagedSpotifyArtist.query.filter_by(user_id=user.id).all()]
+    my_managed_artists = ManagedSpotifyArtist.query.filter_by(user_id=user.id).all()
 
     # get liked tracks with artists that are in ARTISTS
     results = list()
@@ -113,12 +112,12 @@ def get_top_track_uris(user):
         track = item['track']
         artists = [artist['uri'] for artist in track['artists']]
         for artist in artists:
-            if artist in my_managed_artists:
+            if artist in [artist.spotify_artist_uri for artist in my_managed_artists]:
                 output.append(create_csv_line(track))
 
     # get top 3 tracks for each artist in ARTISTS
     for artist in my_managed_artists:
-        for top_track in sp.artist_top_tracks(artist_id=artist)['tracks'][:NUM_TOP_TRACKS]:
+        for top_track in sp.artist_top_tracks(artist_id=artist.spotify_artist_uri)['tracks'][:artist.num_top_tracks]:
             output.append(create_csv_line(top_track))
 
     return "".join(set(output))
