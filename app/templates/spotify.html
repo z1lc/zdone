@@ -54,7 +54,7 @@ This app uses the concept of an "artist under management": this is an artist tha
     </tr>
 {% for managed_artist in managed_artists %}
     <tr>
-        <td>{{ managed_artist.spotify_artist_uri }}</td>
+        <td><code>{{ managed_artist.spotify_artist_uri }}</code></td>
         <td>{{ managed_artist.spotify_artist_name }}</td>
         <td>{{ managed_artist.date_added }}</td>
         <td>{{ managed_artist.comment }}</td>
