@@ -516,6 +516,34 @@ def api_update_task():
                     'reason': str(e)
                 }), 400
 
+@app.route('/api/add_task', methods=['POST'])
+def api_add_task():
+    user = validate_api_key(request.headers.get('x-api-key'))
+    if not user:
+        return api_key_failure()
+    else:
+        req = request.get_json()
+        if not req or "name" not in req or "due_date" not in req or "length_minutes" not in req:
+            return jsonify({
+                'result': 'failure',
+                'reason': 'Request body must be application/json with keys \'name\', \'due_date\', and \'length_minutes\'.'
+            }), 400
+        else:
+            name = req["name"]
+            due_date = req["due_date"]
+            length_minutes = req["length_minutes"]
+            try:
+                response = add_toodledo_task(name, due_date, length_minutes, user)
+                return jsonify({
+                    'result': 'success' if response.status_code == 200 else 'failure',
+                    'reason': '' if response.status_code == 200 else response.reason
+                }), response.status_code
+            except Exception as e:
+                return jsonify({
+                    'result': 'failure',
+                    'reason': str(e)
+                }), 400
+
 
 @app.route('/api/update_time', methods=['POST'])
 def api_update_time():
