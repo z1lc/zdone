@@ -142,7 +142,7 @@ def add_toodledo_task(name, due_date, length_minutes, user=current_user):
     }]
     endpoint = "http://api.toodledo.com/3/tasks/add.php?access_token={access_token}&tasks={tasks}".format(
         access_token=loads(user.toodledo_token_json)["access_token"], tasks=dumps(tasks))
-    requests.post(url=endpoint)
+    return requests.post(url=endpoint)
 
 
 def get_toodledo_tasks(redis_client, user=current_user) -> List[ZDTask]:
