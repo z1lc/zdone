@@ -516,6 +516,7 @@ def api_update_task():
                     'reason': str(e)
                 }), 400
 
+
 @app.route('/api/add_task', methods=['POST'])
 def api_add_task():
     user = validate_api_key(request.headers.get('x-api-key'))
@@ -526,7 +527,8 @@ def api_add_task():
         if not req or "name" not in req or "due_date" not in req or "length_minutes" not in req:
             return jsonify({
                 'result': 'failure',
-                'reason': 'Request body must be application/json with keys \'name\', \'due_date\', and \'length_minutes\'.'
+                'reason': 'Request body must be application/json with keys \'name\', \'due_date\', '
+                          'and \'length_minutes\'.'
             }), 400
         else:
             name = req["name"]
@@ -567,8 +569,3 @@ def api_update_time():
                     'result': 'failure',
                     'reason': str(e)
                 }), 400
-
-
-@app.route('/debug-sentry')
-def trigger_error():
-    division_by_zero = 1 / 0
