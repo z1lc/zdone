@@ -35,12 +35,11 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('spotify_track_uri', sa.String(length=128), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('current_datetime()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['spotify_track_uri'], ['spotify_tracks.uri'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_foreign_key(None, 'managed_spotify_artists', 'spotify_artists', ['spotify_artist_uri'], ['uri'])
     op.drop_column('managed_spotify_artists', 'spotify_artist_name')
     # ### end Alembic commands ###
 

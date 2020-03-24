@@ -81,7 +81,7 @@ class SpotifyPlay(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     spotify_track_uri = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, server_default=func.current_datetime())
+    created_at = db.Column(db.DateTime, nullable=False)
 
 
 class TaskCompletion(db.Model):
