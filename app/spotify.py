@@ -45,10 +45,10 @@ def add_or_get_artist(user, spotify_artist_uri):
 
 def populate_null_artists(user):
     try:
-        unpopulated_artists = ManagedSpotifyArtist.query.filter_by(spotify_artist_name=None).all()
+        unpopulated_artists = SpotifyArtist.query.filter_by(name='').all()
         sp = get_spotify("", user)
         for artist in unpopulated_artists:
-            artist.spotify_artist_name = sp.artist(artist.spotify_artist_uri)['name']
+            artist.name = sp.artist(artist.uri)['name']
         db.session.commit()
     except Exception as e:
         capture_exception(e)
@@ -98,7 +98,7 @@ def add_or_get_track(sp, track_uri):
         sp_track = sp.track(track_uri)
         track = SpotifyTrack(uri=track_uri,
                              name=sp_track['name'],
-                             spotify_artist_uri=track['artists'][0]['uri'],
+                             spotify_artist_uri=sp_track['artists'][0]['uri'],
                              duration_milliseconds=sp_track['duration_ms'])
         db.session.add(track)
         db.session.commit()
