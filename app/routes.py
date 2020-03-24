@@ -13,7 +13,8 @@ from werkzeug.urls import url_parse
 from . import redis_client, app, db, socketio
 from .forms import LoginForm, RegistrationForm
 from .models import User, TaskCompletion, ManagedSpotifyArtist
-from .spotify import get_artists, get_top_track_uris, play_track, maybe_get_spotify_authorize_url, populate_null_artists
+from .spotify import get_artists, get_top_track_uris, play_track, maybe_get_spotify_authorize_url, \
+    add_or_get_artist
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
 from .util import today
@@ -380,7 +381,6 @@ def spotify_auth():
 @app.route('/spotify')
 @login_required
 def spotify_home():
-    populate_null_artists(current_user)
     managed_artists = ManagedSpotifyArtist.query \
         .filter_by(user_id=current_user.id) \
         .order_by(ManagedSpotifyArtist.id.asc()) \
@@ -391,10 +391,11 @@ def spotify_home():
 @app.route('/spotify/add_artist', methods=['POST'])
 @login_required
 def add_artist():
-    artist = ManagedSpotifyArtist(user_id=current_user.id,
-                                  spotify_artist_uri=request.get_json()["new_artist_spotify_uri"],
-                                  date_added=today())
-    db.session.add(artist)
+    spotify_artist = add_or_get_artist(current_user, request.get_json()["new_artist_spotify_uri"])
+    managed_artist = ManagedSpotifyArtist(user_id=current_user.id,
+                                          spotify_artist_uri=spotify_artist.uri,
+                                          date_added=today())
+    db.session.add(managed_artist)
     db.session.commit()
     return success()
 

@@ -9,7 +9,8 @@ from sentry_sdk import capture_exception
 from spotipy import oauth2
 
 from app import kv, redis_client, db
-from app.models import ManagedSpotifyArtist
+from app.models import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay
+from app.util import today_datetime
 
 SCOPES = 'user-read-playback-state user-modify-playback-state user-library-read user-top-read'
 NUM_TOP_TRACKS = 3
@@ -29,6 +30,17 @@ def get_cached_token_info(sp_oauth, user):
             save_token_info(token_info, user)
         return token_info
     return None
+
+
+def add_or_get_artist(user, spotify_artist_uri):
+    artist = SpotifyArtist.query.filter_by(uri=spotify_artist_uri).one_or_none()
+    if not artist:
+        sp = get_spotify("", user)
+        artist_name = sp.artist(spotify_artist_uri)['name']
+        artist = SpotifyArtist(uri=spotify_artist_uri, name=artist_name)
+        db.session.add(artist)
+        db.session.commit()
+    return artist
 
 
 def populate_null_artists(user):
@@ -80,15 +92,33 @@ def get_spotify(full_url, user):
         return sp
 
 
+def add_or_get_track(sp, track_uri):
+    track = SpotifyTrack.query.filter_by(uri=track_uri).one_or_none()
+    if not track:
+        sp_track = sp.track(track_uri)
+        track = SpotifyTrack(uri=track_uri,
+                             name=sp_track['name'],
+                             spotify_artist_uri=track['artists'][0]['uri'],
+                             duration_milliseconds=sp_track['duration_ms'])
+        db.session.add(track)
+        db.session.commit()
+    return track
+
+
 def play_track(full_url, track_uri, user, offset=None):
     sp = get_spotify(full_url, user)
     if isinstance(sp, str):
         redis_client.set("last_spotify_track", track_uri.encode())
         redis_client.expire("last_spotify_track", timedelta(seconds=10))
         return redirect(sp)
-    track = sp.track(track_uri)
-    start = randrange(10000, track['duration_ms'] - 10000) if offset is None else offset
+    track = add_or_get_track(sp, track_uri)
+    start = randrange(10000, track.duration_milliseconds - 10000) if offset is None else offset
     sp.start_playback(uris=[track_uri], position_ms=start)
+    spotify_play = SpotifyPlay(user_id=user.id,
+                               spotify_track_uri=track.uri,
+                               created_at=today_datetime())
+    db.session.add(spotify_play)
+    db.session.commit()
     return ""
 
 

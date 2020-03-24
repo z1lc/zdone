@@ -55,12 +55,33 @@ class ManagedSpotifyArtist(db.Model):
     __tablename__ = "managed_spotify_artists"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    spotify_artist_uri = db.Column(db.String(128), nullable=False)
-    spotify_artist_name = db.Column(db.String(128))
+    spotify_artist_uri = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
     date_added = db.Column(db.Date, nullable=False, server_default=func.current_date())
     comment = db.Column(db.String(128))
     num_top_tracks = db.Column(db.Integer, server_default='3')
     __table_args__ = (UniqueConstraint('user_id', 'spotify_artist_uri', name='_user_id_and_spotify_artist_uri'),)
+
+
+class SpotifyArtist(db.Model):
+    __tablename__ = "spotify_artists"
+    uri = db.Column(db.String(128), primary_key=True)
+    name = db.Column(db.String(128), nullable=False)
+
+
+class SpotifyTrack(db.Model):
+    __tablename__ = "spotify_tracks"
+    uri = db.Column(db.String(128), primary_key=True)
+    name = db.Column(db.String(1024), nullable=False)
+    spotify_artist_uri = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
+    duration_milliseconds = db.Column(db.Integer, nullable=False)
+
+
+class SpotifyPlay(db.Model):
+    __tablename__ = "spotify_plays"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    spotify_track_uri = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, server_default=func.current_datetime())
 
 
 class TaskCompletion(db.Model):
