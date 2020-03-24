@@ -14,7 +14,7 @@ from . import redis_client, app, db, socketio
 from .forms import LoginForm, RegistrationForm
 from .models import User, TaskCompletion, ManagedSpotifyArtist, SpotifyArtist
 from .spotify import get_artists, get_top_track_uris, play_track, maybe_get_spotify_authorize_url, \
-    add_or_get_artist, populate_null_artists
+    add_or_get_artist, populate_null_artists, get_spotify
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
 from .util import today
@@ -398,7 +398,7 @@ def spotify_home():
 @app.route('/spotify/add_artist', methods=['POST'])
 @login_required
 def add_artist():
-    spotify_artist = add_or_get_artist(current_user, request.get_json()["new_artist_spotify_uri"])
+    spotify_artist = add_or_get_artist(get_spotify("", current_user), request.get_json()["new_artist_spotify_uri"])
     managed_artist = ManagedSpotifyArtist(user_id=current_user.id,
                                           spotify_artist_uri=spotify_artist.uri,
                                           date_added=today())

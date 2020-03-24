@@ -32,10 +32,9 @@ def get_cached_token_info(sp_oauth, user):
     return None
 
 
-def add_or_get_artist(user, spotify_artist_uri):
+def add_or_get_artist(sp, spotify_artist_uri):
     artist = SpotifyArtist.query.filter_by(uri=spotify_artist_uri).one_or_none()
     if not artist:
-        sp = get_spotify("", user)
         artist_name = sp.artist(spotify_artist_uri)['name']
         artist = SpotifyArtist(uri=spotify_artist_uri, name=artist_name)
         db.session.add(artist)
@@ -96,9 +95,10 @@ def add_or_get_track(sp, track_uri):
     track = SpotifyTrack.query.filter_by(uri=track_uri).one_or_none()
     if not track:
         sp_track = sp.track(track_uri)
+        spotify_artist = add_or_get_artist(sp, sp_track['artists'][0]['uri'])
         track = SpotifyTrack(uri=track_uri,
                              name=sp_track['name'],
-                             spotify_artist_uri=sp_track['artists'][0]['uri'],
+                             spotify_artist_uri=spotify_artist.uri,
                              duration_milliseconds=sp_track['duration_ms'])
         db.session.add(track)
         db.session.commit()
