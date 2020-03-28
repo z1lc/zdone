@@ -366,6 +366,12 @@ def maintenance():
                            api_key=current_user.api_key)
 
 
+@app.route('/privacy/')
+@login_required
+def privacy():
+    return render_template('privacy.html')
+
+
 @app.route('/spotify/auth')
 @login_required
 def spotify_auth():
@@ -384,7 +390,7 @@ def populate():
     populate_null_artists(current_user)
 
 
-@app.route('/spotify')
+@app.route('/spotify/')
 @login_required
 def spotify_home():
     managed_artists = db.session.query(ManagedSpotifyArtist, SpotifyArtist) \
@@ -407,7 +413,7 @@ def add_artist():
     return success()
 
 
-@app.route('/spotify/top_liked')
+@app.route('/spotify/top_liked/')
 def spotify():
     artists = get_artists()
     if isinstance(artists, dict):
@@ -418,7 +424,7 @@ def spotify():
         return artists
 
 
-@app.route('/spotify/anki_import')
+@app.route('/spotify/anki_import/')
 @login_required
 def spotify_anki_import():
     maybe_uris = get_top_track_uris(current_user)
