@@ -13,7 +13,7 @@ from werkzeug.urls import url_parse
 from . import redis_client, app, db, socketio
 from .forms import LoginForm, RegistrationForm
 from .models import User, TaskCompletion, ManagedSpotifyArtist, SpotifyArtist
-from .spotify import get_artists, get_top_track_uris, play_track, maybe_get_spotify_authorize_url, \
+from .spotify import get_artists, get_anki_csv, play_track, maybe_get_spotify_authorize_url, \
     populate_null_artists, migrate_legacy_artists, follow_unfollow_artists, \
     do_add_artist
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
@@ -427,12 +427,12 @@ def spotify():
 @app.route('/spotify/anki_import/')
 @login_required
 def spotify_anki_import():
-    maybe_uris = get_top_track_uris(current_user)
+    maybe_uris = get_anki_csv(current_user)
     if not maybe_uris:
         return "User {0} is not authenticated. If you'd like to auth, please go to " \
                "<a href='/spotify/auth'>/spotify/auth</a>.".format(current_user.username)
     else:
-        output = make_response(get_top_track_uris(current_user))
+        output = make_response(maybe_uris)
         output.headers["Content-Disposition"] = "attachment; filename=spotify_songs_as_anki_notes.csv"
         output.headers["Content-type"] = "text/csv"
         return output

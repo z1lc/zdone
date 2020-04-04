@@ -192,7 +192,7 @@ def play_track(full_url, track_uri, user, offset=None):
     return ""
 
 
-def get_top_track_uris(user):
+def get_tracks(user):
     sp = get_spotify("zdone", user)
     if isinstance(sp, str):
         return None
@@ -213,15 +213,19 @@ def get_top_track_uris(user):
         artists = [artist['uri'] for artist in track['artists']]
         for artist in artists:
             if artist in [artist.spotify_artist_uri for artist in my_managed_artists]:
-                output.append(create_csv_line(track))
+                output.append(track)
 
     # get top 3 tracks for each artist in ARTISTS
     for artist in my_managed_artists:
         for top_track in sp.artist_top_tracks(artist_id=artist.spotify_artist_uri)['tracks'][:artist.num_top_tracks]:
-            output.append(create_csv_line(top_track))
+            output.append(top_track)
 
-    return "".join(set(output))
-    # return sp.artist_top_tracks(artist_id=artists[0])
+    return output
+
+
+def get_anki_csv(user):
+    tracks = get_tracks(user)
+    return "".join(set([create_csv_line(track) for track in tracks]))
 
 
 def create_csv_line(track):

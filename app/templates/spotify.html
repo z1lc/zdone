@@ -29,17 +29,15 @@ This app uses the concept of an "artist under management": this is an artist tha
 <h2>Artists Under Management</h2>
 <table>
     <tr>
-        <th>Artist URI</th>
         <th>Artist Name</th>
         <th>Date Added</th>
-        <th>Comment</th>
+        <th>Number of Top Tracks</th>
     </tr>
 {% for managed_artist, artist in managed_artists %}
     <tr>
-        <td><code>{{ managed_artist.spotify_artist_uri }}</code></td>
         <td>{{ artist.name }}</td>
         <td>{{ managed_artist.date_added }}</td>
-        <td>{{ managed_artist.comment }}</td>
+        <td>{{ managed_artist.num_top_tracks }}</td>
     </tr>
 {% endfor %}
 </table>
