@@ -17,24 +17,6 @@
         padding: 10px;
     }
 </style>
-<script>
-  function setArtistAndReload(newArtist) {
-    if (newArtist !== null && newArtist.startsWith('spotify:artist:')) {
-      $
-        .ajax({
-          contentType: "application/json",
-          data: JSON.stringify({
-            "new_artist_spotify_uri": newArtist
-          }),
-          type: "POST",
-          url: "/spotify/add_artist"
-        })
-        .done(function () {
-          document.location.reload(true);
-        });
-    }
-  }
-</script>
 {% endblock %}
 
 {% block body %}
@@ -61,8 +43,7 @@ This app uses the concept of an "artist under management": this is an artist tha
     </tr>
 {% endfor %}
 </table>
-<button id="add_new_artist" onclick="setArtistAndReload(prompt('Spotify Artist URI:', ''));">Add New Artist</button>
 <h2>How to Add a New Artist</h2>
-Search for the artist you'd like to add and go to their artist page. Then, click the three dots, go to Share, and click "Copy Spotify URI". Then back on this page, click the "Add New Artist" button (above) and paste the code into the popup. See below for a screenshot.<br>
-<img src="/static/images/how_to_find_spotify_artist_uri.png">
+Search for the artist you'd like to add and go to their artist page. Then, click follow. See below for a screenshot.<br>
+<img src="/static/images/how_to_find_spotify_follow_button.png">
 {% endblock %}
