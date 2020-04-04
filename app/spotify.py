@@ -12,7 +12,19 @@ from app import kv, redis_client, db
 from app.models import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay
 from app.util import today_datetime
 
-SCOPES = 'user-read-playback-state user-modify-playback-state user-library-read user-top-read'
+SCOPES = 'user-read-playback-state ' \
+         'user-modify-playback-state ' \
+         'user-read-currently-playing ' \
+         'user-library-read ' \
+         'user-top-read ' \
+         'user-read-playback-position ' \
+         'user-read-recently-played ' \
+         'user-follow-read ' \
+         'user-follow-modify ' \
+         'playlist-read-collaborative ' \
+         'playlist-modify-public ' \
+         'playlist-read-private ' \
+         'playlist-modify-private'
 NUM_TOP_TRACKS = 3
 
 
