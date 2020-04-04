@@ -10,10 +10,59 @@ from spotipy import oauth2
 
 from app import kv, redis_client, db
 from app.models import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay
-from app.util import today_datetime
+from app.util import today_datetime, today
 
-SCOPES = 'user-read-playback-state user-modify-playback-state user-library-read user-top-read'
+SCOPES = 'user-read-playback-state ' \
+         'user-modify-playback-state ' \
+         'user-read-currently-playing ' \
+         'user-library-read ' \
+         'user-top-read ' \
+         'user-read-playback-position ' \
+         'user-read-recently-played ' \
+         'user-follow-read ' \
+         'user-follow-modify ' \
+         'playlist-read-collaborative ' \
+         'playlist-modify-public ' \
+         'playlist-read-private ' \
+         'playlist-modify-private'
 NUM_TOP_TRACKS = 3
+
+
+def migrate_legacy_artists(user):
+    legacy_artists = ManagedSpotifyArtist.query.filter_by(
+        legacy='true',
+        user_id=user.id
+    ).all()
+    if legacy_artists:
+        sp = get_spotify("", user)
+        for artist in legacy_artists:
+            sp.user_follow_artists(ids=[artist.spotify_artist_uri.split("spotify:artist:")[1]])
+            artist.legacy = False
+        db.session.commit()
+
+
+def follow_unfollow_artists(user):
+    legacy_artists = ManagedSpotifyArtist.query.filter_by(
+        legacy='true',
+        user_id=user.id
+    ).all()
+    # just in case, don't do follow/unfollow in case the person has legacy artists
+    if legacy_artists:
+        return
+    sp = get_spotify("", user)
+    results = list()
+    last_artist_id = None
+    while True:
+        if not last_artist_id:
+            saved = sp.current_user_followed_artists(limit=50)
+        else:
+            saved = sp.current_user_followed_artists(limit=50, after=last_artist_id)
+        results.extend(saved['artists']['items'])
+        last_artist_id = saved['artists']['cursors']['after']
+        if not last_artist_id:
+            break
+    do_add_artist(user, [artist['uri'] for artist in results], True)
+    return
 
 
 def save_token_info(token_info, user):
@@ -103,6 +152,27 @@ def add_or_get_track(sp, track_uri):
         db.session.add(track)
         db.session.commit()
     return track
+
+
+def do_add_artist(user, artist_uris, remove_not_included=False):
+    sp = get_spotify("", user)
+    existing_managed_artists = [msa.spotify_artist_uri for msa in ManagedSpotifyArtist.query.filter_by(user_id=user.id).all()]
+    to_add = set(artist_uris).difference(set(existing_managed_artists))
+    for artist_uri in to_add:
+        spotify_artist = add_or_get_artist(sp, artist_uri)
+        managed_artist = ManagedSpotifyArtist(user_id=user.id,
+                                              spotify_artist_uri=spotify_artist.uri,
+                                              legacy=False,
+                                              date_added=today())
+        db.session.add(managed_artist)
+
+    if remove_not_included:
+        to_remove = set(existing_managed_artists).difference(set(artist_uris))
+        for artist_uri in to_remove:
+            msa = ManagedSpotifyArtist.query.filter_by(user_id=user.id, spotify_artist_uri=artist_uri).one()
+            msa.following = False
+
+    db.session.commit()
 
 
 def play_track(full_url, track_uri, user, offset=None):
