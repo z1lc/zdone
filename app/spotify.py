@@ -156,9 +156,12 @@ def add_or_get_track(sp, track_uri):
 
 def do_add_artist(user, artist_uris, remove_not_included=False):
     sp = get_spotify("", user)
-    existing_managed_artists = [msa.spotify_artist_uri for msa in
-                                ManagedSpotifyArtist.query.filter_by(user_id=user.id).all()]
-    to_add = set(artist_uris).difference(set(existing_managed_artists))
+    existing_managed_artist_uris = [msa.spotify_artist_uri for msa in
+                                    ManagedSpotifyArtist.query.filter_by(user_id=user.id).all()]
+    currently_unfollowed_managed_artist_uris = [msa.spotify_artist_uri for msa in
+                                                ManagedSpotifyArtist.query.filter_by(user_id=user.id,
+                                                                                     following='false').all()]
+    to_add = set(artist_uris).difference(set(existing_managed_artist_uris))
     for artist_uri in to_add:
         spotify_artist = add_or_get_artist(sp, artist_uri)
         managed_artist = ManagedSpotifyArtist(user_id=user.id,
@@ -167,8 +170,13 @@ def do_add_artist(user, artist_uris, remove_not_included=False):
                                               date_added=today())
         db.session.add(managed_artist)
 
+    to_follow = set(artist_uris).intersection(set(currently_unfollowed_managed_artist_uris))
+    for artist_uri in to_follow:
+        artist = ManagedSpotifyArtist.query.filter_by(user_id=user.id, spotify_artist_uri=artist_uri).one()
+        artist.following = True
+
     if remove_not_included:
-        to_remove = set(existing_managed_artists).difference(set(artist_uris))
+        to_remove = set(existing_managed_artist_uris).difference(set(artist_uris))
         for artist_uri in to_remove:
             msa = ManagedSpotifyArtist.query.filter_by(user_id=user.id, spotify_artist_uri=artist_uri).one()
             msa.following = False
@@ -198,7 +206,7 @@ def get_tracks(user):
     if isinstance(sp, str):
         return None
     output = []
-    my_managed_artists = ManagedSpotifyArtist.query.filter_by(user_id=user.id).all()
+    my_managed_artists = ManagedSpotifyArtist.query.filter_by(user_id=user.id, following='true').all()
 
     # get liked tracks with artists that are in ARTISTS
     results = list()
