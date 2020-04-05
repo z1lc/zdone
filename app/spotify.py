@@ -221,6 +221,8 @@ def get_tracks(user):
         for top_track in sp.artist_top_tracks(artist_id=artist.spotify_artist_uri)['tracks'][:artist.num_top_tracks]:
             output.append(top_track)
 
+    for track in output:
+        add_or_get_track(sp, track['uri'])
     return output
 
 
