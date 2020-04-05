@@ -13,9 +13,9 @@ from werkzeug.urls import url_parse
 from . import redis_client, app, db, socketio
 from .forms import LoginForm, RegistrationForm
 from .models import User, TaskCompletion, ManagedSpotifyArtist, SpotifyArtist
-from .spotify import get_artists, get_anki_csv, play_track, maybe_get_spotify_authorize_url, \
+from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, \
     populate_null_artists, migrate_legacy_artists, follow_unfollow_artists, \
-    do_add_artist
+    do_add_artist, get_random_song_family
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
 from .util import today
@@ -414,8 +414,19 @@ def add_artist():
 
 
 @app.route('/spotify/top_liked/')
-def spotify():
-    artists = get_artists()
+def spotify_top_liked():
+    artists = get_top_liked()
+    if isinstance(artists, dict):
+        return render_template('spotify_quick_quiz.html',
+                               potential_artists=artists['artists'],
+                               correct_artist=artists['correct_artist'])
+    else:
+        return artists
+
+
+@app.route('/spotify/family/')
+def spotify_family():
+    artists = get_random_song_family()
     if isinstance(artists, dict):
         return render_template('spotify_quick_quiz.html',
                                potential_artists=artists['artists'],

@@ -30,6 +30,13 @@
       $sel.css("background-color", "red");
     }
   }
+
+  function showAnswer(artist) {
+    $('div#answer').text(artist);
+    sleep(1000).then(() => {
+      location.reload();
+    });
+  }
 </script>
 {% endblock %}
 
@@ -37,8 +44,9 @@
 <div id="container">
     Who is the artist?<br>
     {% for artist in potential_artists %}
-    <div class="selection {{ artist }}" onclick="answerQuestion('{{ correct_artist }}', '{{ artist }}')">{{artist}}
-    </div>
+{#    <div class="selection {{ artist }}" onclick="answerQuestion('{{ correct_artist }}', '{{ artist }}')">{{artist}}</div>#}
+        <div id="answer" class="selection" onclick="showAnswer('{{ artist }}')">Show Answer</div>
     {% endfor %}
+
 </div>
 {% endblock %}

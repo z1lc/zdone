@@ -9,7 +9,7 @@ from sentry_sdk import capture_exception
 from spotipy import oauth2
 
 from app import kv, redis_client, db
-from app.models import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay
+from app.models import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay, User
 from app.util import today_datetime, today
 
 SCOPES = 'user-read-playback-state ' \
@@ -156,7 +156,8 @@ def add_or_get_track(sp, track_uri):
 
 def do_add_artist(user, artist_uris, remove_not_included=False):
     sp = get_spotify("", user)
-    existing_managed_artists = [msa.spotify_artist_uri for msa in ManagedSpotifyArtist.query.filter_by(user_id=user.id).all()]
+    existing_managed_artists = [msa.spotify_artist_uri for msa in
+                                ManagedSpotifyArtist.query.filter_by(user_id=user.id).all()]
     to_add = set(artist_uris).difference(set(existing_managed_artists))
     for artist_uri in to_add:
         spotify_artist = add_or_get_artist(sp, artist_uri)
@@ -241,44 +242,57 @@ def create_csv_line(track):
     return csv_line
 
 
-def get_artists():
-    username = "rsanek"
-    sp_oauth = oauth2.SpotifyOAuth(
-        scope=SCOPES,
-        client_id="03f34cada5cc46a5929be06ff7532321",
-        client_secret=kv.get('SPOTIFY_CLIENT_SECRET'),
-        redirect_uri="https://www.zdone.co",
-        cache_path=".cache-" + username)
+def get_top_liked():
+    sp = get_spotify("", User.query.filter_by(username="rsanek").one())
+    results = sp.current_user_saved_tracks(limit=50)
+    artists = []
+    tracks = []
+    for item in results['items']:
+        track = item['track']
+        artists.append(track['artists'][0]['name'])
+        tracks.append(track)
 
-    token_info = sp_oauth.get_cached_token()
-    # code = sp_oauth.parse_response_code("[url]")
-    # token_info = sp_oauth.get_access_token(code)
+    selected_track = random.choice(tracks)
+    sp.start_playback(uris=[selected_track['uri']], position_ms=20000)
+    correct_artist = selected_track['artists'][0]['name']
 
-    if not token_info:
-        auth_url = sp_oauth.get_authorize_url()
-        return "Go to: " + auth_url
-    else:
-        sp = spotipy.Spotify(auth=token_info['access_token'])
-        results = sp.current_user_saved_tracks(limit=50)
-        artists = []
-        tracks = []
-        for item in results['items']:
-            track = item['track']
-            artists.append(track['artists'][0]['name'])
-            tracks.append(track)
+    final_artists = [correct_artist]
+    while len(final_artists) < 8:
+        maybe_artist = random.choice(artists)
+        if maybe_artist not in final_artists:
+            final_artists.append(maybe_artist)
 
-        selected_track = random.choice(tracks)
-        sp.start_playback(uris=[selected_track['uri']], position_ms=20000)
-        correct_artist = selected_track['artists'][0]['name']
+    random.shuffle(final_artists)
+    return {
+        "artists": final_artists,
+        "correct_artist": correct_artist
+    }
 
-        final_artists = [correct_artist]
-        while len(final_artists) < 8:
-            maybe_artist = random.choice(artists)
-            if maybe_artist not in final_artists:
-                final_artists.append(maybe_artist)
 
-        random.shuffle(final_artists)
-        return {
-            "artists": final_artists,
-            "correct_artist": correct_artist
-        }
+def get_random_song_family():
+    user_ids = [1, 4, 5]
+    user_id = random.choice(user_ids)
+    managed_artist = random.choice(ManagedSpotifyArtist.query.filter_by(following='true', user_id=user_id).all())
+    artist = SpotifyArtist.query.filter_by(uri=managed_artist.spotify_artist_uri).one()
+    song = random.choice(SpotifyTrack.query.filter_by(spotify_artist_uri=managed_artist.spotify_artist_uri).all())
+    sp = get_spotify("", User.query.filter_by(username="vsanek").one())
+    sp.start_playback(uris=[song.uri], position_ms=20000)
+    correct_artist = artist.name
+
+    random_artists_all_users = [pair[1].name for pair in
+                                db.session.query(ManagedSpotifyArtist, SpotifyArtist)
+                                    .join(ManagedSpotifyArtist)
+                                    .filter(ManagedSpotifyArtist.user_id.in_(user_ids))
+                                    .all()]
+
+    final_artists = [correct_artist]
+    while len(final_artists) < 8:
+        maybe_artist = random.choice(random_artists_all_users)
+        if maybe_artist not in final_artists:
+            final_artists.append(maybe_artist)
+
+    random.shuffle(final_artists)
+    return {
+        "artists": [correct_artist],
+        "correct_artist": correct_artist
+    }
