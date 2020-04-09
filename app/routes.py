@@ -399,7 +399,6 @@ def spotify_home():
     if current_user.spotify_token_json == '':
         return redirect("/spotify/auth", 302)
     follow_unfollow_artists(current_user)
-    update_last_fm_scrobble_counts(current_user)
     managed_artists = db.session.query(ManagedSpotifyArtist, SpotifyArtist) \
         .join(ManagedSpotifyArtist) \
         .filter_by(user_id=current_user.id, following=True) \
@@ -407,6 +406,7 @@ def spotify_home():
         .all()
     artists_dict = defaultdict(lambda: 0)
     if "total_track_counts" in request.args:
+        update_last_fm_scrobble_counts(current_user)
         uris = []
         for track in get_tracks(current_user):
             for artist in track['artists']:

@@ -3,8 +3,8 @@ import random
 from datetime import timedelta
 from random import randrange
 
-import pylast
 import pytz
+import requests
 import spotipy
 from flask import redirect
 from sentry_sdk import capture_exception
@@ -51,9 +51,17 @@ def update_last_fm_scrobble_counts(user):
     if user.last_fm_last_refresh_time is None or \
             pytz.timezone('US/Pacific').localize(user.last_fm_last_refresh_time) < (
             today_datetime() - timedelta(days=7)):
-        lastfm = pylast.LastFMNetwork(api_key=kv.get('LAST_FM_API_KEY'))
-        name_to_plays = {top_artist.item.name.lower(): top_artist.weight for top_artist in
-                         lastfm.get_user(user.last_fm_username).get_top_artists(limit=999)}  # TODO: paginate
+        done = False
+        page = 1
+        name_to_plays = {}
+        while not done:
+            top_artists_batch = json.loads(requests.get(
+                f"https://ws.audioscrobbler.com/2.0/?method=user.gettopartists&user={user.last_fm_username}"
+                f"&api_key={kv.get('LAST_FM_API_KEY')}&format=json&limit=1000&page={str(page)}").text)
+            page += 1
+            done = page >= int(top_artists_batch['topartists']['@attr']['totalPages'])
+            for artist in top_artists_batch['topartists']['artist']:
+                name_to_plays[artist['name'].lower()] = artist['playcount']
         for managed_spotify_artist, spotify_artist in db.session.query(ManagedSpotifyArtist, SpotifyArtist) \
                 .join(ManagedSpotifyArtist) \
                 .filter_by(user_id=user.id) \
