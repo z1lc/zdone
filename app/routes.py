@@ -17,7 +17,7 @@ from .forms import LoginForm, RegistrationForm
 from .models import User, TaskCompletion, ManagedSpotifyArtist, SpotifyArtist
 from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, \
     populate_null_artists, follow_unfollow_artists, \
-    get_random_song_family, get_tracks, update_last_fm_scrobble_counts
+    get_random_song_family, get_tracks, update_last_fm_scrobble_counts, get_top_recommendations
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
 from .util import today
@@ -418,9 +418,11 @@ def spotify_home():
                  managed_artist, artist in managed_artists]
     # TODO: add suggested artists to follow, perhaps based on artists you already listen to
     #  or have multiple liked songs from
+    recommendations = get_top_recommendations(current_user)[:3]
     return render_template('spotify.html',
                            managed_artists=to_return,
-                           totals_given="total_track_counts" in request.args)
+                           totals_given="total_track_counts" in request.args,
+                           recommendations=recommendations)
 
 
 @app.route('/spotify/top_liked/')

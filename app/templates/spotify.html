@@ -53,6 +53,10 @@ This app uses the concept of an "artist under management": this is an artist tha
 {% endfor %}
 </tbody>
 </table>
+    Other popular artists include
+{% for i in range(0, recommendations|length) %}
+    {% set name, uri = recommendations[i] %}
+    <a href="https://open.spotify.com/artist/{{ uri }}">{{ name }}</a>{% if i == 0 %}, {% elif i == 1 %}, and {% else %}{% endif %}{% endfor %}.
 <h2>How to Add a New Artist</h2>
 Search for the artist you'd like to add and go to their artist page. Then, click follow. See below for a screenshot.<br>
 <img src="/static/images/how_to_find_spotify_follow_button.png">

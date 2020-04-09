@@ -313,5 +313,21 @@ def get_random_song_family():
         "correct_artist": correct_artist
     }
 
+
+def get_top_recommendations(user):
+    prepared_sql = f"""with my_artists as (select spotify_artist_uri
+from managed_spotify_artists
+where user_id = {user.id}),
+    grouped as (select name, uri, count(*), sum(last_fm_scrobbles)
+                from managed_spotify_artists
+                         join spotify_artists sa on managed_spotify_artists.spotify_artist_uri = sa.uri
+                where last_fm_scrobbles is not null
+                group by 1, 2
+                order by 3 desc, 4 desc)
+select *
+from grouped
+where uri not in (select * from my_artists)"""
+    return [(row[0], row[1].split("spotify:artist:")[1]) for row in db.engine.execute(prepared_sql)]
+
 # TODO: create Spotify playlist(s) for songs from managed artists you haven't yet listened to (as a way to promote
 #  knowing an artist's full catalogue)
