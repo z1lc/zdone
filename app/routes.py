@@ -436,6 +436,11 @@ def spotify_top_liked():
         return artists
 
 
+@app.route('/spotify/help/')
+def spotify_help():
+    return render_template('help.html')
+
+
 @app.route('/spotify/family/')
 def spotify_family():
     artists = get_random_song_family()

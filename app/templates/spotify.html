@@ -4,9 +4,14 @@
     <link rel="stylesheet" href="//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
     <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
     <script>
-      $(document).ready( function () {
-        $('#managed_artists_table').dataTable({"lengthChange": false});
-      } );
+      $(document).ready(function () {
+        $('#managed_artists_table').dataTable({
+          "lengthChange": false,
+          "language": {
+            "info": "Showing _START_ to _END_ of _TOTAL_ artists"
+          }
+        });
+      });
     </script>
 <style>
     body {
@@ -14,19 +19,13 @@
         margin: auto;
         padding: 20px;
     }
-    img {
-        max-width: 100%;
-    }
 </style>
 {% endblock %}
 
 {% block body %}
 <h1>Spotify + Anki</h1>
-<h2>How to Import new Songs</h2>
-Download the <a href="/spotify/anki_import">latest CSV of songs</a> (be patient, this may take up to a minute). In Anki, use File > Import..., select the downloaded CSV file, and use the "Spotify Track" note type:<br>
-<img src="/static/images/import_spotify_track.png">
-<h2>How this app works</h2>
-This app uses the concept of an "artist under management": this is an artist that you have decided you'd like to be familiar with. Once you add a selection of such artists (see below), the app will automatically import the top 3 most-popular songs from their <a href="https://support.spotify.com/us/using_spotify/features/artist-profile/">profile page</a>, as well as <a href="https://support.spotify.com/us/article/what-is-your-music/">any songs that you've liked</a> from that artist.
+    Looking for <a href="/spotify/help">Help</a>?<br>
+    Download the <a href="/spotify/anki_import">latest CSV of songs</a> (be patient, this may take up to a minute).
 <h2><a name="AUM">Artists Under Management</a></h2>
     {% if not totals_given %}
         <a href="?total_track_counts#AUM">Show total track count for artists</a> (includes top + liked; warning, this will take a while)
@@ -53,11 +52,8 @@ This app uses the concept of an "artist under management": this is an artist tha
 {% endfor %}
 </tbody>
 </table>
-    Other popular artists include
+    Artists popular with other Spotify + Anki users include
 {% for i in range(0, recommendations|length) %}
     {% set name, uri = recommendations[i] %}
     <a href="https://open.spotify.com/artist/{{ uri }}">{{ name }}</a>{% if i == 0 %}, {% elif i == 1 %}, and {% else %}{% endif %}{% endfor %}.
-<h2>How to Add a New Artist</h2>
-Search for the artist you'd like to add and go to their artist page. Then, click follow. See below for a screenshot.<br>
-<img src="/static/images/how_to_find_spotify_follow_button.png">
 {% endblock %}
