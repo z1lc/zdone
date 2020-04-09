@@ -38,6 +38,9 @@ class User(UserMixin, db.Model):
 
     spotify_token_json = db.Column(db.String(1024))
 
+    last_fm_username = db.Column(db.String(128), unique=True)
+    last_fm_last_refresh_time = db.Column(db.DateTime)
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -60,6 +63,7 @@ class ManagedSpotifyArtist(db.Model):
     comment = db.Column(db.String(128))
     num_top_tracks = db.Column(db.Integer, server_default='3')
     following = db.Column(db.Boolean, server_default='true')
+    last_fm_scrobbles = db.Column(db.Integer, nullable=True)
     __table_args__ = (UniqueConstraint('user_id', 'spotify_artist_uri', name='_user_id_and_spotify_artist_uri'),)
 
     def get_bare_uri(self):
