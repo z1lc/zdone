@@ -8,7 +8,7 @@
         $('#managed_artists_table').dataTable({
           "lengthChange": false,
           "language": {
-            "info": "Showing _START_ to _END_ of _TOTAL_ artists"
+            "info": "Showing _START_ to _END_ of _TOTAL_ managed artists"
           }
         });
       });
@@ -33,11 +33,13 @@
 <table id="managed_artists_table">
 <thead>
     <tr>
-        <th>Artist Name</th>
-        <th>Lifetime Plays</th>
-        <th>Date Added</th>
-        <th>Number of Top Tracks</th>
-        {% if totals_given %}<th>Number of Total Tracks</th>{% endif %}
+        <th>Artist</th>
+        <th>Plays</th>
+        <th>Added</th>
+        <th>Top Tracks</th>
+        {% if totals_given %}
+            <th>Total Tracks</th>
+        {% endif %}
     </tr>
 </thead>
 <tbody>
@@ -47,7 +49,9 @@
         <td class="dt-body-right">{% if plays %}{{ plays }}{% endif %}</td>
         <td class="dt-body-right">{{ date_added }}</td>
         <td class="dt-body-right">{{ num_top_tracks }}</td>
-        {% if totals_given %}<td class="dt-body-right">{{ num_total_tracks }}</td>{% endif %}
+        {% if totals_given %}
+            <td class="dt-body-right">{{ num_total_tracks }}</td>
+        {% endif %}
     </tr>
 {% endfor %}
 </tbody>
@@ -56,4 +60,9 @@
 {% for i in range(0, recommendations|length) %}
     {% set name, uri = recommendations[i] %}
     <a href="https://open.spotify.com/artist/{{ uri }}">{{ name }}</a>{% if i == 0 %}, {% elif i == 1 %}, and {% else %}{% endif %}{% endfor %}.
+{% if totals_given %}
+    <h2>Stats</h2>
+    <b>{{ total_tracks }}</b> total tracks<br>
+    <b>{{ total_artists }}</b> total artists (includes unmanaged artists featured on tracks by managed artists).
+{% endif %}
 {% endblock %}

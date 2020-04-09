@@ -404,17 +404,20 @@ def spotify_home():
         .filter_by(user_id=current_user.id, following=True) \
         .order_by(ManagedSpotifyArtist.id.asc()) \
         .all()
-    artists_dict = defaultdict(lambda: 0)
+    artists_dict = {}
+    uris = []
+    total_tracks = 0
     if "total_track_counts" in request.args:
         update_last_fm_scrobble_counts(current_user)
-        uris = []
-        for track in get_tracks(current_user):
+        tracks = get_tracks(current_user)
+        total_tracks = len(tracks)
+        for track in tracks:
             for artist in track['artists']:
                 uris.append(artist['uri'])
         for artist_uri, length in itertools.groupby(sorted(uris)):
             artists_dict[artist_uri] = len(list(length))
     to_return = [(artist.name, artist.get_bare_uri(), managed_artist.last_fm_scrobbles, managed_artist.date_added,
-                  managed_artist.num_top_tracks, artists_dict[artist.uri]) for
+                  managed_artist.num_top_tracks, artists_dict.get(artist.uri, 0)) for
                  managed_artist, artist in managed_artists]
     # TODO: add suggested artists to follow, perhaps based on artists you already listen to
     #  or have multiple liked songs from
@@ -422,6 +425,8 @@ def spotify_home():
     return render_template('spotify.html',
                            managed_artists=to_return,
                            totals_given="total_track_counts" in request.args,
+                           total_tracks=total_tracks,
+                           total_artists=len(artists_dict.keys()),
                            recommendations=recommendations)
 
 
