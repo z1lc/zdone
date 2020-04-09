@@ -37,9 +37,9 @@ This app uses the concept of an "artist under management": this is an artist tha
         <th>Number of Top Tracks</th>
         {% if totals_given %}<th>Number of Total Tracks</th>{% endif %}
     </tr>
-{% for name, date_added, num_top_tracks, num_total_tracks in managed_artists %}
+{% for name, uri, date_added, num_top_tracks, num_total_tracks in managed_artists %}
     <tr>
-        <td>{{ name }}</td>
+        <td><a href="https://open.spotify.com/artist/{{ uri }}" target="_blank">{{ name }}</a></td>
         <td>{{ date_added }}</td>
         <td>{{ num_top_tracks }}</td>
         {% if totals_given %}<td>{{ num_total_tracks }}</td>{% endif %}

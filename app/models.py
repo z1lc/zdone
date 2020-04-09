@@ -63,11 +63,17 @@ class ManagedSpotifyArtist(db.Model):
     following = db.Column(db.Boolean, server_default='true')
     __table_args__ = (UniqueConstraint('user_id', 'spotify_artist_uri', name='_user_id_and_spotify_artist_uri'),)
 
+    def get_bare_uri(self):
+        return self.uri.split("spotify:artist:")[1]
+
 
 class SpotifyArtist(db.Model):
     __tablename__ = "spotify_artists"
     uri = db.Column(db.String(128), primary_key=True)
     name = db.Column(db.String(128), nullable=False)
+
+    def get_bare_uri(self):
+        return self.uri.split("spotify:artist:")[1]
 
 
 class SpotifyTrack(db.Model):

@@ -413,7 +413,7 @@ def spotify_home():
                 uris.append(artist['uri'])
         for artist_uri, length in itertools.groupby(sorted(uris)):
             artists_dict[artist_uri] = len(list(length))
-    to_return = [(artist.name, managed_artist.date_added, managed_artist.num_top_tracks, artists_dict[artist.uri]) for
+    to_return = [(artist.name, artist.get_bare_uri(), managed_artist.date_added, managed_artist.num_top_tracks, artists_dict[artist.uri]) for
                  managed_artist, artist in managed_artists]
     return render_template('spotify.html',
                            managed_artists=to_return,

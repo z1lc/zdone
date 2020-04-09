@@ -36,7 +36,7 @@ def migrate_legacy_artists(user):
     if legacy_artists:
         sp = get_spotify("", user)
         for artist in legacy_artists:
-            sp.user_follow_artists(ids=[artist.spotify_artist_uri.split("spotify:artist:")[1]])
+            sp.user_follow_artists(ids=[artist.get_bare_uri()])
             artist.legacy = False
         db.session.commit()
 
