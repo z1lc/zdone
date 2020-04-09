@@ -22,3 +22,4 @@ mock
 py-trello
 git+git://github.com/z1lc/spotipy.git
 ebisu
+pylast

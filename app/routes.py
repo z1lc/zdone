@@ -17,7 +17,7 @@ from .forms import LoginForm, RegistrationForm
 from .models import User, TaskCompletion, ManagedSpotifyArtist, SpotifyArtist
 from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, \
     populate_null_artists, follow_unfollow_artists, \
-    do_add_artist, get_random_song_family, get_tracks
+    do_add_artist, get_random_song_family, get_tracks, update_last_fm_scrobble_counts
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
 from .util import today
@@ -399,6 +399,7 @@ def spotify_home():
     if current_user.spotify_token_json == '':
         return redirect("/spotify/auth", 302)
     follow_unfollow_artists(current_user)
+    update_last_fm_scrobble_counts(current_user)
     managed_artists = db.session.query(ManagedSpotifyArtist, SpotifyArtist) \
         .join(ManagedSpotifyArtist) \
         .filter_by(user_id=current_user.id, following=True) \
@@ -412,7 +413,7 @@ def spotify_home():
                 uris.append(artist['uri'])
         for artist_uri, length in itertools.groupby(sorted(uris)):
             artists_dict[artist_uri] = len(list(length))
-    to_return = [(artist.name, artist.get_bare_uri(), managed_artist.date_added, managed_artist.num_top_tracks, artists_dict[artist.uri]) for
+    to_return = [(artist.name, artist.get_bare_uri(), managed_artist.last_fm_scrobbles, managed_artist.date_added, managed_artist.num_top_tracks, artists_dict[artist.uri]) for
                  managed_artist, artist in managed_artists]
     return render_template('spotify.html',
                            managed_artists=to_return,

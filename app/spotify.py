@@ -3,6 +3,8 @@ import random
 from datetime import timedelta
 from random import randrange
 
+import pylast
+import pytz
 import spotipy
 from flask import redirect
 from sentry_sdk import capture_exception
@@ -43,6 +45,21 @@ def follow_unfollow_artists(user):
             break
     do_add_artist(user, [artist['uri'] for artist in results], True)
     return
+
+
+def update_last_fm_scrobble_counts(user):
+    if user.last_fm_last_refresh_time is None or \
+            pytz.timezone('US/Pacific').localize(user.last_fm_last_refresh_time) < (today_datetime() - timedelta(days=7)):
+        lastfm = pylast.LastFMNetwork(api_key=kv.get('LAST_FM_API_KEY'))
+        name_to_plays = {top_artist.item.name.lower(): top_artist.weight for top_artist in
+                         lastfm.get_user(user.last_fm_username).get_top_artists(limit=999)}
+        for managed_spotify_artist, spotify_artist in db.session.query(ManagedSpotifyArtist, SpotifyArtist) \
+                .join(ManagedSpotifyArtist) \
+                .filter_by(user_id=user.id) \
+                .all():
+            managed_spotify_artist.last_fm_scrobbles = name_to_plays.get(spotify_artist.name.lower(), None)
+        user.last_fm_last_refresh_time = today_datetime()
+        db.session.commit()
 
 
 def save_token_info(token_info, user):
