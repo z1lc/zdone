@@ -61,7 +61,7 @@ class ManagedSpotifyArtist(db.Model):
     spotify_artist_uri = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
     date_added = db.Column(db.Date, nullable=False, server_default=func.current_date())
     comment = db.Column(db.String(128))
-    num_top_tracks = db.Column(db.Integer, server_default='3')
+    num_top_tracks = db.Column(db.Integer, server_default='3')  # TODO: expose to users & allow editing
     following = db.Column(db.Boolean, server_default='true')
     last_fm_scrobbles = db.Column(db.Integer, nullable=True)
     __table_args__ = (UniqueConstraint('user_id', 'spotify_artist_uri', name='_user_id_and_spotify_artist_uri'),)

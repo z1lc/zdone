@@ -49,10 +49,11 @@ def follow_unfollow_artists(user):
 
 def update_last_fm_scrobble_counts(user):
     if user.last_fm_last_refresh_time is None or \
-            pytz.timezone('US/Pacific').localize(user.last_fm_last_refresh_time) < (today_datetime() - timedelta(days=7)):
+            pytz.timezone('US/Pacific').localize(user.last_fm_last_refresh_time) < (
+            today_datetime() - timedelta(days=7)):
         lastfm = pylast.LastFMNetwork(api_key=kv.get('LAST_FM_API_KEY'))
         name_to_plays = {top_artist.item.name.lower(): top_artist.weight for top_artist in
-                         lastfm.get_user(user.last_fm_username).get_top_artists(limit=999)}
+                         lastfm.get_user(user.last_fm_username).get_top_artists(limit=999)}  # TODO: paginate
         for managed_spotify_artist, spotify_artist in db.session.query(ManagedSpotifyArtist, SpotifyArtist) \
                 .join(ManagedSpotifyArtist) \
                 .filter_by(user_id=user.id) \
@@ -230,6 +231,7 @@ def get_tracks(user):
     return output
 
 
+# TODO: change to use https://github.com/kerrickstaley/genanki instead of CSV
 def get_anki_csv(user):
     tracks = get_tracks(user)
     return "".join(set([create_csv_line(track) for track in tracks]))
@@ -302,3 +304,6 @@ def get_random_song_family():
         "artists": [correct_artist],
         "correct_artist": correct_artist
     }
+
+# TODO: create Spotify playlist(s) for songs from managed artists you haven't yet listened to (as a way to promote
+#  knowing an artist's full catalogue)
