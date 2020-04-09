@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 
 {% block within_head %}
+    <link rel="stylesheet" href="//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
+    <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <script>
+      $(document).ready( function () {
+        $('#managed_artists_table').dataTable({"lengthChange": false});
+      } );
+    </script>
 <style>
     body {
         max-width: 1500px;
@@ -9,12 +16,6 @@
     }
     img {
         max-width: 100%;
-    }
-    table {
-        font-size: 0.8em;
-    }
-    td {
-        padding: 10px;
     }
 </style>
 {% endblock %}
@@ -30,7 +31,8 @@ This app uses the concept of an "artist under management": this is an artist tha
     {% if not totals_given %}
         <a href="?total_track_counts#AUM">Show total track count for artists</a> (includes top + liked; warning, this will take a while)
     {% endif %}
-<table>
+<table id="managed_artists_table">
+<thead>
     <tr>
         <th>Artist Name</th>
         <th>Lifetime Plays</th>
@@ -38,15 +40,18 @@ This app uses the concept of an "artist under management": this is an artist tha
         <th>Number of Top Tracks</th>
         {% if totals_given %}<th>Number of Total Tracks</th>{% endif %}
     </tr>
+</thead>
+<tbody>
 {% for name, uri, plays, date_added, num_top_tracks, num_total_tracks in managed_artists %}
     <tr>
         <td><a href="https://open.spotify.com/artist/{{ uri }}" target="_blank">{{ name }}</a></td>
-        <td>{% if plays %}{{ plays }}{% endif %}</td>
-        <td>{{ date_added }}</td>
-        <td>{{ num_top_tracks }}</td>
-        {% if totals_given %}<td>{{ num_total_tracks }}</td>{% endif %}
+        <td class="dt-body-right">{% if plays %}{{ plays }}{% endif %}</td>
+        <td class="dt-body-right">{{ date_added }}</td>
+        <td class="dt-body-right">{{ num_top_tracks }}</td>
+        {% if totals_given %}<td class="dt-body-right">{{ num_total_tracks }}</td>{% endif %}
     </tr>
 {% endfor %}
+</tbody>
 </table>
 <h2>How to Add a New Artist</h2>
 Search for the artist you'd like to add and go to their artist page. Then, click follow. See below for a screenshot.<br>
