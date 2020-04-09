@@ -1,3 +1,5 @@
+import itertools
+from collections import defaultdict
 from datetime import timedelta, datetime
 from json import dumps
 from typing import List, Tuple
@@ -15,7 +17,7 @@ from .forms import LoginForm, RegistrationForm
 from .models import User, TaskCompletion, ManagedSpotifyArtist, SpotifyArtist
 from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, \
     populate_null_artists, migrate_legacy_artists, follow_unfollow_artists, \
-    do_add_artist, get_random_song_family
+    do_add_artist, get_random_song_family, get_tracks
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
 from .util import today
@@ -403,7 +405,19 @@ def spotify_home():
         .filter_by(user_id=current_user.id, following=True) \
         .order_by(ManagedSpotifyArtist.id.asc()) \
         .all()
-    return render_template('spotify.html', managed_artists=managed_artists)
+    artists_dict = defaultdict(lambda: 0)
+    if "total_track_counts" in request.args:
+        uris = []
+        for track in get_tracks(current_user):
+            for artist in track['artists']:
+                uris.append(artist['uri'])
+        for artist_uri, length in itertools.groupby(sorted(uris)):
+            artists_dict[artist_uri] = len(list(length))
+    to_return = [(artist.name, managed_artist.date_added, managed_artist.num_top_tracks, artists_dict[artist.uri]) for
+                 managed_artist, artist in managed_artists]
+    return render_template('spotify.html',
+                           managed_artists=to_return,
+                           totals_given="total_track_counts" in request.args)
 
 
 @app.route('/spotify/add_artist', methods=['POST'])
