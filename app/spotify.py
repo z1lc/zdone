@@ -28,27 +28,7 @@ SCOPES = 'user-read-playback-state ' \
 NUM_TOP_TRACKS = 3
 
 
-def migrate_legacy_artists(user):
-    legacy_artists = ManagedSpotifyArtist.query.filter_by(
-        legacy='true',
-        user_id=user.id
-    ).all()
-    if legacy_artists:
-        sp = get_spotify("", user)
-        for artist in legacy_artists:
-            sp.user_follow_artists(ids=[artist.get_bare_uri()])
-            artist.legacy = False
-        db.session.commit()
-
-
 def follow_unfollow_artists(user):
-    legacy_artists = ManagedSpotifyArtist.query.filter_by(
-        legacy='true',
-        user_id=user.id
-    ).all()
-    # just in case, don't do follow/unfollow in case the person has legacy artists
-    if legacy_artists:
-        return
     sp = get_spotify("", user)
     results = list()
     last_artist_id = None
@@ -166,7 +146,6 @@ def do_add_artist(user, artist_uris, remove_not_included=False):
         spotify_artist = add_or_get_artist(sp, artist_uri)
         managed_artist = ManagedSpotifyArtist(user_id=user.id,
                                               spotify_artist_uri=spotify_artist.uri,
-                                              legacy=False,
                                               date_added=today())
         db.session.add(managed_artist)
 

@@ -16,7 +16,7 @@ from . import redis_client, app, db, socketio
 from .forms import LoginForm, RegistrationForm
 from .models import User, TaskCompletion, ManagedSpotifyArtist, SpotifyArtist
 from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, \
-    populate_null_artists, migrate_legacy_artists, follow_unfollow_artists, \
+    populate_null_artists, follow_unfollow_artists, \
     do_add_artist, get_random_song_family, get_tracks
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
@@ -398,7 +398,6 @@ def populate():
 def spotify_home():
     if current_user.spotify_token_json == '':
         return redirect("/spotify/auth", 302)
-    migrate_legacy_artists(current_user)
     follow_unfollow_artists(current_user)
     managed_artists = db.session.query(ManagedSpotifyArtist, SpotifyArtist) \
         .join(ManagedSpotifyArtist) \
