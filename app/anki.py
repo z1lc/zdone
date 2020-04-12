@@ -18,6 +18,7 @@ class SpotifyTrackNote(genanki.Note):
         return genanki.guid_for(self.fields[0])
 
 
+# TODO: fork genanki so that creation date of cards is reasonable
 def generate_track_apkg(user, filename):
     deck = genanki.Deck(
         SPOTIFY_TRACK_DECK_ID,

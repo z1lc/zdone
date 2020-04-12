@@ -240,7 +240,6 @@ def get_tracks(user):
     return output
 
 
-# TODO: change to use https://github.com/kerrickstaley/genanki instead of CSV
 def get_anki_csv(user):
     tracks = get_tracks(user)
     return "".join([create_csv_line(track) for track in tracks])
