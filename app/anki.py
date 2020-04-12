@@ -3,7 +3,7 @@ from enum import Enum
 import genanki
 from jsmin import jsmin
 
-from app.models import LegacySpotifyTrackNoteGuidMapping, LegacyModelIdMapping
+from app.models import LegacySpotifyTrackNoteGuidMapping
 from app.spotify import get_tracks
 
 SPOTIFY_TRACK_MODEL_ID = 1586000000000
@@ -32,7 +32,8 @@ def generate_track_apkg(user, filename):
         SPOTIFY_TRACK_DECK_ID,
         'Spotify Tracks')
     model = get_genanki_model(user)
-    legacy_mappings = {lm.spotify_track_uri: lm.anki_guid for lm in LegacySpotifyTrackNoteGuidMapping.query.filter_by(user_id=user.id).all()}
+    legacy_mappings = {lm.spotify_track_uri: lm.anki_guid for lm in
+                       LegacySpotifyTrackNoteGuidMapping.query.filter_by(user_id=user.id).all()}
 
     for track in get_tracks(user):
         inner_artists = []
@@ -57,7 +58,7 @@ def get_genanki_model(user):
     rs_anki_enabled = user.uses_rsAnki_javascript
     api_key = user.api_key
     should_generate_albumart_card = user.username == "rsanek"
-    maybe_model_id = LegacyModelIdMapping.query.filter_by(user_id=user.id).one_or_none()
+    legacy_model_id = 1579060616046
 
     templates = [
         {
@@ -72,7 +73,9 @@ def get_genanki_model(user):
             'afmt': get_back(AnkiCard.AUDIO_AND_ALBUMART_TO_ARTIST, rs_anki_enabled),
         })
     return genanki.Model(
-        maybe_model_id if maybe_model_id is not None else SPOTIFY_TRACK_MODEL_ID,
+        # the legacy model ID was from when I imported my model to everyone else. I migrated to the publically-facing,
+        # default model ID, but kept existing users on my old model ID for simplicity.
+        legacy_model_id if 1 < user.id <= 6 else SPOTIFY_TRACK_MODEL_ID,
         'Spotify Track',
         fields=[
             {'name': 'Track URI'},

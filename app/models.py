@@ -109,14 +109,6 @@ class LegacySpotifyTrackNoteGuidMapping(db.Model):
     )
 
 
-# similarly, so that existing users don't have to migrate to a new note type
-class LegacyModelIdMapping(db.Model):
-    __tablename__ = "legacy_model_id_mappings"
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    anki_spotify_track_model_id = db.Column(db.BigInteger, nullable=False)
-
-
 class TaskCompletion(db.Model):
     __tablename__ = "task_completions"
     id = db.Column(db.Integer, primary_key=True)
