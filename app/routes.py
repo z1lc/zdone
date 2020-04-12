@@ -524,11 +524,11 @@ def jsonp(function_name, payload):
 def index():
     maybe_not_set = ""
     if not current_user.toodledo_token_json:
-        maybe_not_set += "Toodledo auth not set for user {0}!<br>".format(current_user.username)
+        maybe_not_set += f"Toodledo auth not set for user {current_user.username}!<br>"
     if not current_user.habitica_user_id or not current_user.habitica_api_token:
-        maybe_not_set += "Habitica auth not set for user {0}!<br>".format(current_user.username)
+        maybe_not_set += f"Habitica auth not set for user {current_user.username}!<br>"
     if maybe_not_set:
-        return maybe_not_set + '<br>Looking for <a href="/spotify">Spotify</a>?'
+        return redirect('spotify')
     info = get_homepage_info(skew_sort="sort" in request.args)
     info['times']['minutes_total_rounded'] = \
         round(info['times']['minutes_allocated'] + info['times']['minutes_completed_today'])
