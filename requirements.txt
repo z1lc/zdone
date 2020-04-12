@@ -23,5 +23,5 @@ py-trello
 git+git://github.com/z1lc/spotipy.git
 ebisu
 pylast
-genanki
+git+git://github.com/z1lc/genanki.git
 jsmin
