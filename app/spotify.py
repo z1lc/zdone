@@ -14,19 +14,28 @@ from app import kv, redis_client, db
 from app.models import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay, User
 from app.util import today_datetime, today
 
-SCOPES = 'user-read-playback-state ' \
-         'user-modify-playback-state ' \
-         'user-read-currently-playing ' \
-         'user-library-read ' \
-         'user-top-read ' \
-         'user-read-playback-position ' \
-         'user-read-recently-played ' \
-         'user-follow-read ' \
-         'user-follow-modify ' \
-         'playlist-read-collaborative ' \
-         'playlist-modify-public ' \
-         'playlist-read-private ' \
-         'playlist-modify-private'
+# Scopes that are currently requested for public users -- only request things that are necessary
+MIN_SCOPES = 'user-read-playback-state ' \
+             'user-modify-playback-state ' \
+             'user-read-currently-playing ' \
+             'user-library-read ' \
+             'user-top-read ' \
+             'user-follow-read '
+
+# Scopes that are requested for 'internal' users -- request generously to ease testing
+ALL_SCOPES = 'user-read-playback-state ' \
+             'user-modify-playback-state ' \
+             'user-read-currently-playing ' \
+             'user-library-read ' \
+             'user-top-read ' \
+             'user-read-playback-position ' \
+             'user-read-recently-played ' \
+             'user-follow-read ' \
+             'user-follow-modify ' \
+             'playlist-read-collaborative ' \
+             'playlist-modify-public ' \
+             'playlist-read-private ' \
+             'playlist-modify-private'
 NUM_TOP_TRACKS = 3
 
 
@@ -111,7 +120,7 @@ def populate_null_artists(user):
 
 def maybe_get_spotify_authorize_url(full_url, user):
     sp_oauth = oauth2.SpotifyOAuth(
-        scope=SCOPES,
+        scope=ALL_SCOPES if user.id <= 8 else MIN_SCOPES,
         client_id="03f34cada5cc46a5929be06ff7532321",
         client_secret=kv.get('SPOTIFY_CLIENT_SECRET'),
         redirect_uri="https://www.zdone.co/spotify/auth" if "zdone" in full_url else "http://127.0.0.1:5000/spotify/auth",
@@ -131,7 +140,7 @@ def maybe_get_spotify_authorize_url(full_url, user):
 
 def get_spotify(full_url, user):
     sp_oauth = oauth2.SpotifyOAuth(
-        scope=SCOPES,
+        scope=ALL_SCOPES if user.id <= 8 else MIN_SCOPES,
         client_id="03f34cada5cc46a5929be06ff7532321",
         client_secret=kv.get('SPOTIFY_CLIENT_SECRET'),
         redirect_uri="https://www.zdone.co/spotify/auth" if "zdone" in full_url else "http://127.0.0.1:5000/spotify/auth",

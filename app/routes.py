@@ -36,8 +36,6 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     form = LoginForm()
-    passed_username = request.args.get('username')
-    form.username.data = passed_username
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
@@ -48,6 +46,8 @@ def login():
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
         return redirect(next_page)
+    passed_username = request.args.get('username')
+    form.username.data = passed_username
     return render_template('login.html', title='Sign In',
                            form=form,
                            passed_username=passed_username,
@@ -392,7 +392,7 @@ def spotify_auth():
     last_spotify_track = redis_client.get("last_spotify_track")
     if last_spotify_track:
         play_track(request.url, last_spotify_track.decode(), current_user)
-    return "successfully auth'd"
+    return redirect(url_for("spotify"))
 
 
 @app.route('/spotify/populate')
@@ -403,9 +403,9 @@ def populate():
 
 @app.route('/spotify/')
 @login_required
-def spotify_home():
-    if current_user.spotify_token_json == '':
-        return redirect("/spotify/auth", 302)
+def spotify():
+    if current_user.spotify_token_json is None or current_user.spotify_token_json == '':
+        return render_template('spotify_new_user.html')
     follow_unfollow_artists(current_user)
     managed_artists = db.session.query(ManagedSpotifyArtist, SpotifyArtist) \
         .join(ManagedSpotifyArtist) \
@@ -533,7 +533,7 @@ def index():
     if not current_user.habitica_user_id or not current_user.habitica_api_token:
         maybe_not_set += f"Habitica auth not set for user {current_user.username}!<br>"
     if maybe_not_set:
-        return redirect('spotify')
+        return redirect(url_for('spotify'))
     info = get_homepage_info(skew_sort="sort" in request.args)
     info['times']['minutes_total_rounded'] = \
         round(info['times']['minutes_allocated'] + info['times']['minutes_completed_today'])

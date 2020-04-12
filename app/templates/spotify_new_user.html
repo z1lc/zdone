@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block within_head %}
+    <style>
+        body {
+            max-width: 1500px;
+            margin: auto;
+            padding: 20px;
+        }
+    </style>
+{% endblock %}
+{% block body %}
+<h1>Welcome to Spotify-Anki!</h1>
+    It looks like you're a new user that needs to authenticate with Spotify.<br>
+    <a href="/spotify/auth">Click here</a> to be taken to Spotify to enable the integration.
+{% endblock %}
