@@ -1,5 +1,3 @@
-import uuid
-
 from flask_login import UserMixin
 from sqlalchemy import func, UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -91,6 +89,24 @@ class SpotifyPlay(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     spotify_track_uri = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False)
+
+
+# genanki uses the `guid` column in Anki's `notes` table to deduplicate upon import. While I have updated the GUID to
+# be based upon the Spotify track URI, old notes that were imported using the original, CSV-based method have GUIDs that
+# will not match these, since Anki seems to assign GUIDs randomly instead of in some deterministic fashion. This table
+# captures that mapping for such cards created before genanki days, so that existing users wouldn't have to hard-migrate
+# to the new approach (and in the process lose all review history). This table should be read-only, since no cards in
+# the future should need this mapping if generated through genanki.
+class LegacySpotifyTrackNoteGuidMapping(db.Model):
+    __tablename__ = "legacy_spotify_track_note_guid_mappings"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    spotify_track_uri = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=False)
+    anki_guid = db.Column(db.String(10), nullable=False)
+    __table_args__ = (
+        UniqueConstraint('user_id', 'spotify_track_uri', name='_user_id_and_spotify_track_uri'),
+        UniqueConstraint('user_id', 'anki_guid', name='_user_id_and_anki_guid'),
+    )
 
 
 class TaskCompletion(db.Model):
