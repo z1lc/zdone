@@ -36,6 +36,8 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     form = LoginForm()
+    passed_username = request.args.get('username')
+    form.username.data = passed_username
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
@@ -46,7 +48,10 @@ def login():
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
         return redirect(next_page)
-    return render_template('login.html', title='Sign In', form=form)
+    return render_template('login.html', title='Sign In',
+                           form=form,
+                           passed_username=passed_username,
+                           just_registered="new_user" in request.args)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -64,7 +69,7 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash(f"Congratulations, you are now a registered user! Your API key has been set to {user.api_key}.")
-        return redirect(url_for('login'))
+        return redirect(url_for('login', username=user.username, new_user='✔'))
     return render_template('register.html', title='Register', form=form)
 
 

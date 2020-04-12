@@ -11,6 +11,13 @@
 
 {% block body %}
 <h1>Sign In</h1>
+    {% if passed_username %}
+        {% if just_registered %}
+            <span style="color: darkgreen">Successfully registered user <b>{{ passed_username }}</b>! Use your password to log in below.</span>
+        {% endif %}
+    {% else %}
+        Need to <a href="register">register</a>?
+    {% endif %}
 <form action="" method="post" novalidate>
     {{ form.hidden_tag() }}
     <p>
