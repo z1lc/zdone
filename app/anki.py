@@ -3,8 +3,11 @@ from enum import Enum
 import genanki
 from jsmin import jsmin
 
-SPOTIFY_TRACK_MODEL_ID = 2145668757
-SPOTIFY_TRACK_DECK_ID = 1358352773
+from app.models import LegacySpotifyTrackNoteGuidMapping, LegacyModelIdMapping
+from app.spotify import get_tracks
+
+SPOTIFY_TRACK_MODEL_ID = 1586000000000
+SPOTIFY_TRACK_DECK_ID = 1586000000000
 
 
 class AnkiCard(Enum):
@@ -15,30 +18,61 @@ class AnkiCard(Enum):
 class SpotifyTrackNote(genanki.Note):
     @property
     def guid(self):
-        return genanki.guid_for(self.fields[0])
+        if self._guid is None:
+            return genanki.guid_for(self.fields[0])
+        return self._guid
+
+    @guid.setter
+    def guid(self, val):
+        self._guid = val
 
 
-# TODO: fork genanki so that creation date of cards is reasonable
 def generate_track_apkg(user, filename):
     deck = genanki.Deck(
         SPOTIFY_TRACK_DECK_ID,
         'Spotify Tracks')
-    my_note = SpotifyTrackNote(
-        model=get_genanki_model(user.api_key, user.uses_rsAnki_javascript),
-        fields=[
-            'spotify:track:5HNCy40Ni5BZJFw1TKzRsC',
-            'Comfortably Numb TEST',
-            'Pink Floyd',
-            'The Wall',
-            '<img src="https://i.scdn.co/image/ab67616d0000b273288d32d88a616b9a278ddc07">'
-        ])
-    deck.add_note(my_note)
+    model = get_genanki_model(user)
+    legacy_mappings = {lm.spotify_track_uri: lm.anki_guid for lm in LegacySpotifyTrackNoteGuidMapping.query.filter_by(user_id=user.id).all()}
+
+    for track in get_tracks(user):
+        inner_artists = []
+        for inner_artist in track['artists']:
+            inner_artists.append(inner_artist['name'])
+        track_as_note = SpotifyTrackNote(
+            model=model,
+            fields=[
+                track['uri'],
+                track['name'].replace('"', '\''),
+                ", ".join(inner_artists).replace('"', '\''),
+                track['album']['name'].replace('"', '\''),
+                "<img src='" + track['album']['images'][0]['url'] + "'>"
+            ])
+        if track['uri'] in legacy_mappings:
+            track_as_note.guid = legacy_mappings.get(track['uri'])
+        deck.add_note(track_as_note)
     genanki.Package(deck).write_to_file(filename)
 
 
-def get_genanki_model(api_key, rs_anki_enabled):
+def get_genanki_model(user):
+    rs_anki_enabled = user.uses_rsAnki_javascript
+    api_key = user.api_key
+    should_generate_albumart_card = user.username == "rsanek"
+    maybe_model_id = LegacyModelIdMapping.query.filter_by(user_id=user.id).one_or_none()
+
+    templates = [
+        {
+            'name': 'Audio>Artist',
+            'qfmt': get_front(AnkiCard.AUDIO_TO_ARTIST, api_key, rs_anki_enabled),
+            'afmt': get_back(AnkiCard.AUDIO_TO_ARTIST, rs_anki_enabled),
+        }]
+    if should_generate_albumart_card:
+        templates.append({
+            'name': 'Audio+AlbumArt>Artist',
+            'qfmt': get_front(AnkiCard.AUDIO_AND_ALBUMART_TO_ARTIST, api_key, rs_anki_enabled),
+            'afmt': get_back(AnkiCard.AUDIO_AND_ALBUMART_TO_ARTIST, rs_anki_enabled),
+        })
     return genanki.Model(
-        SPOTIFY_TRACK_MODEL_ID,
+        maybe_model_id if maybe_model_id is not None else SPOTIFY_TRACK_MODEL_ID,
         'Spotify Track',
         fields=[
             {'name': 'Track URI'},
@@ -48,18 +82,8 @@ def get_genanki_model(api_key, rs_anki_enabled):
             {'name': 'Album Art'},
         ],
         css="@import '_anki.css';" if rs_anki_enabled else get_default_css(),
-        templates=[
-            {
-                'name': 'Audio>Artist',
-                'qfmt': get_front(AnkiCard.AUDIO_TO_ARTIST, api_key, rs_anki_enabled),
-                'afmt': get_back(AnkiCard.AUDIO_TO_ARTIST, rs_anki_enabled),
-            },
-            {
-                'name': 'Audio+AlbumArt>Artist',
-                'qfmt': get_front(AnkiCard.AUDIO_AND_ALBUMART_TO_ARTIST, api_key, rs_anki_enabled),
-                'afmt': get_back(AnkiCard.AUDIO_AND_ALBUMART_TO_ARTIST, rs_anki_enabled),
-            },
-        ])
+        templates=templates
+    )
 
 
 def get_back(card_type, rs_anki_enabled):
