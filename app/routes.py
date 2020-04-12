@@ -497,7 +497,8 @@ def api_play_song():
     else:
         track_uri = args.get('track_uri')
         api_key = args.get('api_key')
-        api_play_song_v2(api_key, track_uri)
+        api_play_song_v2(api_key, track_uri, "no_function")
+        return success()
 
 
 @app.route("/api/<api_key>/play/<track_uri>/<callback_function_name>")
