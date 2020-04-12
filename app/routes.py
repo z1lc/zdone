@@ -1,10 +1,11 @@
 import itertools
-from collections import defaultdict
+import os
+import uuid
 from datetime import timedelta, datetime
 from json import dumps
 from typing import List, Tuple
 
-from flask import render_template, request, make_response, jsonify, redirect
+from flask import render_template, request, make_response, jsonify, redirect, send_file
 from flask import url_for, flash
 from flask_login import current_user, login_user, logout_user
 from flask_login import login_required
@@ -13,6 +14,7 @@ from trello import TrelloClient
 from werkzeug.urls import url_parse
 
 from . import redis_client, app, db, socketio
+from .anki import generate_track_apkg
 from .forms import LoginForm, RegistrationForm
 from .models import User, TaskCompletion, ManagedSpotifyArtist, SpotifyArtist
 from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, \
@@ -53,12 +55,15 @@ def register():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
+        user = User(
+            username=form.username.data,
+            email=form.email.data,
+            api_key=uuid.uuid4()
+        )
         user.set_password(form.password.data)
-        user.create_api_key()
         db.session.add(user)
         db.session.commit()
-        flash('Congratulations, you are now a registered user! Your API key has been set to ' + user.api_key + '.')
+        flash(f"Congratulations, you are now a registered user! Your API key has been set to {user.api_key}.")
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
@@ -155,11 +160,15 @@ def success():
     }), 200
 
 
-def api_key_failure():
+def failure(reason="", code=400):
     return jsonify({
         'result': 'failure',
-        'reason': 'Make sure you are passing a valid API key in the x-api-key header.'
-    }), 401
+        'reason': reason
+    }), code
+
+
+def api_key_failure():
+    return failure("Make sure you are passing a valid API key in the x-api-key header.", 401)
 
 
 @app.route('/set_priorities', methods=['POST'])
@@ -193,20 +202,14 @@ def do_update_task(update, service, task_id, subtask_id, duration_seconds=0, use
             else:
                 complete_toodledo_task(task_id, user)
         else:
-            return jsonify({
-                'result': 'failure',
-                'reason': 'unexpected service type "' + service + '"'
-            }), 400
+            return failure(f"unexpected service type '{service}'")
 
         task_completion = TaskCompletion(user_id=user.id, service=service, task_id=task_id, subtask_id=subtask_id,
                                          duration_seconds=duration_seconds, at=datetime.now())
         db.session.add(task_completion)
         db.session.commit()
     else:
-        return jsonify({
-            'result': 'failure',
-            'reason': 'unexpected update type "' + update + '"'
-        }), 400
+        return failure(f"unexpected update type '{update}'")
 
     length = 0
     if not subtask_id:
@@ -471,21 +474,48 @@ def spotify_anki_import():
         return output
 
 
-# TODO: if no device is playing, alert user within Anki about error
+@app.route('/spotify/download_apkg/')
+@login_required
+def spotify_download_apkg():
+    filename = os.path.join(app.instance_path, f'songs-{current_user.username}.apkg')
+    os.makedirs(app.instance_path, exist_ok=True)
+    generate_track_apkg(current_user, filename)
+    return send_file(filename, as_attachment=True)
+
+
+# TODO: remove this endpoint once people are migrated off
 @app.route("/api/play_track")
 def api_play_song():
     args = request.args
     if not args or "track_uri" not in args or "api_key" not in args:
-        return jsonify({
-            'result': 'failure',
-            'reason': 'Request must set parameters \'track_uri\' and \'api_key\'.'
-        }), 400
+        return failure("Request must set parameters 'track_uri' and 'api_key'.")
     else:
         track_uri = args.get('track_uri')
-        user = validate_api_key(args.get('api_key'))
-        offset = args.get('offset') if "offset" in args else None
+        api_key = args.get('api_key')
+        api_play_song_v2(api_key, track_uri)
 
-        return play_track(request.url, track_uri, user, offset)
+
+@app.route("/api/<api_key>/play/<track_uri>/<callback_function_name>")
+def api_play_song_v2(api_key, track_uri, callback_function_name):
+    user = validate_api_key(api_key)
+    offset = request.args.get('offset') if "offset" in request.args else None
+    try:
+        play_track(request.url, track_uri, user, offset)
+    except Exception as e:
+        if "No active device found" in repr(e):
+            return jsonp(callback_function_name,
+                         failure("Did not detect a device playing music.<br>"
+                                 "Please begin playback on your device and return to this card."))
+    return jsonp(callback_function_name, success())
+
+
+def jsonp(function_name, payload):
+    if isinstance(payload, str):
+        return f"{function_name}({payload})"
+    elif isinstance(payload, tuple):
+        # we've received payload from a success() or failure() method
+        payload = payload[0].get_data().decode('utf-8').replace('\n', '')
+        return f"{function_name}({payload})"
 
 
 @app.route('/')
@@ -545,10 +575,7 @@ def api_update_task():
     else:
         req = request.get_json()
         if not req or "update" not in req or "service" not in req or "id" not in req:
-            return jsonify({
-                'result': 'failure',
-                'reason': 'Request body must be application/json with keys \'update\', \'service\', and \'id\'.'
-            }), 400
+            return failure("Request body must be application/json with keys 'update', 'service', and 'id'.")
         else:
             update = req["update"]
             service = req["service"]
@@ -559,10 +586,7 @@ def api_update_task():
             try:
                 return do_update_task(update, service, task_id, subtask_id, duration_seconds, user)
             except Exception as e:
-                return jsonify({
-                    'result': 'failure',
-                    'reason': str(e)
-                }), 400
+                return failure(str(e))
 
 
 @app.route('/api/add_task', methods=['POST'])
@@ -573,11 +597,8 @@ def api_add_task():
     else:
         req = request.get_json()
         if not req or "name" not in req or "due_date" not in req or "length_minutes" not in req:
-            return jsonify({
-                'result': 'failure',
-                'reason': 'Request body must be application/json with keys \'name\', \'due_date\', '
-                          'and \'length_minutes\'.'
-            }), 400
+            return failure('Request body must be application/json with keys \'name\', \'due_date\', '
+                           'and \'length_minutes\'.')
         else:
             name = req["name"]
             due_date = req["due_date"]
@@ -589,10 +610,7 @@ def api_add_task():
                     'reason': '' if response.status_code == 200 else response.reason
                 }), response.status_code
             except Exception as e:
-                return jsonify({
-                    'result': 'failure',
-                    'reason': str(e)
-                }), 400
+                return failure(str(e))
 
 
 @app.route('/api/update_time', methods=['POST'])
@@ -603,17 +621,11 @@ def api_update_time():
     else:
         req = request.get_json()
         if not req or "maximum_minutes_per_day" not in req:
-            return jsonify({
-                'result': 'failure',
-                'reason': 'Request body must be application/json with key \'maximum_minutes_per_day\'.'
-            }), 400
+            return failure("Request body must be application/json with key 'maximum_minutes_per_day'.")
         else:
             time = req["maximum_minutes_per_day"]
 
             try:
                 return do_update_time(time, user)
             except Exception as e:
-                return jsonify({
-                    'result': 'failure',
-                    'reason': str(e)
-                }), 400
+                return failure(str(e))

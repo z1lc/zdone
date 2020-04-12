@@ -19,8 +19,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     maximum_minutes_per_day = db.Column(db.Integer, nullable=False, server_default='120')
 
-    # import uuid ; uuid.uuid4()
-    api_key = db.Column(db.String(128), unique=True)
+    api_key = db.Column(db.String(128), unique=True, nullable=False)
 
     # https://api.toodledo.com/3/account/authorize.php?response_type=code&client_id=ztasks&state=MY_STATE&scope=basic tasks notes outlines lists share write folders
     # complete auth via Postman (see http://api.toodledo.com/3/account/index.php for full info)
@@ -41,11 +40,10 @@ class User(UserMixin, db.Model):
     last_fm_username = db.Column(db.String(128), unique=True)
     last_fm_last_refresh_time = db.Column(db.DateTime)
 
+    uses_rsAnki_javascript = db.Column(db.Boolean, server_default='false', nullable=False)
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
-
-    def create_api_key(self):
-        self.api_key = uuid.uuid4()
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
