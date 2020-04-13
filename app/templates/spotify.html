@@ -58,8 +58,9 @@
               .row.add(row)
               .draw()
               .node();
+            $(rowNode).find('td:nth-child(2)').addClass("dt-body-right");
             if (typeof num_total_tracks !== 'undefined') {
-              $(rowNode).find('td:nth-child(2)').addClass("dt-body-right");
+              $(rowNode).find('td:nth-child(3)').addClass("dt-body-right");
             }
           })
           .fail(function () {
@@ -129,7 +130,7 @@
                             {% if totals_given %}
                                 <td class="dt-body-right">{{ num_total_tracks }}</td>
                             {% endif %}
-                            <td>
+                            <td class="dt-body-right">
                                 <input type="button" data-name="{{ name }}" data-uri="{{ uri }}"
                                        {% if totals_given %}data-num-total-tracks="{{ num_total_tracks }}"{% endif %}
                                        value="Start Testing">
@@ -157,7 +158,7 @@
                             {% if totals_given %}
                                 <td class="dt-body-right">{{ num_total_tracks }}</td>
                             {% endif %}
-                            <td>
+                            <td class="dt-body-right">
                                 <input type="button" data-name="{{ name }}" data-uri="{{ uri }}"
                                        {% if totals_given %}data-num-total-tracks="{{ num_total_tracks }}"{% endif %}
                                        value="Stop Testing">
