@@ -19,7 +19,7 @@ from .forms import LoginForm, RegistrationForm
 from .models import User, TaskCompletion, ManagedSpotifyArtist, SpotifyArtist
 from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, \
     populate_null_artists, follow_unfollow_artists, \
-    get_random_song_family, get_tracks, update_last_fm_scrobble_counts, get_top_recommendations
+    get_random_song_family, get_tracks, update_last_fm_scrobble_counts, get_top_recommendations, test_artist
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
 from .util import today
@@ -401,6 +401,22 @@ def populate():
     populate_null_artists(current_user)
 
 
+@app.route('/update_artist', methods=['POST'])
+@login_required
+def update_artist():
+    payload = request.get_json()
+    artist_uri = payload["uri"]
+    action = payload["action"]
+    if action == "start":
+        test_artist(current_user, artist_uri, True)
+    elif action == "stop":
+        test_artist(current_user, artist_uri, False)
+    else:
+        failure(f"Did not expect action {action}")
+
+    return success()
+
+
 @app.route('/spotify/')
 @login_required
 def spotify():
@@ -410,7 +426,14 @@ def spotify():
     managed_artists = db.session.query(ManagedSpotifyArtist, SpotifyArtist) \
         .join(ManagedSpotifyArtist) \
         .filter_by(user_id=current_user.id, following=True) \
-        .order_by(ManagedSpotifyArtist.id.asc()) \
+        .all()
+    following_artists = db.session.query(ManagedSpotifyArtist, SpotifyArtist) \
+        .join(ManagedSpotifyArtist) \
+        .filter_by(user_id=current_user.id, following=True, testing=False) \
+        .all()
+    testing_artists = db.session.query(ManagedSpotifyArtist, SpotifyArtist) \
+        .join(ManagedSpotifyArtist) \
+        .filter_by(user_id=current_user.id, testing=True) \
         .all()
     artists_dict = {}
     uris = []
@@ -432,11 +455,16 @@ def spotify():
     recommendations = get_top_recommendations(current_user)[:3]
     return render_template('spotify.html',
                            managed_artists=to_return,
+                           following_artists=[(artist.name, artist.uri, artists_dict.get(artist.uri, 0)) for
+                                              managed_artist, artist in following_artists],
+                           testing_artists=[(artist.name, artist.uri, artists_dict.get(artist.uri, 0)) for
+                                            managed_artist, artist in testing_artists],
                            totals_given="total_track_counts" in request.args,
                            total_tracks=total_tracks,
                            total_artists=len(artists_dict.keys()),
                            recommendations=recommendations,
-                           show_last_fm_plays=current_user.last_fm_last_refresh_time is not None)
+                           show_last_fm_plays=current_user.last_fm_last_refresh_time is not None,
+                           internal_user=(current_user.id <= 6))
 
 
 @app.route('/spotify/top_liked/')

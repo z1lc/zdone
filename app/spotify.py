@@ -169,6 +169,13 @@ def add_or_get_track(sp, track_uri):
     return track
 
 
+def test_artist(user, artist_uri, should_test):
+    artist = ManagedSpotifyArtist.query.filter_by(user_id=user.id, spotify_artist_uri=artist_uri).one_or_none()
+    if artist:
+        artist.testing = should_test
+        db.session.commit()
+
+
 def do_add_artist(user, artist_uris, remove_not_included=False):
     sp = get_spotify("", user)
     existing_managed_artist_uris = [msa.spotify_artist_uri for msa in
@@ -220,7 +227,7 @@ def get_tracks(user):
     if isinstance(sp, str):
         return None
     dedup_map = {}
-    my_managed_artists = ManagedSpotifyArtist.query.filter_by(user_id=user.id, following='true').all()
+    my_managed_artists = ManagedSpotifyArtist.query.filter_by(user_id=user.id, testing='true').all()
 
     # get liked tracks with artists that are in ARTISTS
     results = list()

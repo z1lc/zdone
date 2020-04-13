@@ -5,64 +5,215 @@
     <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
     <script>
       $(document).ready(function () {
-        $('#managed_artists_table').dataTable({
+        let options = {
           "lengthChange": false,
           "language": {
-            "info": "Showing _START_ to _END_ of _TOTAL_ managed artists"
+            "info": "Showing _START_ to _END_ of _TOTAL_ artists"
           }
+        }
+        $('#managed_artists_table').DataTable(options);
+        let following = $('#following_artists').DataTable(options);
+        let testing = $('#testing_artists').DataTable(options);
+
+        $('#following_artists tbody').on('click', 'input', function () {
+          // we're adding something to testing
+          addRemoveRow($(this), following, testing, true);
+        });
+
+        $('#testing_artists tbody').on('click', 'input', function () {
+          // we're removing something from testing & adding it back to followed
+          addRemoveRow($(this), testing, following, false);
         });
       });
+
+      function addRemoveRow(passed_this, fromJQtable, toJQtable, should_test) {
+        passed_this.prop("disabled", true);
+        let name = passed_this.attr('data-name');
+        let uri = passed_this.attr('data-uri');
+        let num_total_tracks = passed_this.attr('data-num-total-tracks');
+        $.ajax({
+          contentType: "application/json",
+          url: "/update_artist",
+          type: "POST",
+          data: JSON.stringify({
+            uri: uri,
+            action: should_test ? "start" : "stop"
+          })
+        })
+          .done(function () {
+            fromJQtable
+              .row(passed_this.parents('tr'))
+              .remove()
+              .draw();
+            let start_stop = should_test ? "Stop" : "Start"
+            let row = [name]
+            if (typeof num_total_tracks !== 'undefined') {
+              row.push(num_total_tracks)
+              row.push(`<input type="button" data-name="${name}" data-uri="${uri}" data-num-total-tracks="${num_total_tracks}" value="${start_stop} Testing">`)
+            } else {
+              row.push(`<input type="button" data-name="${name}" data-uri="${uri}" value="${start_stop} Testing">`)
+            }
+
+            let rowNode = toJQtable
+              .row.add(row)
+              .draw()
+              .node();
+            if (typeof num_total_tracks !== 'undefined') {
+              $(rowNode).find('td:nth-child(2)').addClass("dt-body-right");
+            }
+          })
+          .fail(function () {
+            passed_this.prop("disabled", false);
+          });
+      }
     </script>
-<style>
-    body {
-        max-width: 1500px;
-        margin: auto;
-        padding: 20px;
-    }
-</style>
+    <style>
+        body {
+            max-width: 1500px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        table#both {
+            width: 100%;
+        }
+
+        table#both td {
+            width: 50%;
+            vertical-align: top;
+        }
+
+        table#both tr td:nth-child(1) {
+            padding-right: 10px;
+        }
+
+        table#both tr td:nth-child(2) {
+            padding-left: 10px;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
-<h1>Spotify + Anki</h1>
+    <h1>Spotify + Anki</h1>
     Looking for <a href="/spotify/help">Help</a>?<br>
     Download the <a href="/spotify/download_apkg">latest set of songs</a> (be patient, this may take up to a minute).
-<h2><a name="AUM">Artists Under Management</a></h2>
-    {% if not totals_given %}
-        <a href="?total_track_counts#AUM">Show total track count for artists</a> (includes top + liked; warning, this will take a while)
+
+    <h2><a name="AUM">Artists</a></h2>
+    <table id="both">
+        <tr>
+            <td>
+                <h3>Followed Artists</h3>
+                Artists that you have chosen to follow on Spotify which aren't currently under testing.
+            </td>
+            <td>
+                <h3>Tested Artists</h3>
+                Artists that you've chosen to test for. These artists generate Anki cards.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <table id="following_artists" class="compact">
+                    <thead>
+                    <tr>
+                        <th>Artist</th>
+                        {% if totals_given %}
+                            <th>Total Tracks</th>
+                        {% endif %}
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for name, uri, num_total_tracks in following_artists %}
+                        <tr>
+                            <td>{{ name }}</td>
+                            {% if totals_given %}
+                                <td class="dt-body-right">{{ num_total_tracks }}</td>
+                            {% endif %}
+                            <td>
+                                <input type="button" data-name="{{ name }}" data-uri="{{ uri }}"
+                                       {% if totals_given %}data-num-total-tracks="{{ num_total_tracks }}"{% endif %}
+                                       value="Start Testing">
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </td>
+            <td>
+                <table id="testing_artists" class="compact">
+                    <thead>
+                    <tr>
+                        <th>Artist</th>
+                        {% if totals_given %}
+                            <th>Total Tracks</th>
+                        {% endif %}
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for name, uri, num_total_tracks in testing_artists %}
+                        <tr>
+                            <td>{{ name }}</td>
+                            {% if totals_given %}
+                                <td class="dt-body-right">{{ num_total_tracks }}</td>
+                            {% endif %}
+                            <td>
+                                <input type="button" data-name="{{ name }}" data-uri="{{ uri }}"
+                                       {% if totals_given %}data-num-total-tracks="{{ num_total_tracks }}"{% endif %}
+                                       value="Stop Testing">
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    {% if False %}
+        <table id="managed_artists_table">
+            <thead>
+            <tr>
+                <th>Artist</th>
+                {% if show_last_fm_plays %}
+                    <th>Plays</th>{% endif %}
+                <th>Added</th>
+                <th>Top Tracks</th>
+                {% if totals_given %}
+                    <th>Total Tracks</th>
+                {% endif %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for name, uri, plays, date_added, num_top_tracks, num_total_tracks in managed_artists %}
+                <tr>
+                    <td><a href="https://open.spotify.com/artist/{{ uri }}" target="_blank">{{ name }}</a></td>
+                    {% if show_last_fm_plays %}
+                        <td class="dt-body-right">{% if plays %}{{ plays }}{% endif %}</td>{% endif %}
+                    <td class="dt-body-right">{{ date_added }}</td>
+                    <td class="dt-body-right">{{ num_top_tracks }}</td>
+                    {% if totals_given %}
+                        <td class="dt-body-right">{{ num_total_tracks }}</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     {% endif %}
-<table id="managed_artists_table">
-<thead>
-    <tr>
-        <th>Artist</th>
-        {% if show_last_fm_plays %}<th>Plays</th>{% endif %}
-        <th>Added</th>
-        <th>Top Tracks</th>
-        {% if totals_given %}
-            <th>Total Tracks</th>
-        {% endif %}
-    </tr>
-</thead>
-<tbody>
-{% for name, uri, plays, date_added, num_top_tracks, num_total_tracks in managed_artists %}
-    <tr>
-        <td><a href="https://open.spotify.com/artist/{{ uri }}" target="_blank">{{ name }}</a></td>
-        {% if show_last_fm_plays %}<td class="dt-body-right">{% if plays %}{{ plays }}{% endif %}</td>{% endif %}
-        <td class="dt-body-right">{{ date_added }}</td>
-        <td class="dt-body-right">{{ num_top_tracks }}</td>
-        {% if totals_given %}
-            <td class="dt-body-right">{{ num_total_tracks }}</td>
-        {% endif %}
-    </tr>
-{% endfor %}
-</tbody>
-</table>
+
     Artists popular with other Spotify + Anki users include
-{% for i in range(0, recommendations|length) %}
-    {% set name, uri = recommendations[i] %}
-    <a href="https://open.spotify.com/artist/{{ uri }}">{{ name }}</a>{% if i == 0 %}, {% elif i == 1 %}, and {% else %}{% endif %}{% endfor %}.
-{% if totals_given %}
-    <h2>Stats</h2>
-    <b>{{ total_tracks }}</b> total tracks<br>
-    <b>{{ total_artists }}</b> total artists (includes unmanaged artists featured on tracks by managed artists).
-{% endif %}
+    {% for i in range(0, recommendations|length) %}
+        {% set name, uri = recommendations[i] %}
+        <a href="https://open.spotify.com/artist/{{ uri }}">{{ name }}</a>{% if i == 0 %}, {% elif i == 1 %}, and
+    {% else %}{% endif %}{% endfor %}.
+    {% if totals_given %}
+        <h2>Stats</h2>
+        <b>{{ total_tracks }}</b> total tracks<br>
+        <b>{{ total_artists }}</b> total artists (includes unmanaged artists featured on tracks by managed artists).
+    {% endif %}
+    {% if not totals_given and internal_user %}
+        <br>
+        <a href="?total_track_counts">Show total track count for artists</a> (includes top + liked; warning, this
+        will take a while)
+    {% endif %}
 {% endblock %}

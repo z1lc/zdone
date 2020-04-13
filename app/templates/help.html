@@ -15,13 +15,14 @@
 
 {% block body %}
 <h1>Spotify + Anki Help</h1>
-
-<h2>How to Import new Songs</h2>
-Download the <a href="/spotify/download_apkg">latest set of songs</a> (be patient, this may take up to a minute). Open the file, and your new cards will appear under a deck called "Spotify Tracks."
+    <a href="/spotify">Go back home</a><br>
+    <b>Spotify + Anki</b> helps you learn to recognize the artist of a given song. It generates <a href="https://apps.ankiweb.net/">Anki</a> cards which trigger playback through Spotify.
 <h2>How this app works</h2>
-This app uses the concept of an "artist under management": this is an artist that you have decided you'd like to be familiar with. Once you add a selection of such artists, the app will automatically import the top 3 most-popular songs from their <a href="https://support.spotify.com/us/using_spotify/features/artist-profile/">profile page</a>, as well as <a href="https://support.spotify.com/us/article/what-is-your-music/">any songs that you've liked</a> from that artist.
+This app uses the concept of a "tested artist": this is an artist that you have decided you'd like to be familiar with. Once you add a selection of such artists, the app will automatically generate cards from the top 3 most-popular songs from their <a href="https://support.spotify.com/us/using_spotify/features/artist-profile/">profile page</a>, as well as <a href="https://support.spotify.com/us/article/what-is-your-music/">any songs that you've liked</a> from that artist.
+<h2>How to import new songs into Anki</h2>
+Download the <a href="/spotify/download_apkg">latest set of songs</a> (be patient, this may take up to a minute). Open the file, and your new cards will appear under a deck called "Spotify Tracks."
 
-<h2>How to Add a New Artist</h2>
-While using the Spotify app, search for the artist you'd like to add and go to their artist page. Then, click follow. See below for a screenshot.<br>
+<h2>How to add a new artist</h2>
+    While using the Spotify app, search for the artist you'd like to test for, go to their artist page, and click follow (see below for a screenshot). Then, back on the <a href="/spotify">homepage</a>, add the artist to the set of Tested Artists.<br>
 <img src="/static/images/how_to_find_spotify_follow_button.png">
 {% endblock %}
