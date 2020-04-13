@@ -27,7 +27,7 @@
     Looking for <a href="/spotify/help">Help</a>?<br>
     Download the <a href="/spotify/download_apkg">latest set of songs</a> (be patient, this may take up to a minute).
 <h2><a name="AUM">Artists Under Management</a></h2>
-    {% if not totals_given %}
+    {% if not totals_given and internal_user %}
         <a href="?total_track_counts#AUM">Show total track count for artists</a> (includes top + liked; warning, this will take a while)
     {% endif %}
 <table id="managed_artists_table">
@@ -36,7 +36,7 @@
         <th>Artist</th>
         {% if show_last_fm_plays %}<th>Plays</th>{% endif %}
         <th>Added</th>
-        <th>Top Tracks</th>
+        {% if internal_user %}<th>Top Tracks</th>{% endif %}
         {% if totals_given %}
             <th>Total Tracks</th>
         {% endif %}
@@ -48,7 +48,7 @@
         <td><a href="https://open.spotify.com/artist/{{ uri }}" target="_blank">{{ name }}</a></td>
         {% if show_last_fm_plays %}<td class="dt-body-right">{% if plays %}{{ plays }}{% endif %}</td>{% endif %}
         <td class="dt-body-right">{{ date_added }}</td>
-        <td class="dt-body-right">{{ num_top_tracks }}</td>
+        {% if internal_user %}<td class="dt-body-right">{{ num_top_tracks }}</td>{% endif %}
         {% if totals_given %}
             <td class="dt-body-right">{{ num_total_tracks }}</td>
         {% endif %}
