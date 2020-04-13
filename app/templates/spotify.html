@@ -34,7 +34,7 @@
 <thead>
     <tr>
         <th>Artist</th>
-        <th>Plays</th>
+        {% if show_last_fm_plays %}<th>Plays</th>{% endif %}
         <th>Added</th>
         <th>Top Tracks</th>
         {% if totals_given %}
@@ -46,7 +46,7 @@
 {% for name, uri, plays, date_added, num_top_tracks, num_total_tracks in managed_artists %}
     <tr>
         <td><a href="https://open.spotify.com/artist/{{ uri }}" target="_blank">{{ name }}</a></td>
-        <td class="dt-body-right">{% if plays %}{{ plays }}{% endif %}</td>
+        {% if show_last_fm_plays %}<td class="dt-body-right">{% if plays %}{{ plays }}{% endif %}</td>{% endif %}
         <td class="dt-body-right">{{ date_added }}</td>
         <td class="dt-body-right">{{ num_top_tracks }}</td>
         {% if totals_given %}

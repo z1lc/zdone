@@ -435,7 +435,8 @@ def spotify():
                            totals_given="total_track_counts" in request.args,
                            total_tracks=total_tracks,
                            total_artists=len(artists_dict.keys()),
-                           recommendations=recommendations)
+                           recommendations=recommendations,
+                           show_last_fm_plays=current_user.last_fm_last_refresh_time is not None)
 
 
 @app.route('/spotify/top_liked/')
