@@ -52,7 +52,7 @@ def follow_unfollow_artists(user):
         last_artist_id = saved['artists']['cursors']['after']
         if not last_artist_id:
             break
-    do_add_artist(user, [artist['uri'] for artist in results], True)
+    do_add_artists(user, [artist['uri'] for artist in results], True)
     return
 
 
@@ -169,13 +169,14 @@ def add_or_get_track(sp, track_uri):
     return track
 
 
-def do_add_artist(user, artist_uris, remove_not_included=False):
+def do_add_artists(user, artist_uris, remove_not_included=False):
     sp = get_spotify("", user)
     existing_managed_artist_uris = [msa.spotify_artist_uri for msa in
                                     ManagedSpotifyArtist.query.filter_by(user_id=user.id).all()]
     currently_unfollowed_managed_artist_uris = [msa.spotify_artist_uri for msa in
                                                 ManagedSpotifyArtist.query.filter_by(user_id=user.id,
                                                                                      following='false').all()]
+
     to_add = set(artist_uris).difference(set(existing_managed_artist_uris))
     for artist_uri in to_add:
         spotify_artist = add_or_get_artist(sp, artist_uri)
@@ -223,15 +224,15 @@ def get_tracks(user):
     my_managed_artists = ManagedSpotifyArtist.query.filter_by(user_id=user.id, following='true').all()
 
     # get liked tracks with artists that are in ARTISTS
-    results = list()
+    liked_tracks = list()
     offset = 0
     while True:
         saved = sp.current_user_saved_tracks(limit=50, offset=offset)
-        results.extend(saved['items'])
+        liked_tracks.extend(saved['items'])
         offset += 50
         if len(saved['items']) < 50:
             break
-    for item in results:
+    for item in liked_tracks:
         track = item['track']
         artists = [artist['uri'] for artist in track['artists']]
         for artist in artists:
