@@ -513,7 +513,7 @@ def api_play_song_v2(api_key, track_uri, callback_function_name):
         if "No active device found" in repr(e):
             return jsonp(callback_function_name,
                          failure("Did not detect a device playing music.<br>"
-                                 "Please begin playback on your device and return to this card."))
+                                 "Please <a href='spotify:'>begin playback on your device</a> and return to this card."))
     return jsonp(callback_function_name, success())
 
 
