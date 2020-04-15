@@ -37,6 +37,10 @@ ALL_SCOPES = 'user-read-playback-state ' \
              'playlist-read-private ' \
              'playlist-modify-private'
 NUM_TOP_TRACKS = 3
+# randomized song playback will avoid starting within RANDOM_RANGE_MS of beginning or end of song.
+# If multiple random calls happen in succession, it will also avoid restarting within 2 * RANDOM_RANGE_MS of the most
+# recent random playback.
+RANDOM_RANGE_MS = 10_000
 
 
 def follow_unfollow_artists(user):
@@ -202,11 +206,21 @@ def do_add_artists(user, artist_uris, remove_not_included=False):
 def play_track(full_url, track_uri, user, offset=None):
     sp = get_spotify(full_url, user)
     if isinstance(sp, str):
-        redis_client.set("last_spotify_track", track_uri.encode())
-        redis_client.expire("last_spotify_track", timedelta(seconds=10))
+        redis_client.set(f"last_spotify_track-{user.username}", track_uri.encode(), ex=10)
         return redirect(sp)
     track = add_or_get_track(sp, track_uri)
-    start = randrange(10000, track.duration_milliseconds - 10000) if offset is None else offset
+    maybe_redis_last_play_key = f"last_play-{user.username}-{track_uri}"
+    if offset is None:
+        start = randrange(RANDOM_RANGE_MS, track.duration_milliseconds - RANDOM_RANGE_MS)
+        last_random_play = redis_client.get(maybe_redis_last_play_key)
+        if last_random_play and track.duration_milliseconds > RANDOM_RANGE_MS * 3:  # avoid infinite loop
+            # try to pick a different spot in the song from the last random selection
+            while start - RANDOM_RANGE_MS < int(last_random_play.decode()) < start + RANDOM_RANGE_MS:
+                start = randrange(RANDOM_RANGE_MS, track.duration_milliseconds - RANDOM_RANGE_MS)
+
+        redis_client.set(maybe_redis_last_play_key, start, ex=60)
+    else:
+        start = offset
     sp.start_playback(uris=[track_uri], position_ms=start)
     spotify_play = SpotifyPlay(user_id=user.id,
                                spotify_track_uri=track.uri,
