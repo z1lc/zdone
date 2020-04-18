@@ -22,6 +22,7 @@ from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_
     get_random_song_family, get_tracks, update_last_fm_scrobble_counts, get_top_recommendations
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
+from .themoviedb import get_stuff
 from .util import today
 from .ztasks import ZDTask, htmlize_note
 
@@ -637,3 +638,8 @@ def api_update_time():
                 return do_update_time(time, user)
             except Exception as e:
                 return failure(str(e))
+
+
+@app.route('/movies')
+def movies():
+    return get_stuff()

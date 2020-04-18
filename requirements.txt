@@ -25,3 +25,4 @@ ebisu
 pylast
 git+git://github.com/z1lc/genanki.git
 jsmin
+tmdbsimple
