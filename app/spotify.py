@@ -353,5 +353,16 @@ from grouped
 where uri not in (select * from my_artists)"""
     return [(row[0], row[1].split("spotify:artist:")[1]) for row in db.engine.execute(prepared_sql)]
 
+
 # TODO: create Spotify playlist(s) for songs from managed artists you haven't yet listened to (as a way to promote
 #  knowing an artist's full catalogue)
+
+def get_artists_images():
+    sp = get_spotify("", User.query.filter_by(username="rsanek").one())
+    to_ret = ""
+    for artist in SpotifyArtist.query.all()[:30]:
+        artist = sp.artist(artist.uri)
+        src = artist['images'][0]['url'] if artist['images'] else ''
+        name = artist['name']
+        to_ret += f"{name}<br><img src='{src}'><br>"
+    return to_ret

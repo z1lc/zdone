@@ -1,5 +1,5 @@
 from flask_login import UserMixin
-from sqlalchemy import func, UniqueConstraint
+from sqlalchemy import func, UniqueConstraint, CheckConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from . import db
@@ -70,6 +70,8 @@ class SpotifyArtist(db.Model):
     __tablename__ = "spotify_artists"
     uri = db.Column(db.String(128), primary_key=True)
     name = db.Column(db.String(128), nullable=False)
+    good_image = db.Column(db.Boolean, nullable=False, server_default='false')
+    image_override_name = db.Column(db.String(128), nullable=True)
 
     def get_bare_uri(self):
         return self.uri.split("spotify:artist:")[1]
