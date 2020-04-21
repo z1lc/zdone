@@ -99,6 +99,7 @@ class TopTrack(db.Model):
     artist_uri = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
     track_uri = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=False)
     ordinal = db.Column(db.Integer, nullable=False)
+    api_response = db.Column(db.Text) # simple dump of the exact json that was returned by the API
     __table_args__ = (
         UniqueConstraint('artist_uri', 'track_uri'),
         UniqueConstraint('artist_uri', 'ordinal'),

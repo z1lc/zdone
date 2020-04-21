@@ -1,5 +1,7 @@
 import json
 import random
+import time
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from datetime import timedelta
 from random import randrange
 
@@ -11,7 +13,7 @@ from sentry_sdk import capture_exception
 from spotipy import oauth2
 
 from app import kv, redis_client, db
-from app.models import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay, User
+from app.models import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay, User, TopTrack
 from app.util import today_datetime, today
 
 # Scopes that are currently requested for public users -- only request things that are necessary
@@ -230,37 +232,70 @@ def play_track(full_url, track_uri, user, offset=None):
     return ""
 
 
+def get_liked_page(sp, offset):
+    tries = 0
+    while tries < 10:
+        tries += 1
+        try:
+            return sp.current_user_saved_tracks(limit=50, offset=offset)['items']
+        except Exception as e:
+            continue
+    print('returned nothing')
+    return []
+
+
+def refresh_top_tracks(sp, artist_uri):
+    dropped = TopTrack.query.filter_by(artist_uri=artist_uri).delete()
+    top_tracks = sp.artist_top_tracks(artist_id=artist_uri)['tracks']
+    for ordinal, top_track in enumerate(top_tracks, 1):
+        track = add_or_get_track(sp, top_track['uri'])
+        db.session.add(TopTrack(track_uri=track.uri,
+                                artist_uri=artist_uri,
+                                ordinal=ordinal,
+                                api_response=json.dumps(top_track)))
+    db.session.commit()
+    return dropped, top_tracks
+
+
 def get_tracks(user):
+    print(f"get tracks {today_datetime()}")
     sp = get_spotify("zdone", user)
     if isinstance(sp, str):
         return None
     dedup_map = {}
     my_managed_artists = ManagedSpotifyArtist.query.filter_by(user_id=user.id, following='true').all()
+    managed_arists_uris = set([artist.spotify_artist_uri for artist in my_managed_artists])
 
     # get liked tracks with artists that are in ARTISTS
     liked_tracks = list()
-    offset = 0
-    while True:
-        saved = sp.current_user_saved_tracks(limit=50, offset=offset)
-        liked_tracks.extend(saved['items'])
-        offset += 50
-        if len(saved['items']) < 50:
-            break
+    print(f"getting liked {today_datetime()}")
+
+    pages = sp.current_user_saved_tracks(limit=1)['total'] // 50 + 1
+    offsets = [x * 50 for x in range(0, pages)]
+    with ThreadPoolExecutor() as executor:
+        for saved in executor.map(get_liked_page, [sp] * pages, offsets):
+            liked_tracks.extend(saved)
+
     for item in liked_tracks:
         track = item['track']
         artists = [artist['uri'] for artist in track['artists']]
         for artist in artists:
-            if artist in [artist.spotify_artist_uri for artist in my_managed_artists]:
+            if artist in managed_arists_uris:
                 dedup_map[track['uri']] = track
 
+    print(f"getting top 3 {today_datetime()}")
     # get top 3 tracks for each artist in ARTISTS
     for artist in my_managed_artists:
-        for top_track in sp.artist_top_tracks(artist_id=artist.spotify_artist_uri)['tracks'][:artist.num_top_tracks]:
-            dedup_map[top_track['uri']] = top_track
+        top_tracks = TopTrack.query.filter_by(spotify_artist_uri=artist.uri).all()
+        if not top_tracks:
+            _, top_tracks = refresh_top_tracks(sp, artist.uri)
+        for top_track in top_tracks[:artist.num_top_tracks]:
+            dedup_map[top_track.track_uri] = json.loads(top_track.api_response)
 
     output = dedup_map.values()
     for track in output:
         add_or_get_track(sp, track['uri'])
+    print(f"before output {today_datetime()}")
     return output
 
 
@@ -360,7 +395,7 @@ where uri not in (select * from my_artists)"""
 def get_artists_images():
     sp = get_spotify("", User.query.filter_by(username="rsanek").one())
     to_ret = ""
-    for artist in SpotifyArtist.query.all()[:30]:
+    for artist in SpotifyArtist.query.filter_by(good_image=False, image_override_name=None).all():
         artist = sp.artist(artist.uri)
         src = artist['images'][0]['url'] if artist['images'] else ''
         name = artist['name']
