@@ -23,7 +23,7 @@ from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_
 from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
     add_toodledo_task
 from .themoviedb import get_stuff
-from .util import today
+from .util import today, today_datetime
 from .ztasks import ZDTask, htmlize_note
 
 
@@ -488,9 +488,11 @@ def spotify_anki_import():
 @app.route('/spotify/download_apkg/')
 @login_required
 def spotify_download_apkg():
+    print(f"endpoint hit {today_datetime()}")
     filename = os.path.join(app.instance_path, f'songs-{current_user.username}.apkg')
     os.makedirs(app.instance_path, exist_ok=True)
     generate_track_apkg(current_user, filename)
+    print(f"before sendfile {today_datetime()}")
     return send_file(filename, as_attachment=True)
 
 

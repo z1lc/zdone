@@ -3,6 +3,7 @@ from sentry_sdk import capture_exception
 from app.models import SpotifyArtist, User
 from app.spotify import get_spotify, refresh_top_tracks
 
+# This code is scheduled to run once daily by the Heroku Scheduler, to avoid having to do this in-request.
 if __name__ == '__main__':
     print('Will update the top songs for all artists in table `spotify_artists`.')
     print('Getting artists...')

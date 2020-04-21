@@ -161,6 +161,12 @@ def get_spotify(full_url, user):
         return sp
 
 
+def bulk_add_tracks(sp, track_uris):
+    not_added_tracks = set(track_uris) - set([track.uri for track in SpotifyTrack.query.all()])
+    for track_uri in not_added_tracks:
+        add_or_get_track(sp, track_uri)
+
+
 def add_or_get_track(sp, track_uri):
     track = SpotifyTrack.query.filter_by(uri=track_uri).one_or_none()
     if not track:
@@ -244,6 +250,7 @@ def get_liked_page(sp, offset):
     return []
 
 
+# TODO: add a column for last successful refresh & only refresh once per week
 def refresh_top_tracks(sp, artist_uri):
     dropped = TopTrack.query.filter_by(artist_uri=artist_uri).delete()
     top_tracks = sp.artist_top_tracks(artist_id=artist_uri)['tracks']
@@ -283,18 +290,19 @@ def get_tracks(user):
             if artist in managed_arists_uris:
                 dedup_map[track['uri']] = track
 
-    print(f"getting top 3 {today_datetime()}")
+    print(f"getting top 3 tracks per artist {today_datetime()}")
     # get top 3 tracks for each artist in ARTISTS
     for artist in my_managed_artists:
-        top_tracks = TopTrack.query.filter_by(spotify_artist_uri=artist.uri).all()
+        top_tracks = TopTrack.query.filter_by(artist_uri=artist.spotify_artist_uri).all()
         if not top_tracks:
             _, top_tracks = refresh_top_tracks(sp, artist.uri)
         for top_track in top_tracks[:artist.num_top_tracks]:
             dedup_map[top_track.track_uri] = json.loads(top_track.api_response)
 
     output = dedup_map.values()
-    for track in output:
-        add_or_get_track(sp, track['uri'])
+
+    print(f"ensuring all tracks are in db {today_datetime()}")
+    bulk_add_tracks(sp, [track['uri'] for track in output])
     print(f"before output {today_datetime()}")
     return output
 
