@@ -17,7 +17,7 @@ if __name__ == '__main__':
         for ordinal, top_track in enumerate(top_tracks, 1):
             track = add_or_get_track(sp, top_track['uri'])
             db.session.add(TopTrack(track_uri=track.uri,
-                                    artist_uri=track.spotify_artist_uri,
+                                    artist_uri=artist.uri,
                                     ordinal=ordinal))
         db.session.commit()
         print(f'Updated mappings for artist {artist.name}, dropping {dropped} & adding {len(top_tracks)}.')
