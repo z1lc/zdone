@@ -93,6 +93,20 @@ class SpotifyPlay(db.Model):
     created_at = db.Column(db.DateTime, nullable=False)
 
 
+class TopTrack(db.Model):
+    __tablename__ = "top_tracks"
+    id = db.Column(db.Integer, primary_key=True)
+    artist_uri = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
+    track_uri = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=False)
+    ordinal = db.Column(db.Integer, nullable=False)
+    __table_args__ = (
+        UniqueConstraint('artist_uri', 'track_uri'),
+        UniqueConstraint('artist_uri', 'ordinal'),
+        CheckConstraint('ordinal >= 1'),
+        CheckConstraint('ordinal <= 10'),
+    )
+
+
 # genanki uses the `guid` column in Anki's `notes` table to deduplicate upon import. While I have updated the GUID to
 # be based upon the Spotify track URI, old notes that were imported using the original, CSV-based method have GUIDs that
 # will not match these, since Anki seems to assign GUIDs randomly instead of in some deterministic fashion. This table
