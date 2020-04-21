@@ -7,6 +7,7 @@ BASE_URL = 'https://image.tmdb.org/t/p/'
 POSTER_SIZE = 'w500'
 
 
+# TODO: finish implementing TMDB integration
 def get_stuff():
     tmdbsimple.API_KEY = kv.get('TMDB_API_KEY')
     acct = tmdbsimple.Account(session_id=kv.get('TMDB_SESSION_ID'))
