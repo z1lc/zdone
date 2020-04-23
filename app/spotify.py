@@ -402,8 +402,6 @@ where uri not in (select * from my_artists)"""
 
 # TODO: create Spotify playlist(s) for songs from managed artists you haven't yet listened to (as a way to promote
 #  knowing an artist's full catalogue)
-
-# TODO: go through popular artists' images to allow creation of Artist note type; see 'artist_note_type.md'
 def get_artists_images():
     sp = get_spotify("", User.query.filter_by(username="rsanek").one())
     to_ret = ""
