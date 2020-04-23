@@ -407,8 +407,11 @@ where uri not in (select * from my_artists)"""
 def get_artists_images():
     sp = get_spotify("", User.query.filter_by(username="rsanek").one())
     to_ret = ""
-    for artist in SpotifyArtist.query.filter_by(good_image=False, image_override_name=None).all():
-        artist = sp.artist(artist.uri)
+    for artist_uri in db.engine.execute("""select uri
+from spotify_artists
+where uri in (select spotify_artist_uri from managed_spotify_artists where user_id in (1, 2, 3, 4, 5, 6))
+and not good_image and image_override_name is null"""):
+        artist = sp.artist(artist_uri[0])
         src = artist['images'][0]['url'] if artist['images'] else ''
         name = artist['name']
         to_ret += f"{name}<br><img src='{src}'><br>"
