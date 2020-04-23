@@ -295,7 +295,7 @@ def get_tracks(user):
     for artist in my_managed_artists:
         top_tracks = TopTrack.query.filter_by(artist_uri=artist.spotify_artist_uri).all()
         if not top_tracks:
-            _, top_tracks = refresh_top_tracks(sp, artist.uri)
+            _, top_tracks = refresh_top_tracks(sp, artist.spotify_artist_uri)
         for top_track in top_tracks[:artist.num_top_tracks]:
             dedup_map[top_track.track_uri] = json.loads(top_track.api_response)
 
