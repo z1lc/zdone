@@ -254,14 +254,17 @@ def get_liked_page(sp, offset):
 def refresh_top_tracks(sp, artist_uri):
     dropped = TopTrack.query.filter_by(artist_uri=artist_uri).delete()
     top_tracks = sp.artist_top_tracks(artist_id=artist_uri)['tracks']
+    to_return = []
     for ordinal, top_track in enumerate(top_tracks, 1):
         track = add_or_get_track(sp, top_track['uri'])
-        db.session.add(TopTrack(track_uri=track.uri,
+        top_track_db = TopTrack(track_uri=track.uri,
                                 artist_uri=artist_uri,
                                 ordinal=ordinal,
-                                api_response=json.dumps(top_track)))
+                                api_response=json.dumps(top_track))
+        db.session.add(top_track_db)
+        to_return.append(top_track_db)
     db.session.commit()
-    return dropped, top_tracks
+    return dropped, to_return
 
 
 def get_tracks(user):
