@@ -13,7 +13,7 @@ SPOTIFY_TRACK_DECK_ID = 1586000000000
 
 class AnkiCard(Enum):
     AUDIO_TO_ARTIST = 1
-    AUDIO_AND_ALBUMART_TO_ARTIST = 2
+    AUDIO_AND_ALBUMART_TO_ALBUM = 2
     ARTIST_IMAGE_TO_NAME = 3
     ARTIST_NAME_TO_IMAGE = 4
 
@@ -128,9 +128,9 @@ def get_track_model(user):
         }]
     if should_generate_albumart_card:
         templates.append({
-            'name': 'Audio+AlbumArt>Artist',
-            'qfmt': get_front(AnkiCard.AUDIO_AND_ALBUMART_TO_ARTIST, api_key, rs_anki_enabled),
-            'afmt': get_back(AnkiCard.AUDIO_AND_ALBUMART_TO_ARTIST, rs_anki_enabled),
+            'name': 'Audio+AlbumArt>Album',
+            'qfmt': get_front(AnkiCard.AUDIO_AND_ALBUMART_TO_ALBUM, api_key, rs_anki_enabled),
+            'afmt': get_back(AnkiCard.AUDIO_AND_ALBUMART_TO_ALBUM, rs_anki_enabled),
         })
     return genanki.Model(
         # the legacy model ID was from when I imported my model to everyone else. I migrated to the publically-facing,
@@ -160,7 +160,7 @@ def get_back(card_type, rs_anki_enabled):
 <li>{{Album}}</li>
 </ul>"""
         image_part = "{{Album Art}}"
-    elif card_type == AnkiCard.AUDIO_AND_ALBUMART_TO_ARTIST:
+    elif card_type == AnkiCard.AUDIO_AND_ALBUMART_TO_ALBUM:
         text_part = """What album?
 <hr>
 <ul>
@@ -197,7 +197,7 @@ def get_front(card_type, api_key, rs_anki_enabled):
 <input id="jump" type="submit" onclick="jump()" value="Jump to Random Location"><br><br>
 <div id="error" style="color:red"></div>"""
         image_part = ""
-    elif card_type == AnkiCard.AUDIO_AND_ALBUMART_TO_ARTIST:
+    elif card_type == AnkiCard.AUDIO_AND_ALBUMART_TO_ALBUM:
         text_part = """What album?<br>
 <input id="jump" type="submit" onclick="jump()" value="Jump to Random Location"><br><br>
 <div id="error" style="color:red"></div>"""
