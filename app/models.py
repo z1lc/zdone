@@ -70,6 +70,7 @@ class SpotifyArtist(db.Model):
     __tablename__ = "spotify_artists"
     uri = db.Column(db.String(128), primary_key=True)
     name = db.Column(db.String(128), nullable=False)
+    spotify_image_url = db.Column(db.Text)
     good_image = db.Column(db.Boolean, nullable=False, server_default='false')
     image_override_name = db.Column(db.String(128), nullable=True)
 

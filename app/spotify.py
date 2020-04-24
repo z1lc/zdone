@@ -105,8 +105,12 @@ def get_cached_token_info(sp_oauth, user):
 def add_or_get_artist(sp, spotify_artist_uri):
     artist = SpotifyArtist.query.filter_by(uri=spotify_artist_uri).one_or_none()
     if not artist:
-        artist_name = sp.artist(spotify_artist_uri)['name']
-        artist = SpotifyArtist(uri=spotify_artist_uri, name=artist_name)
+        sp_artist = sp.artist(spotify_artist_uri)
+        artist = SpotifyArtist(
+            uri=spotify_artist_uri,
+            name=sp_artist['name'],
+            spotify_image_url=sp_artist['images'][0]['url'] if sp_artist['images'] else None
+        )
         db.session.add(artist)
         db.session.commit()
     return artist
@@ -186,8 +190,7 @@ def do_add_artists(user, artist_uris, remove_not_included=False):
     existing_managed_artist_uris = [msa.spotify_artist_uri for msa in
                                     ManagedSpotifyArtist.query.filter_by(user_id=user.id).all()]
     currently_unfollowed_managed_artist_uris = [msa.spotify_artist_uri for msa in
-                                                ManagedSpotifyArtist.query.filter_by(user_id=user.id,
-                                                                                     following='false').all()]
+                                                get_followed_managed_spotify_artists_for_user(user)]
 
     to_add = set(artist_uris).difference(set(existing_managed_artist_uris))
     for artist_uri in to_add:
@@ -267,13 +270,17 @@ def refresh_top_tracks(sp, artist_uri):
     return dropped, to_return
 
 
+def get_followed_managed_spotify_artists_for_user(user):
+    return ManagedSpotifyArtist.query.filter_by(user_id=user.id, following='true').all()
+
+
 def get_tracks(user):
     print(f"get tracks {today_datetime()}")
     sp = get_spotify("zdone", user)
     if isinstance(sp, str):
         return None
     dedup_map = {}
-    my_managed_artists = ManagedSpotifyArtist.query.filter_by(user_id=user.id, following='true').all()
+    my_managed_artists = get_followed_managed_spotify_artists_for_user(user)
     managed_arists_uris = set([artist.spotify_artist_uri for artist in my_managed_artists])
 
     # get liked tracks with artists that are in ARTISTS
@@ -408,7 +415,7 @@ def get_artists_images():
     for artist_uri in db.engine.execute("""select uri
 from spotify_artists
 where uri in (select spotify_artist_uri from managed_spotify_artists where user_id in (1, 2, 3, 4, 5, 6))
-and not good_image and image_override_name is null"""):
+and not ((good_image and spotify_image_url is not null) or image_override_name is not null)"""):
         artist = sp.artist(artist_uri[0])
         src = artist['images'][0]['url'] if artist['images'] else ''
         name = artist['name']

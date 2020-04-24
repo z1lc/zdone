@@ -1,7 +1,7 @@
 # Spotify Anki Artist note type
 
 ## Fields
- * Name
+ * ~~Name~~
  * Songs
    * only ones you have in your library/have listened to?
  * Albums
@@ -10,12 +10,12 @@
  * Similar artists
    * only other artists you also follow? or those are at least prioritized vs. listing others?
  * Genres
- * Image
-   * sourced from Spotify / provided backup image if one from Spotify sucks
+ * ~~Image~~
+   * ~~sourced from Spotify / provided backup image if one from Spotify sucks~~
 
 ## Cards
- * image>name
- * name>image
+ * ~~image>name~~
+ * ~~name>image~~
  * name+image>song
  * songs>name
  * name+image>genres
