@@ -493,7 +493,7 @@ def spotify_download_apkg():
     os.makedirs(app.instance_path, exist_ok=True)
     generate_track_apkg(current_user, filename)
     print(f"before sendfile {today_datetime()}")
-    return send_file(filename, as_attachment=True)
+    return send_file(filename, as_attachment=True, add_etags=False, cache_timeout=0)
 
 
 # TODO: remove this endpoint once people are migrated off
