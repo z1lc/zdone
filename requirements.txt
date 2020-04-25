@@ -24,6 +24,7 @@ pylast==3.2.1
 jsmin==2.2.2
 tmdbsimple==2.2.0
 email_validator==1.0.5
+pytest==5.4.1
 
 git+git://github.com/z1lc/spotipy.git
 git+git://github.com/z1lc/genanki.git
