@@ -6,6 +6,7 @@ import pytest
 from app import app
 
 
+# see https://flask.palletsprojects.com/en/1.1.x/testing/
 @pytest.fixture
 def client():
     db_fd, app.app.config['DATABASE'] = tempfile.mkstemp()
