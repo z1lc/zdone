@@ -24,7 +24,8 @@ pylast==3.2.1
 jsmin==2.2.2
 tmdbsimple==2.2.0
 email_validator==1.0.5
+pytest==5.4.1
 
-git+git://github.com/z1lc/spotipy.git
-git+git://github.com/z1lc/genanki.git
-git+git://github.com/z1lc/toodledo-python.git@f77d4b97c56e610f9c6d5f6f11da49ed3dfabc72
+git+git://github.com/z1lc/spotipy.git#egg=spotipy
+git+git://github.com/z1lc/genanki.git#egg=genanki
+git+git://github.com/z1lc/toodledo-python.git@f77d4b97c56e610f9c6d5f6f11da49ed3dfabc72#egg=Toodledo
