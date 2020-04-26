@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
+from typing import Dict, Any
 
 import pytz
 
+JsonDict = Dict[str, Any]
 
 def today():
     return today_datetime().date()

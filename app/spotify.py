@@ -1,9 +1,9 @@
 import json
 import random
-import time
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from random import randrange
+from typing import Optional, List, Tuple
 
 import pytz
 import requests
@@ -14,38 +14,38 @@ from spotipy import oauth2
 
 from app import kv, redis_client, db
 from app.models import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay, User, TopTrack
-from app.util import today_datetime, today
+from app.util import today_datetime, today, JsonDict
 
 # Scopes that are currently requested for public users -- only request things that are necessary
-MIN_SCOPES = 'user-read-playback-state ' \
-             'user-modify-playback-state ' \
-             'user-read-currently-playing ' \
-             'user-library-read ' \
-             'user-top-read ' \
-             'user-follow-read '
+MIN_SCOPES: str = 'user-read-playback-state ' \
+                  'user-modify-playback-state ' \
+                  'user-read-currently-playing ' \
+                  'user-library-read ' \
+                  'user-top-read ' \
+                  'user-follow-read '
 
 # Scopes that are requested for 'internal' users -- request generously to ease testing
-ALL_SCOPES = 'user-read-playback-state ' \
-             'user-modify-playback-state ' \
-             'user-read-currently-playing ' \
-             'user-library-read ' \
-             'user-top-read ' \
-             'user-read-playback-position ' \
-             'user-read-recently-played ' \
-             'user-follow-read ' \
-             'user-follow-modify ' \
-             'playlist-read-collaborative ' \
-             'playlist-modify-public ' \
-             'playlist-read-private ' \
-             'playlist-modify-private'
-NUM_TOP_TRACKS = 3
+ALL_SCOPES: str = 'user-read-playback-state ' \
+                  'user-modify-playback-state ' \
+                  'user-read-currently-playing ' \
+                  'user-library-read ' \
+                  'user-top-read ' \
+                  'user-read-playback-position ' \
+                  'user-read-recently-played ' \
+                  'user-follow-read ' \
+                  'user-follow-modify ' \
+                  'playlist-read-collaborative ' \
+                  'playlist-modify-public ' \
+                  'playlist-read-private ' \
+                  'playlist-modify-private'
+NUM_TOP_TRACKS: int = 3
 # randomized song playback will avoid starting within RANDOM_RANGE_MS of beginning or end of song.
 # If multiple random calls happen in succession, it will also avoid restarting within 2 * RANDOM_RANGE_MS of the most
 # recent random playback.
-RANDOM_RANGE_MS = 10_000
+RANDOM_RANGE_MS: int = 10_000
 
 
-def follow_unfollow_artists(user: User):
+def follow_unfollow_artists(user: User) -> None:
     sp = get_spotify("", user)
     results = list()
     last_artist_id = None
@@ -59,7 +59,6 @@ def follow_unfollow_artists(user: User):
         if not last_artist_id:
             break
     do_add_artists(user, [artist['uri'] for artist in results], True)
-    return
 
 
 def update_last_fm_scrobble_counts(user: User):
@@ -91,7 +90,7 @@ def save_token_info(token_info, user: User):
     db.session.commit()
 
 
-def get_cached_token_info(sp_oauth, user: User):
+def get_cached_token_info(sp_oauth, user: User) -> Optional[JsonDict]:
     maybe_token_info = user.spotify_token_json
     if maybe_token_info:
         token_info = json.loads(maybe_token_info)
@@ -102,7 +101,7 @@ def get_cached_token_info(sp_oauth, user: User):
     return None
 
 
-def add_or_get_artist(sp, spotify_artist_uri):
+def add_or_get_artist(sp, spotify_artist_uri: str):
     artist = SpotifyArtist.query.filter_by(uri=spotify_artist_uri).one_or_none()
     if not artist:
         sp_artist = sp.artist(spotify_artist_uri)
@@ -116,7 +115,7 @@ def add_or_get_artist(sp, spotify_artist_uri):
     return artist
 
 
-def populate_null_artists(user: User):
+def populate_null_artists(user: User) -> None:
     try:
         unpopulated_artists = SpotifyArtist.query.filter_by(name='').all()
         sp = get_spotify("", user)
@@ -125,10 +124,9 @@ def populate_null_artists(user: User):
         db.session.commit()
     except Exception as e:
         capture_exception(e)
-    return
 
 
-def maybe_get_spotify_authorize_url(full_url, user: User):
+def maybe_get_spotify_authorize_url(full_url: str, user: User) -> Optional[str]:
     sp_oauth = oauth2.SpotifyOAuth(
         scope=ALL_SCOPES if user.id <= 8 else MIN_SCOPES,
         client_id="03f34cada5cc46a5929be06ff7532321",
@@ -145,10 +143,10 @@ def maybe_get_spotify_authorize_url(full_url, user: User):
             code = sp_oauth.parse_response_code(full_url)
             token_info = sp_oauth.get_access_token(code)
             save_token_info(token_info, user)
-    return ""
+    return None
 
 
-def get_spotify(full_url, user: User):
+def get_spotify(full_url: str, user: User):
     sp_oauth = oauth2.SpotifyOAuth(
         scope=ALL_SCOPES if user.id <= 8 else MIN_SCOPES,
         client_id="03f34cada5cc46a5929be06ff7532321",
@@ -165,13 +163,13 @@ def get_spotify(full_url, user: User):
         return sp
 
 
-def bulk_add_tracks(sp, track_uris):
+def bulk_add_tracks(sp, track_uris: List[str]) -> None:
     not_added_tracks = set(track_uris) - set([track.uri for track in SpotifyTrack.query.all()])
     for track_uri in not_added_tracks:
         add_or_get_track(sp, track_uri)
 
 
-def add_or_get_track(sp, track_uri):
+def add_or_get_track(sp, track_uri: str) -> SpotifyTrack:
     track = SpotifyTrack.query.filter_by(uri=track_uri).one_or_none()
     if not track:
         sp_track = sp.track(track_uri)
@@ -185,7 +183,7 @@ def add_or_get_track(sp, track_uri):
     return track
 
 
-def do_add_artists(user: User, artist_uris, remove_not_included=False):
+def do_add_artists(user: User, artist_uris: List[str], remove_not_included: bool = False) -> None:
     sp = get_spotify("", user)
     existing_managed_artist_uris = [msa.spotify_artist_uri for msa in
                                     ManagedSpotifyArtist.query.filter_by(user_id=user.id).all()]
@@ -214,7 +212,7 @@ def do_add_artists(user: User, artist_uris, remove_not_included=False):
     db.session.commit()
 
 
-def play_track(full_url, track_uri, user: User, offset=None):
+def play_track(full_url: str, track_uri: str, user: User, offset: Optional[int] = None):
     sp = get_spotify(full_url, user)
     if isinstance(sp, str):
         redis_client.set(f"last_spotify_track-{user.username}", track_uri.encode(), ex=10)
@@ -241,7 +239,7 @@ def play_track(full_url, track_uri, user: User, offset=None):
     return ""
 
 
-def get_liked_page(sp, offset):
+def get_liked_page(sp, offset: int) -> List[JsonDict]:
     tries = 0
     while tries < 10:
         tries += 1
@@ -254,7 +252,7 @@ def get_liked_page(sp, offset):
 
 
 # TODO: add a column for last successful refresh & only refresh once per week
-def refresh_top_tracks(sp, artist_uri):
+def refresh_top_tracks(sp, artist_uri: str):
     dropped = TopTrack.query.filter_by(artist_uri=artist_uri).delete()
     top_tracks = sp.artist_top_tracks(artist_id=artist_uri)['tracks']
     to_return = []
@@ -274,11 +272,11 @@ def get_followed_managed_spotify_artists_for_user(user: User):
     return ManagedSpotifyArtist.query.filter_by(user_id=user.id, following='true').all()
 
 
-def get_tracks(user: User):
+def get_tracks(user: User) -> List[JsonDict]:
     print(f"get tracks {today_datetime()}")
     sp = get_spotify("zdone", user)
     if isinstance(sp, str):
-        return None
+        return []
     dedup_map = {}
     my_managed_artists = get_followed_managed_spotify_artists_for_user(user)
     managed_arists_uris = set([artist.spotify_artist_uri for artist in my_managed_artists])
@@ -314,15 +312,15 @@ def get_tracks(user: User):
     print(f"ensuring all tracks are in db {today_datetime()}")
     bulk_add_tracks(sp, [track['uri'] for track in output])
     print(f"before output {today_datetime()}")
-    return output
+    return list(output)
 
 
-def get_anki_csv(user: User):
+def get_anki_csv(user: User) -> str:
     tracks = get_tracks(user)
     return "".join([create_csv_line(track) for track in tracks])
 
 
-def create_csv_line(track):
+def create_csv_line(track) -> str:
     csv_line = "\""
     csv_line += track['uri'] + "\",\""
     csv_line += track['name'].replace('"', '\'') + "\",\""
@@ -335,7 +333,7 @@ def create_csv_line(track):
     return csv_line
 
 
-def get_top_liked():
+def get_top_liked() -> JsonDict:
     sp = get_spotify("", User.query.filter_by(username="rsanek").one())
     results = sp.current_user_saved_tracks(limit=50)
     artists = []
@@ -362,7 +360,7 @@ def get_top_liked():
     }
 
 
-def get_random_song_family():
+def get_random_song_family() -> JsonDict:
     user_ids = [1, 4, 5]
     user_id = random.choice(user_ids)
     managed_artist = random.choice(ManagedSpotifyArtist.query.filter_by(following='true', user_id=user_id).all())
@@ -391,7 +389,7 @@ def get_random_song_family():
     }
 
 
-def get_top_recommendations(user: User):
+def get_top_recommendations(user: User) -> List[Tuple[str, str]]:
     prepared_sql = f"""with my_artists as (select spotify_artist_uri
 from managed_spotify_artists
 where user_id = {user.id}),
@@ -409,7 +407,7 @@ where uri not in (select * from my_artists)"""
 
 # TODO: create Spotify playlist(s) for songs from managed artists you haven't yet listened to (as a way to promote
 #  knowing an artist's full catalogue)
-def get_artists_images():
+def get_artists_images() -> str:
     sp = get_spotify("", User.query.filter_by(username="rsanek").one())
     to_ret = ""
     for artist_uri in db.engine.execute("""select uri
