@@ -26,6 +26,8 @@ tmdbsimple==2.2.0
 email_validator==1.0.5
 pytest==5.4.1
 mypy==0.770
+trello==0.9.4
+
 
 git+git://github.com/z1lc/spotipy.git#egg=spotipy
 git+git://github.com/z1lc/genanki.git#egg=genanki

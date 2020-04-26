@@ -1,30 +1,27 @@
 import itertools
 import os
 import uuid
-from datetime import timedelta, datetime
 from json import dumps
-from typing import List, Tuple, Optional
 
 from flask import render_template, request, make_response, jsonify, redirect, send_file
 from flask import url_for, flash
 from flask_login import current_user, login_user, logout_user
 from flask_login import login_required
 from sentry_sdk import last_event_id
-from trello import TrelloClient
 from werkzeug.urls import url_parse
 
-from . import redis_client, app, db, socketio, kv
+from . import redis_client, app, db, kv
 from .anki import generate_track_apkg
 from .forms import LoginForm, RegistrationForm
-from .models import User, TaskCompletion, ManagedSpotifyArtist, SpotifyArtist
-from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, \
-    populate_null_artists, follow_unfollow_artists, \
-    get_random_song_family, get_tracks, update_last_fm_scrobble_counts, get_top_recommendations, get_artists_images
-from .taskutils import get_toodledo_tasks, get_habitica_tasks, complete_habitica_task, complete_toodledo_task, \
-    add_toodledo_task
+from .models import User, ManagedSpotifyArtist, SpotifyArtist
+from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, populate_null_artists, \
+    follow_unfollow_artists, get_random_song_family, get_tracks, update_last_fm_scrobble_counts, \
+    get_top_recommendations, get_artists_images
+from .taskutils import add_toodledo_task, get_all_tasks, do_update_time, get_homepage_info, get_open_trello_lists, \
+    do_update_task, get_task_order_from_db
 from .themoviedb import get_stuff
-from .util import today, today_datetime
-from .ztasks import ZDTask, htmlize_note
+from .util import today, today_datetime, failure, success, api_key_failure, jsonp, validate_api_key
+from .ztasks import htmlize_note
 
 
 @app.errorhandler(500)
@@ -94,10 +91,6 @@ def show_priorities():
                            type='priorities')
 
 
-TOODLEDO_UNORDERED_TASKS_PLACEHOLDER = ZDTask(
-    "-1", "[all unordered Toodledo Tasks]", 0, None, None, "", "", "unorderedToodledo", [])
-
-
 @app.route('/list')
 @login_required
 def enhanced_list():
@@ -134,52 +127,6 @@ def show_dependencies():
                            type='dependencies')
 
 
-def get_all_tasks(user: User = current_user) -> List[ZDTask]:
-    return get_toodledo_tasks(redis_client, user) + get_habitica_tasks(user)
-
-
-def get_task_order_from_db(order_type, user: User = current_user) -> Tuple[List[ZDTask], List[ZDTask]]:
-    currently_sorted_in_db = getattr(user, order_type)
-    if currently_sorted_in_db:
-        currently_sorted_in_db = currently_sorted_in_db.split("|||")
-    else:
-        currently_sorted_in_db = []
-    sorted_tasks, unsorted_tasks = [], []
-    all_tasks: List[ZDTask] = get_all_tasks(user)
-    task_map = {t.name: t for t in all_tasks}
-    task_map[TOODLEDO_UNORDERED_TASKS_PLACEHOLDER.name] = TOODLEDO_UNORDERED_TASKS_PLACEHOLDER
-    for name in currently_sorted_in_db:
-        if name in task_map:
-            sorted_tasks.append(task_map[name])
-            del task_map[name]
-
-    for task in task_map.values():
-        if task.is_repeating():
-            unsorted_tasks.append(task)
-
-    if TOODLEDO_UNORDERED_TASKS_PLACEHOLDER in unsorted_tasks:
-        del unsorted_tasks[unsorted_tasks.index(TOODLEDO_UNORDERED_TASKS_PLACEHOLDER)]
-
-    return sorted_tasks, unsorted_tasks
-
-
-def success():
-    return jsonify({
-        'result': 'success'
-    }), 200
-
-
-def failure(reason="", code=400):
-    return jsonify({
-        'result': 'failure',
-        'reason': reason
-    }), code
-
-
-def api_key_failure():
-    return failure("Make sure you are passing a valid API key in the x-api-key header.", 401)
-
-
 @app.route('/set_priorities', methods=['POST'])
 @login_required
 def update_priorities():
@@ -192,50 +139,6 @@ def update_priorities():
 @login_required
 def update_dependencies():
     current_user.dependencies = request.get_json()["dependencies"]
-    db.session.commit()
-    return success()
-
-
-def do_update_task(update, service, task_id, subtask_id, duration_seconds=0, user: User = current_user):
-    if update == "defer":
-        redis_client.append("hidden:" + user.username + ":" + str(today()), (task_id + "|||").encode())
-        redis_client.expire("hidden:" + user.username + ":" + str(today()), timedelta(days=7))
-        # can no longer use cached tasks since we have to re-sort
-        redis_client.delete("toodledo:" + user.username + ":last_mod")
-    elif update == "complete":
-        if service == "habitica":
-            complete_habitica_task(task_id, subtask_id, user)
-        elif service == "toodledo":
-            if subtask_id:
-                complete_toodledo_task(subtask_id, user)
-            else:
-                complete_toodledo_task(task_id, user)
-        else:
-            return failure(f"unexpected service type '{service}'")
-
-        task_completion = TaskCompletion(user_id=user.id, service=service, task_id=task_id, subtask_id=subtask_id,
-                                         duration_seconds=duration_seconds, at=datetime.now())
-        db.session.add(task_completion)
-        db.session.commit()
-    else:
-        return failure(f"unexpected update type '{update}'")
-
-    length = 0.0
-    if not subtask_id:
-        length = [t.length_minutes for i, t in enumerate(get_all_tasks(user))
-                  if t.service == service and t.id == task_id][0]
-    socketio.emit(user.api_key, {
-        'update': update,
-        'service': service,
-        'task_id': task_id,
-        'subtask_id': subtask_id if subtask_id else '',
-        'length_minutes': length
-    })
-    return success()
-
-
-def do_update_time(time, user: User = current_user):
-    user.maximum_minutes_per_day = max(0, min(1440, int(time)))
     db.session.commit()
     return success()
 
@@ -269,101 +172,6 @@ def add_task():
 @login_required
 def update_time():
     return do_update_time(request.get_json()["maximum_minutes_per_day"])
-
-
-def get_homepage_info(user: User = current_user, skew_sort=False):
-    minutes_completed_today = 0.0
-    tasks_completed, tasks_to_do, tasks_backlog, nonrecurring_tasks_coming_up = [], [], [], []
-    prioritized_tasks, unprioritized_tasks = get_task_order_from_db("priorities", user)
-    for task in prioritized_tasks:
-        if task.completed_today() and task not in tasks_completed:
-            minutes_completed_today += task.length_minutes
-            tasks_completed.append(task)
-
-    task_ids_to_hide = redis_client.get("hidden:" + user.username + ":" + str(today()))
-    task_ids_to_hide = [] if task_ids_to_hide is None else task_ids_to_hide.decode().split("|||")
-
-    total_minutes = user.maximum_minutes_per_day
-    minutes_left_to_schedule = total_minutes - minutes_completed_today
-
-    i = 0
-    minutes_allocated = 0.0
-    all_tasks = get_all_tasks(user)
-    # try sorting by skew
-    if skew_sort:
-        all_tasks.sort(key=lambda t: (t.skew, -t.interval), reverse=True)
-    while i < len(all_tasks):
-        task = all_tasks[i]
-        if task.id not in task_ids_to_hide \
-                and not task.completed_today():
-            if task.due_date is not None and task.due_date <= today():
-                # add 4 minutes to allow some space for non-round-number tasks to be scheduled
-                if task.length_minutes <= (minutes_left_to_schedule + 4) and task not in tasks_to_do:
-                    tasks_to_do.append(task)
-                    minutes_left_to_schedule -= task.length_minutes
-                    minutes_allocated += task.length_minutes
-                elif task not in tasks_backlog:
-                    tasks_backlog.append(task)
-            elif not task.is_repeating() and \
-                    (task.due_date is not None and task.due_date <= (today() + timedelta(days=1))) and \
-                    task not in nonrecurring_tasks_coming_up:
-                nonrecurring_tasks_coming_up.append(task)
-        i += 1
-
-    ordering = [t.name for t in get_task_order_from_db("dependencies", user)[0]]
-    sorted_tasks_to_do: List[Tuple[int, ZDTask]] = []  # int in Tuple is priority; lower is better
-    for task in tasks_to_do:
-        if task.name in ordering:
-            sorted_tasks_to_do.append((ordering.index(task.name), task))
-        else:
-            sorted_tasks_to_do.append((ordering.index(TOODLEDO_UNORDERED_TASKS_PLACEHOLDER.name)
-                                       if TOODLEDO_UNORDERED_TASKS_PLACEHOLDER.name in ordering else 0,
-                                       task))
-
-    sorted_tasks_to_do.sort(key=lambda tup: tup[0])
-
-    times = {
-        'minutes_completed_today': minutes_completed_today,
-        'minutes_allocated': minutes_allocated,
-        'maximum_minutes_per_day': user.maximum_minutes_per_day
-    }
-    denom = times['minutes_completed_today'] + times['minutes_allocated']
-    percent_done = int(times['minutes_completed_today'] * 100 / denom) if denom > 0 else 0
-    tasks_without_required_fields = get_tasks_without_required_fields(all_tasks)
-    return {
-        "tasks_completed": list(tasks_completed),
-        "tasks_to_do": tasks_to_do if skew_sort else [task for _, task in sorted_tasks_to_do],
-        "tasks_backlog": list(tasks_backlog),
-        "tasks_without_required_fields": tasks_without_required_fields,
-        "nonrecurring_tasks_coming_up": list(nonrecurring_tasks_coming_up),
-        "times": times,
-        "num_unsorted_tasks": len(unprioritized_tasks),
-        "percentage": min(100, max(0, percent_done)),
-        "background": "red !important" if times['minutes_completed_today'] < 30 else "#2196F3 !important"
-    }
-
-
-def get_tasks_without_required_fields(all_tasks):
-    bad_tasks = []
-    for task in all_tasks:
-        if task.completed_datetime is None:
-            if (task.length_minutes is None or task.length_minutes == 0) or \
-                    task.due_date is None:
-                bad_tasks.append(task)
-
-    return bad_tasks
-
-
-def get_open_trello_lists():
-    if current_user.trello_api_key and current_user.trello_api_access_token:
-        client = TrelloClient(
-            api_key=current_user.trello_api_key,
-            api_secret=current_user.trello_api_access_token
-        )
-        backlog_board = [board for board in client.list_boards() if board.name == 'Backlogs'][0]
-
-        return backlog_board.list_lists('open')
-    return []
 
 
 @app.context_processor
@@ -525,15 +333,6 @@ def api_play_song_v2(api_key, track_uri, callback_function_name):
     return jsonp(callback_function_name, success())
 
 
-def jsonp(function_name, payload):
-    if isinstance(payload, str):
-        return f"{function_name}({payload})"
-    elif isinstance(payload, tuple):
-        # we've received payload from a success() or failure() method
-        payload = payload[0].get_data().decode('utf-8').replace('\n', '')
-        return f"{function_name}({payload})"
-
-
 @app.route('/')
 @app.route("/index")
 @login_required
@@ -565,10 +364,6 @@ def index():
                            num_unsorted_tasks=info['num_unsorted_tasks'],
                            percentage=info['percentage'],
                            background=info['background'])
-
-
-def validate_api_key(api_key: str) -> Optional[User]:
-    return User.query.filter_by(api_key=api_key).one() if api_key else None
 
 
 @app.route("/api")
