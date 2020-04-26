@@ -13,6 +13,7 @@ from flask_login import current_user
 from habitipy import Habitipy
 from requests import HTTPError
 from toodledo import Toodledo
+# watch out, this dependency is actually py-trello
 from trello import TrelloClient
 
 from app import kv, redis_client, db, socketio
