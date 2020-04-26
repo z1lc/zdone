@@ -92,7 +92,7 @@ def get_habitica_tasks(user: User = current_user) -> List[ZDTask]:
                 sub_tasks.append(ZDSubTask(
                     subtask['id'],
                     subtask['text'],
-                    today() if subtask['completed'] else None,
+                    today_datetime() if subtask['completed'] else None,
                     "",
                     "habitica"))
 

@@ -373,7 +373,7 @@ def get_random_song_family() -> JsonDict:
     random_artists_all_users = [pair[1].name for pair in
                                 db.session.query(ManagedSpotifyArtist, SpotifyArtist)
                                     .join(ManagedSpotifyArtist)
-                                    .filter(ManagedSpotifyArtist.user_id.in_(user_ids))
+                                    .filter(ManagedSpotifyArtist.user_id.in_(user_ids))  # type: ignore
                                     .all()]
 
     final_artists = [correct_artist]

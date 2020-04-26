@@ -7,7 +7,7 @@ def get_con():
     return psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require')
 
 
-def get(key):
+def get(key) -> str:
     conn = get_con()
     cur = conn.cursor()
     cur.execute("SELECT v FROM kv WHERE k='{key}'".format(key=key))
@@ -19,7 +19,7 @@ def get(key):
     return res
 
 
-def put(key, value):
+def put(key, value) -> None:
     conn = get_con()
     cur = conn.cursor()
     cur.execute("INSERT INTO kv(k, v) VALUES (%s, %s) ON CONFLICT (k) DO UPDATE SET v = %s",

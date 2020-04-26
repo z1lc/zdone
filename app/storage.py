@@ -6,6 +6,7 @@ from toodledo import TokenStorageFile
 
 from app.models import User
 from . import db
+from .util import JsonDict
 
 
 class TokenStoragePostgres(TokenStorageFile):
@@ -14,9 +15,9 @@ class TokenStoragePostgres(TokenStorageFile):
     def __init__(self, path):
         super().__init__(path)
 
-    def Save(self, token):
+    def Save(self, token) -> None:
         User.query.get(int(self.path)).toodledo_token_json = dumps(token)
         db.session.commit()
 
-    def Load(self):
+    def Load(self) -> JsonDict:
         return loads(User.query.get(int(self.path)).toodledo_token_json)

@@ -3,7 +3,7 @@ import os
 import uuid
 from datetime import timedelta, datetime
 from json import dumps
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from flask import render_template, request, make_response, jsonify, redirect, send_file
 from flask import url_for, flash
@@ -489,7 +489,7 @@ def spotify_anki_import():
 @login_required
 def spotify_download_apkg():
     print(f"endpoint hit {today_datetime()}")
-    filename = os.path.join(app.instance_path, f'songs-{current_user.username}.apkg')
+    filename: str = os.path.join(app.instance_path, f'songs-{current_user.username}.apkg')
     os.makedirs(app.instance_path, exist_ok=True)
     generate_track_apkg(current_user, filename)
     print(f"before sendfile {today_datetime()}")
@@ -512,6 +512,8 @@ def api_play_song():
 @app.route("/api/<api_key>/play/<track_uri>/<callback_function_name>")
 def api_play_song_v2(api_key, track_uri, callback_function_name):
     user = validate_api_key(api_key)
+    if not user:
+        return api_key_failure()
     offset = request.args.get('offset') if "offset" in request.args else None
     try:
         play_track(request.url, track_uri, user, offset)
@@ -565,7 +567,7 @@ def index():
                            background=info['background'])
 
 
-def validate_api_key(api_key):
+def validate_api_key(api_key: str) -> Optional[User]:
     return User.query.filter_by(api_key=api_key).one() if api_key else None
 
 

@@ -1,15 +1,17 @@
 from enum import Enum
-from typing import Dict
+from typing import Dict, List, Optional
 
 import genanki
+from genanki import Model, Deck
 from jsmin import jsmin
 
 from app.models import LegacySpotifyTrackNoteGuidMapping, SpotifyArtist, User
 from app.spotify import get_tracks, get_followed_managed_spotify_artists_for_user
+from app.util import JsonDict
 
-SPOTIFY_TRACK_MODEL_ID = 1586000000000
-SPOTIFY_ARTIST_MODEL_ID = 1587000000000
-SPOTIFY_TRACK_DECK_ID = 1586000000000
+SPOTIFY_TRACK_MODEL_ID: int = 1586000000000
+SPOTIFY_ARTIST_MODEL_ID: int = 1587000000000
+SPOTIFY_TRACK_DECK_ID: int = 1586000000000
 
 
 class AnkiCard(Enum):
@@ -38,12 +40,12 @@ class SpotifyArtistNote(genanki.Note):
         return genanki.guid_for(self.fields[0])
 
 
-def generate_track_apkg(user: User, filename):
-    deck = genanki.Deck(
+def generate_track_apkg(user: User, filename: str) -> None:
+    deck: Deck = Deck(
         SPOTIFY_TRACK_DECK_ID,
         'Spotify Tracks')
-    track_model = get_track_model(user)
-    artist_model = get_artist_model(user)
+    track_model: Model = get_track_model(user)
+    artist_model: Model = get_artist_model(user)
     legacy_mappings: Dict[str, LegacySpotifyTrackNoteGuidMapping] = {lm.spotify_track_uri: lm.anki_guid for lm in
                                                                      LegacySpotifyTrackNoteGuidMapping.query.filter_by(
                                                                          user_id=user.id).all()}
@@ -68,7 +70,8 @@ def generate_track_apkg(user: User, filename):
     # internal only release for now
     if user.id <= 6:
         for managed_artist in get_followed_managed_spotify_artists_for_user(user):
-            artist = SpotifyArtist.query.filter_by(uri=managed_artist.spotify_artist_uri).one()
+            artist: SpotifyArtist = SpotifyArtist.query.filter_by(uri=managed_artist.spotify_artist_uri).one()
+            img_src: Optional[str]
             if artist.good_image and artist.spotify_image_url:
                 img_src = artist.spotify_image_url
             elif artist.image_override_name:
@@ -87,11 +90,11 @@ def generate_track_apkg(user: User, filename):
     genanki.Package(deck).write_to_file(filename)
 
 
-def get_artist_model(user: User):
-    rs_anki_enabled = user.uses_rsAnki_javascript
-    api_key = user.api_key
+def get_artist_model(user: User) -> Model:
+    rs_anki_enabled: bool = user.uses_rsAnki_javascript
+    api_key: str = user.api_key
 
-    templates = [
+    templates: List[JsonDict] = [
         {
             'name': 'Image>Name',
             'qfmt': get_front(AnkiCard.ARTIST_IMAGE_TO_NAME, api_key, rs_anki_enabled),
@@ -116,13 +119,13 @@ def get_artist_model(user: User):
     )
 
 
-def get_track_model(user: User):
-    rs_anki_enabled = user.uses_rsAnki_javascript
-    api_key = user.api_key
-    should_generate_albumart_card = user.username == "rsanek"
-    legacy_model_id = 1579060616046
+def get_track_model(user: User) -> Model:
+    rs_anki_enabled: bool = user.uses_rsAnki_javascript
+    api_key: str = user.api_key
+    should_generate_albumart_card: bool = user.username == "rsanek"
+    legacy_model_id: int = 1579060616046
 
-    templates = [
+    templates: List[JsonDict] = [
         {
             'name': 'Audio>Artist',
             'qfmt': get_front(AnkiCard.AUDIO_TO_ARTIST, api_key, rs_anki_enabled),
@@ -151,7 +154,7 @@ def get_track_model(user: User):
     )
 
 
-def get_back(card_type, rs_anki_enabled):
+def get_back(card_type: AnkiCard, rs_anki_enabled: bool) -> str:
     script_include = get_rs_anki_custom_script() if rs_anki_enabled else get_default_script()
     if card_type == AnkiCard.AUDIO_TO_ARTIST:
         text_part = """What artist?
@@ -189,7 +192,7 @@ def get_back(card_type, rs_anki_enabled):
 {script_include}"""
 
 
-def get_front(card_type, api_key, rs_anki_enabled):
+def get_front(card_type: AnkiCard, api_key: str, rs_anki_enabled: bool) -> str:
     extra_include = f"""<script type="text/javascript">
 {get_minified_js(api_key)}
 </script>"""
@@ -226,7 +229,7 @@ def get_front(card_type, api_key, rs_anki_enabled):
 {extra_include}"""
 
 
-def get_minified_js(api_key):
+def get_minified_js(api_key: str) -> str:
     return jsmin(f"""
 function pr(data) {{
   if (typeof data.reason !== 'undefined') {{
@@ -244,7 +247,7 @@ jump();
 """)
 
 
-def get_rs_anki_custom_script():
+def get_rs_anki_custom_script() -> str:
     return """<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML"></script>
 <script type="text/javascript" src="_jquery-1.11.2.min.js"></script>
 <div id="categoryIdentifierFront">{{Tags}}</div>
@@ -252,11 +255,11 @@ def get_rs_anki_custom_script():
 <script type="text/javascript">if (typeof rsAnki !== 'undefined') rsAnki.defaultUnified();</script>"""
 
 
-def get_default_script():
+def get_default_script() -> str:
     return """<script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js"></script>"""
 
 
-def get_default_css():
+def get_default_css() -> str:
     return """.card {
   background: white;
   font-size: 24px;
