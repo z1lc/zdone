@@ -8,7 +8,7 @@ from typing import List, Dict, Tuple
 import pytz
 import requests
 from dateutil import parser
-from flask import g
+from flask import g, Response
 from flask_login import current_user
 from habitipy import Habitipy
 from requests import HTTPError
@@ -21,7 +21,7 @@ from app.storage import TokenStoragePostgres
 from app.util import today, today_datetime, failure, success
 from app.ztasks import ZDTask, ZDSubTask
 
-TOODLEDO_UNORDERED_TASKS_PLACEHOLDER = ZDTask(
+TOODLEDO_UNORDERED_TASKS_PLACEHOLDER: ZDTask = ZDTask(
     "-1", "[all unordered Toodledo Tasks]", 0, None, None, "", "", "unorderedToodledo", [])
 
 
@@ -29,7 +29,7 @@ def get_all_tasks(user: User = current_user) -> List[ZDTask]:
     return get_toodledo_tasks(redis_client, user) + get_habitica_tasks(user)
 
 
-def get_task_order_from_db(order_type, user: User = current_user) -> Tuple[List[ZDTask], List[ZDTask]]:
+def get_task_order_from_db(order_type: str, user: User = current_user) -> Tuple[List[ZDTask], List[ZDTask]]:
     currently_sorted_in_db = getattr(user, order_type)
     if currently_sorted_in_db:
         currently_sorted_in_db = currently_sorted_in_db.split("|||")
@@ -54,7 +54,12 @@ def get_task_order_from_db(order_type, user: User = current_user) -> Tuple[List[
     return sorted_tasks, unsorted_tasks
 
 
-def do_update_task(update, service, task_id, subtask_id, duration_seconds=0, user: User = current_user):
+def do_update_task(update: str,
+                   service: str,
+                   task_id: str,
+                   subtask_id: str,
+                   duration_seconds: int = 0,
+                   user: User = current_user) -> Tuple[Response, int]:
     if update == "defer":
         redis_client.append("hidden:" + user.username + ":" + str(today()), (task_id + "|||").encode())
         redis_client.expire("hidden:" + user.username + ":" + str(today()), datetime.timedelta(days=7))
@@ -92,8 +97,8 @@ def do_update_task(update, service, task_id, subtask_id, duration_seconds=0, use
     return success()
 
 
-def do_update_time(time, user: User = current_user):
-    user.maximum_minutes_per_day = max(0, min(1440, int(time)))
+def do_update_time(time: int, user: User = current_user) -> Tuple[Response, int]:
+    user.maximum_minutes_per_day = max(0, min(1440, time))
     db.session.commit()
     return success()
 
@@ -116,7 +121,7 @@ def get_toodledo(user: User = current_user):
         scope="basic tasks notes outlines lists share write folders")
 
 
-def needs_to_cron_habitica(dailys):
+def needs_to_cron_habitica(dailys) -> bool:
     dailys_with_history = [daily for daily in dailys if len(daily['history']) > 0]
     most_recent_completed_at = max(
         [max(daily['history'], key=lambda v: v['date'])['date'] for daily in dailys_with_history])

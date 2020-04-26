@@ -1,8 +1,8 @@
 import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple, Union
 
 import pytz
-from flask import jsonify
+from flask import jsonify, Response
 
 from app.models import User
 
@@ -22,24 +22,24 @@ def validate_api_key(api_key: str) -> Optional[User]:
     return User.query.filter_by(api_key=api_key).one() if api_key else None
 
 
-def success():
+def success() -> Tuple[Response, int]:
     return jsonify({
         'result': 'success'
     }), 200
 
 
-def failure(reason="", code=400):
+def failure(reason: str = "", code: int = 400) -> Tuple[Response, int]:
     return jsonify({
         'result': 'failure',
         'reason': reason
     }), code
 
 
-def api_key_failure():
+def api_key_failure() -> Tuple[Response, int]:
     return failure("Make sure you are passing a valid API key in the x-api-key header.", 401)
 
 
-def jsonp(function_name, payload):
+def jsonp(function_name: str, payload: Union[str, Tuple]) -> str:
     if isinstance(payload, str):
         return f"{function_name}({payload})"
     elif isinstance(payload, tuple):

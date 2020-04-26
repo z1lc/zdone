@@ -171,7 +171,7 @@ def add_task():
 @app.route('/update_time', methods=['POST'])
 @login_required
 def update_time():
-    return do_update_time(request.get_json()["maximum_minutes_per_day"])
+    return do_update_time(int(request.get_json()["maximum_minutes_per_day"]))
 
 
 @app.context_processor
@@ -437,7 +437,7 @@ def api_update_time():
             time = req["maximum_minutes_per_day"]
 
             try:
-                return do_update_time(time, user)
+                return do_update_time(int(time), user)
             except Exception as e:
                 return failure(str(e))
 
