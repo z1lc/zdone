@@ -45,7 +45,7 @@ NUM_TOP_TRACKS = 3
 RANDOM_RANGE_MS = 10_000
 
 
-def follow_unfollow_artists(user):
+def follow_unfollow_artists(user: User):
     sp = get_spotify("", user)
     results = list()
     last_artist_id = None
@@ -62,7 +62,7 @@ def follow_unfollow_artists(user):
     return
 
 
-def update_last_fm_scrobble_counts(user):
+def update_last_fm_scrobble_counts(user: User):
     if user.last_fm_last_refresh_time is None or \
             pytz.timezone('US/Pacific').localize(user.last_fm_last_refresh_time) < (
             today_datetime() - timedelta(days=7)):
@@ -86,12 +86,12 @@ def update_last_fm_scrobble_counts(user):
         db.session.commit()
 
 
-def save_token_info(token_info, user):
+def save_token_info(token_info, user: User):
     user.spotify_token_json = json.dumps(token_info)
     db.session.commit()
 
 
-def get_cached_token_info(sp_oauth, user):
+def get_cached_token_info(sp_oauth, user: User):
     maybe_token_info = user.spotify_token_json
     if maybe_token_info:
         token_info = json.loads(maybe_token_info)
@@ -116,7 +116,7 @@ def add_or_get_artist(sp, spotify_artist_uri):
     return artist
 
 
-def populate_null_artists(user):
+def populate_null_artists(user: User):
     try:
         unpopulated_artists = SpotifyArtist.query.filter_by(name='').all()
         sp = get_spotify("", user)
@@ -128,7 +128,7 @@ def populate_null_artists(user):
     return
 
 
-def maybe_get_spotify_authorize_url(full_url, user):
+def maybe_get_spotify_authorize_url(full_url, user: User):
     sp_oauth = oauth2.SpotifyOAuth(
         scope=ALL_SCOPES if user.id <= 8 else MIN_SCOPES,
         client_id="03f34cada5cc46a5929be06ff7532321",
@@ -148,7 +148,7 @@ def maybe_get_spotify_authorize_url(full_url, user):
     return ""
 
 
-def get_spotify(full_url, user):
+def get_spotify(full_url, user: User):
     sp_oauth = oauth2.SpotifyOAuth(
         scope=ALL_SCOPES if user.id <= 8 else MIN_SCOPES,
         client_id="03f34cada5cc46a5929be06ff7532321",
@@ -185,7 +185,7 @@ def add_or_get_track(sp, track_uri):
     return track
 
 
-def do_add_artists(user, artist_uris, remove_not_included=False):
+def do_add_artists(user: User, artist_uris, remove_not_included=False):
     sp = get_spotify("", user)
     existing_managed_artist_uris = [msa.spotify_artist_uri for msa in
                                     ManagedSpotifyArtist.query.filter_by(user_id=user.id).all()]
@@ -214,7 +214,7 @@ def do_add_artists(user, artist_uris, remove_not_included=False):
     db.session.commit()
 
 
-def play_track(full_url, track_uri, user, offset=None):
+def play_track(full_url, track_uri, user: User, offset=None):
     sp = get_spotify(full_url, user)
     if isinstance(sp, str):
         redis_client.set(f"last_spotify_track-{user.username}", track_uri.encode(), ex=10)
@@ -270,11 +270,11 @@ def refresh_top_tracks(sp, artist_uri):
     return dropped, to_return
 
 
-def get_followed_managed_spotify_artists_for_user(user):
+def get_followed_managed_spotify_artists_for_user(user: User):
     return ManagedSpotifyArtist.query.filter_by(user_id=user.id, following='true').all()
 
 
-def get_tracks(user):
+def get_tracks(user: User):
     print(f"get tracks {today_datetime()}")
     sp = get_spotify("zdone", user)
     if isinstance(sp, str):
@@ -317,7 +317,7 @@ def get_tracks(user):
     return output
 
 
-def get_anki_csv(user):
+def get_anki_csv(user: User):
     tracks = get_tracks(user)
     return "".join([create_csv_line(track) for track in tracks])
 
@@ -391,7 +391,7 @@ def get_random_song_family():
     }
 
 
-def get_top_recommendations(user):
+def get_top_recommendations(user: User):
     prepared_sql = f"""with my_artists as (select spotify_artist_uri
 from managed_spotify_artists
 where user_id = {user.id}),

@@ -134,11 +134,11 @@ def show_dependencies():
                            type='dependencies')
 
 
-def get_all_tasks(user=current_user) -> List[ZDTask]:
+def get_all_tasks(user: User = current_user) -> List[ZDTask]:
     return get_toodledo_tasks(redis_client, user) + get_habitica_tasks(user)
 
 
-def get_task_order_from_db(order_type, user=current_user) -> Tuple[List[ZDTask], List[ZDTask]]:
+def get_task_order_from_db(order_type, user: User = current_user) -> Tuple[List[ZDTask], List[ZDTask]]:
     currently_sorted_in_db = getattr(user, order_type)
     if currently_sorted_in_db:
         currently_sorted_in_db = currently_sorted_in_db.split("|||")
@@ -196,7 +196,7 @@ def update_dependencies():
     return success()
 
 
-def do_update_task(update, service, task_id, subtask_id, duration_seconds=0, user=current_user):
+def do_update_task(update, service, task_id, subtask_id, duration_seconds=0, user: User = current_user):
     if update == "defer":
         redis_client.append("hidden:" + user.username + ":" + str(today()), (task_id + "|||").encode())
         redis_client.expire("hidden:" + user.username + ":" + str(today()), timedelta(days=7))
@@ -234,7 +234,7 @@ def do_update_task(update, service, task_id, subtask_id, duration_seconds=0, use
     return success()
 
 
-def do_update_time(time, user=current_user):
+def do_update_time(time, user: User = current_user):
     user.maximum_minutes_per_day = max(0, min(1440, int(time)))
     db.session.commit()
     return success()
@@ -271,7 +271,7 @@ def update_time():
     return do_update_time(request.get_json()["maximum_minutes_per_day"])
 
 
-def get_homepage_info(user=current_user, skew_sort=False):
+def get_homepage_info(user: User = current_user, skew_sort=False):
     minutes_completed_today = 0
     tasks_completed, tasks_to_do, tasks_backlog, nonrecurring_tasks_coming_up = [], [], [], []
     prioritized_tasks, unprioritized_tasks = get_task_order_from_db("priorities", user)

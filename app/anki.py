@@ -1,9 +1,10 @@
 from enum import Enum
+from typing import Dict
 
 import genanki
 from jsmin import jsmin
 
-from app.models import LegacySpotifyTrackNoteGuidMapping, SpotifyArtist
+from app.models import LegacySpotifyTrackNoteGuidMapping, SpotifyArtist, User
 from app.spotify import get_tracks, get_followed_managed_spotify_artists_for_user
 
 SPOTIFY_TRACK_MODEL_ID = 1586000000000
@@ -37,14 +38,15 @@ class SpotifyArtistNote(genanki.Note):
         return genanki.guid_for(self.fields[0])
 
 
-def generate_track_apkg(user, filename):
+def generate_track_apkg(user: User, filename):
     deck = genanki.Deck(
         SPOTIFY_TRACK_DECK_ID,
         'Spotify Tracks')
     track_model = get_track_model(user)
     artist_model = get_artist_model(user)
-    legacy_mappings = {lm.spotify_track_uri: lm.anki_guid for lm in
-                       LegacySpotifyTrackNoteGuidMapping.query.filter_by(user_id=user.id).all()}
+    legacy_mappings: Dict[str, LegacySpotifyTrackNoteGuidMapping] = {lm.spotify_track_uri: lm.anki_guid for lm in
+                                                                     LegacySpotifyTrackNoteGuidMapping.query.filter_by(
+                                                                         user_id=user.id).all()}
 
     for track in get_tracks(user):
         inner_artists = []
@@ -85,7 +87,7 @@ def generate_track_apkg(user, filename):
     genanki.Package(deck).write_to_file(filename)
 
 
-def get_artist_model(user):
+def get_artist_model(user: User):
     rs_anki_enabled = user.uses_rsAnki_javascript
     api_key = user.api_key
 
@@ -114,7 +116,7 @@ def get_artist_model(user):
     )
 
 
-def get_track_model(user):
+def get_track_model(user: User):
     rs_anki_enabled = user.uses_rsAnki_javascript
     api_key = user.api_key
     should_generate_albumart_card = user.username == "rsanek"

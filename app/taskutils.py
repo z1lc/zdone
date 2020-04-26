@@ -15,12 +15,13 @@ from requests import HTTPError
 from toodledo import Toodledo
 
 from app import kv
+from app.models import User
 from app.storage import TokenStoragePostgres
 from app.util import today, today_datetime
 from app.ztasks import ZDTask, ZDSubTask
 
 
-def get_habitica(user=current_user):
+def get_habitica(user: User = current_user):
     return Habitipy({
         'url': 'https://habitica.com',
         'login': user.habitica_user_id,
@@ -30,7 +31,7 @@ def get_habitica(user=current_user):
     })
 
 
-def get_toodledo(user=current_user):
+def get_toodledo(user: User = current_user):
     return Toodledo(
         clientId=kv.get('TOODLEDO_CLIENT_ID'),
         clientSecret=kv.get('TOODLEDO_CLIENT_SECRET'),
@@ -40,14 +41,15 @@ def get_toodledo(user=current_user):
 
 def needs_to_cron_habitica(dailys):
     dailys_with_history = [daily for daily in dailys if len(daily['history']) > 0]
-    most_recent_completed_at = max([max(daily['history'], key=lambda v: v['date'])['date'] for daily in dailys_with_history])
+    most_recent_completed_at = max(
+        [max(daily['history'], key=lambda v: v['date'])['date'] for daily in dailys_with_history])
     most_recent_completed_at = datetime.datetime.fromtimestamp(int(most_recent_completed_at / 1000),
                                                                tz=pytz.timezone('US/Pacific'))
     # need to cron if most recent completed at is not today
     return most_recent_completed_at.date() < today()
 
 
-def get_habitica_tasks(user=current_user) -> List[ZDTask]:
+def get_habitica_tasks(user: User = current_user) -> List[ZDTask]:
     if 'habitica' not in g:
         g.habitica = []
         # https://habitica.fandom.com/wiki/Cron
@@ -81,7 +83,7 @@ def get_habitica_tasks(user=current_user) -> List[ZDTask]:
                 while i < len(sorted_history):
                     if sorted_history[i - 1]['value'] > sorted_history[i]['value']:
                         completed_datetime = datetime.datetime.fromtimestamp(int(sorted_history[i - 1]['date'] / 1000),
-                                                                         tz=pytz.timezone('US/Pacific'))
+                                                                             tz=pytz.timezone('US/Pacific'))
                         break
                     i += 1
 
@@ -115,14 +117,14 @@ def get_habitica_tasks(user=current_user) -> List[ZDTask]:
     return g.habitica
 
 
-def complete_habitica_task(task_id, subtask_id, user=current_user):
+def complete_habitica_task(task_id, subtask_id, user: User = current_user):
     if subtask_id:
         get_habitica(user).tasks[task_id].checklist[subtask_id].score.post()
     else:
         get_habitica(user).tasks[task_id].score.up.post()
 
 
-def complete_toodledo_task(task_id, user=current_user):
+def complete_toodledo_task(task_id, user: User = current_user):
     tasks = [{
         "id": task_id,
         # unclear what timestamp should be used here. manual testing suggested this was the right one
@@ -134,7 +136,7 @@ def complete_toodledo_task(task_id, user=current_user):
     requests.post(url=endpoint)
 
 
-def add_toodledo_task(name, due_date, length_minutes, user=current_user):
+def add_toodledo_task(name, due_date, length_minutes, user: User = current_user):
     tasks = [{
         "title": name,
         "duedate": int(parser.parse(due_date).timestamp()),
@@ -145,7 +147,7 @@ def add_toodledo_task(name, due_date, length_minutes, user=current_user):
     return requests.post(url=endpoint)
 
 
-def get_toodledo_tasks(redis_client, user=current_user) -> List[ZDTask]:
+def get_toodledo_tasks(redis_client, user: User = current_user) -> List[ZDTask]:
     if 'toodledo' not in g:
         account = get_toodledo(user).GetAccount()
         last_deleted = account.lastDeleteTask or datetime.datetime.now()

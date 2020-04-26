@@ -1,3 +1,5 @@
+from typing import List
+
 from sentry_sdk import capture_exception
 
 from app.models import SpotifyArtist, User
@@ -7,9 +9,9 @@ from app.spotify import get_spotify, refresh_top_tracks
 if __name__ == '__main__':
     print('Will update the top songs for all artists in table `spotify_artists`.')
     print('Getting artists...')
-    artists = SpotifyArtist.query.all()
+    artists: List[SpotifyArtist] = SpotifyArtist.query.all()
     print(f'Got {len(artists)} artists.')
-    user = User.query.filter_by(username="rsanek").one()
+    user: User = User.query.filter_by(username="rsanek").one()
     sp = get_spotify("zdone", user)
     print(f'Getting top liked songs as user {user.username}...')
 
