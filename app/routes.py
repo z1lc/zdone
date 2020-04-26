@@ -220,10 +220,10 @@ def do_update_task(update, service, task_id, subtask_id, duration_seconds=0, use
     else:
         return failure(f"unexpected update type '{update}'")
 
-    length = 0
+    length = 0.0
     if not subtask_id:
-        length = \
-            [t.length_minutes for i, t in enumerate(get_all_tasks(user)) if t.service == service and t.id == task_id][0]
+        length = [t.length_minutes for i, t in enumerate(get_all_tasks(user))
+                  if t.service == service and t.id == task_id][0]
     socketio.emit(user.api_key, {
         'update': update,
         'service': service,
@@ -272,7 +272,7 @@ def update_time():
 
 
 def get_homepage_info(user: User = current_user, skew_sort=False):
-    minutes_completed_today = 0
+    minutes_completed_today = 0.0
     tasks_completed, tasks_to_do, tasks_backlog, nonrecurring_tasks_coming_up = [], [], [], []
     prioritized_tasks, unprioritized_tasks = get_task_order_from_db("priorities", user)
     for task in prioritized_tasks:
@@ -287,7 +287,7 @@ def get_homepage_info(user: User = current_user, skew_sort=False):
     minutes_left_to_schedule = total_minutes - minutes_completed_today
 
     i = 0
-    minutes_allocated = 0
+    minutes_allocated = 0.0
     all_tasks = get_all_tasks(user)
     # try sorting by skew
     if skew_sort:
