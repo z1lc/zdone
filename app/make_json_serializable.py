@@ -1,3 +1,4 @@
+# type: ignore
 # https://stackoverflow.com/a/18561055
 
 """ Module that monkey-patches json module when it's imported so

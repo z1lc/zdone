@@ -138,7 +138,7 @@ def get_all_tasks(user=current_user) -> List[ZDTask]:
     return get_toodledo_tasks(redis_client, user) + get_habitica_tasks(user)
 
 
-def get_task_order_from_db(order_type, user=current_user) -> (List[ZDTask], List[ZDTask]):
+def get_task_order_from_db(order_type, user=current_user) -> Tuple[List[ZDTask], List[ZDTask]]:
     currently_sorted_in_db = getattr(user, order_type)
     if currently_sorted_in_db:
         currently_sorted_in_db = currently_sorted_in_db.split("|||")

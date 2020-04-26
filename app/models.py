@@ -1,15 +1,19 @@
 from flask_login import UserMixin
+# see https://github.com/dropbox/sqlalchemy-stubs/issues/76#issuecomment-595839159
+from flask_sqlalchemy.model import DefaultMeta
 from sqlalchemy import func, UniqueConstraint, CheckConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from . import db
 from . import login
 
+BaseModel: DefaultMeta = db.Model
+
 
 # to run a db migration (in regular command line in zdone working directory):
 # flask db migrate -m "comment explaining model change"
 # flask db upgrade
-class User(UserMixin, db.Model):
+class User(UserMixin, BaseModel):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
@@ -50,7 +54,7 @@ class User(UserMixin, db.Model):
         return '<User {}>'.format(self.username)
 
 
-class ManagedSpotifyArtist(db.Model):
+class ManagedSpotifyArtist(BaseModel):
     __tablename__ = "managed_spotify_artists"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -66,7 +70,7 @@ class ManagedSpotifyArtist(db.Model):
         return self.uri.split("spotify:artist:")[1]
 
 
-class SpotifyArtist(db.Model):
+class SpotifyArtist(BaseModel):
     __tablename__ = "spotify_artists"
     uri = db.Column(db.String(128), primary_key=True)
     name = db.Column(db.String(128), nullable=False)
@@ -78,7 +82,7 @@ class SpotifyArtist(db.Model):
         return self.uri.split("spotify:artist:")[1]
 
 
-class SpotifyTrack(db.Model):
+class SpotifyTrack(BaseModel):
     __tablename__ = "spotify_tracks"
     uri = db.Column(db.String(128), primary_key=True)
     name = db.Column(db.String(1024), nullable=False)
@@ -86,7 +90,7 @@ class SpotifyTrack(db.Model):
     duration_milliseconds = db.Column(db.Integer, nullable=False)
 
 
-class SpotifyPlay(db.Model):
+class SpotifyPlay(BaseModel):
     __tablename__ = "spotify_plays"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -94,13 +98,13 @@ class SpotifyPlay(db.Model):
     created_at = db.Column(db.DateTime, nullable=False)
 
 
-class TopTrack(db.Model):
+class TopTrack(BaseModel):
     __tablename__ = "top_tracks"
     id = db.Column(db.Integer, primary_key=True)
     artist_uri = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
     track_uri = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=False)
     ordinal = db.Column(db.Integer, nullable=False)
-    api_response = db.Column(db.Text) # simple dump of the exact json that was returned by the API
+    api_response = db.Column(db.Text)  # simple dump of the exact json that was returned by the API
     __table_args__ = (
         UniqueConstraint('artist_uri', 'track_uri'),
         UniqueConstraint('artist_uri', 'ordinal'),
@@ -115,7 +119,7 @@ class TopTrack(db.Model):
 # captures that mapping for such cards created before genanki days, so that existing users wouldn't have to hard-migrate
 # to the new approach (and in the process lose all review history). This table should be read-only, since no cards in
 # the future should need this mapping if generated through genanki.
-class LegacySpotifyTrackNoteGuidMapping(db.Model):
+class LegacySpotifyTrackNoteGuidMapping(BaseModel):
     __tablename__ = "legacy_spotify_track_note_guid_mappings"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -127,7 +131,7 @@ class LegacySpotifyTrackNoteGuidMapping(db.Model):
     )
 
 
-class TaskCompletion(db.Model):
+class TaskCompletion(BaseModel):
     __tablename__ = "task_completions"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -143,7 +147,7 @@ def load_user(id) -> User:
     return User.query.get(int(id))
 
 
-class kv(db.Model):
+class kv(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     k = db.Column(db.Text, unique=True)
     v = db.Column(db.Text)

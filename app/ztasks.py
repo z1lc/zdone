@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import List
+from typing import List, Optional
 
 import dateutil
 from dateutil.rrule import rrule
@@ -12,7 +12,12 @@ extractor = URLExtract()
 
 
 class ZDSubTask:
-    def __init__(self, id_: str, name: str, completed_datetime: datetime, note: str, service: str):
+    def __init__(self,
+                 id_: str,
+                 name: str,
+                 completed_datetime: datetime.datetime,
+                 note: str,
+                 service: str):
         self.id = id_
         self.name = name
         self.completed_datetime = completed_datetime
@@ -28,8 +33,8 @@ class ZDTask:
                  id_: str,
                  name: str,
                  length_minutes: float,
-                 due_date: datetime.date,
-                 completed_datetime: datetime,
+                 due_date: Optional[datetime.date],
+                 completed_datetime: Optional[datetime.datetime],
                  repeat: str,
                  note: str,
                  service: str,

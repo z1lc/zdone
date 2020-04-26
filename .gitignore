@@ -3,3 +3,4 @@
 *.pyc
 .cache-*
 instance/
+/.mypy_cache/
