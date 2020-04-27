@@ -269,6 +269,11 @@ function jump() {{
   $.getScript("https://www.zdone.co/api/{api_key}/play/{{{{Track URI}}}}/pr");
 }};
 jump();
+$(document).keypress(function(e) {{
+    if (e.key === 'r' || e.key === 'R') {{
+        jump();
+    }}
+}});
 """)
 
 
