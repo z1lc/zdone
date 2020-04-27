@@ -46,9 +46,8 @@ def generate_track_apkg(user: User, filename: str) -> None:
         'Spotify Tracks')
     track_model: Model = get_track_model(user)
     artist_model: Model = get_artist_model(user)
-    legacy_mappings: Dict[str, LegacySpotifyTrackNoteGuidMapping] = {lm.spotify_track_uri: lm.anki_guid for lm in
-                                                                     LegacySpotifyTrackNoteGuidMapping.query.filter_by(
-                                                                         user_id=user.id).all()}
+    legacy_mappings: Dict[str, str] = {lm.spotify_track_uri: lm.anki_guid for lm in
+                                       LegacySpotifyTrackNoteGuidMapping.query.filter_by(user_id=user.id).all()}
 
     for track in get_tracks(user):
         inner_artists = []
@@ -67,8 +66,8 @@ def generate_track_apkg(user: User, filename: str) -> None:
             track_as_note.guid = legacy_mappings.get(track['uri'])
         deck.add_note(track_as_note)
 
-    # internal only release for now
-    if user.id <= 6:
+    # released to nobody for now since have to consider backwards-compatibility
+    if user.id <= 0:
         for managed_artist in get_followed_managed_spotify_artists_for_user(user):
             artist: SpotifyArtist = SpotifyArtist.query.filter_by(uri=managed_artist.spotify_artist_uri).one()
             img_src: Optional[str]
