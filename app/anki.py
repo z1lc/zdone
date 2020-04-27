@@ -139,7 +139,7 @@ def get_artist_model(user: User) -> Model:
             {'name': 'Name'},
             {'name': 'Image'},
         ],
-        css="@import '_anki.css';" if rs_anki_enabled else get_default_css(),
+        css=get_rs_anki_css() if rs_anki_enabled else get_default_css(),
         templates=templates
     )
 
@@ -284,6 +284,14 @@ def get_default_script() -> str:
     return """<script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js"></script>"""
 
 
+def get_rs_anki_css() -> str:
+    return """@import '_anki.css';
+
+#jump {
+  font-size: 24px;
+}"""
+
+
 def get_default_css() -> str:
     return """.card {
   background: white;
@@ -315,5 +323,5 @@ img {
 }
 
 #jump {
-  font-size: 18px;
+  font-size: 24px;
 }"""
