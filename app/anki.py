@@ -13,6 +13,28 @@ SPOTIFY_TRACK_MODEL_ID: int = 1586000000000
 SPOTIFY_ARTIST_MODEL_ID: int = 1587000000000
 SPOTIFY_TRACK_DECK_ID: int = 1586000000000
 
+"""
+Things to keep in mind when adding new models / templates:
+(to avoid "Notes that could not be imported as note type has changed" on Anki import)
+ * you can change the qfmt and afmt of a template, as long as the template name stays the same
+ * you cannot change the names or total count of templates in a model
+ * you cannot change the names or total count of fields in a model
+
+A general, long-term approach to avoiding compatibility problems:
+ * Create many more fields than you're going to need at the beginning, naming them something unique (maybe adjectives?).
+   You're going to re-purpose these fields later for new fields that you'll need.
+ * Create many more templates than you need, again naming them something unique. This is again so that you can re-
+   purpose later, though you need to make sure cards are not generated in advance for these empty placeholder templates.
+   What you can do to make sure this is the case is by making the qfmt and afmt dependent on an unused field, and then 
+   later editing that qfmt and afmt to whatever you want. You need to create a field that you never intend to use, 
+   perhaps as the last field in the model, in order to assure the conditional card generation works over time.
+ * When you want to add a new field and/or template, ensure you DO NOT CHANGE THE NAME, ORDERING, OR TOTAL COUNT.
+   If you do, you will cause a permanent backwards incompatibility. Use the unique field names you created in the
+   beginning in the unique template names (also created in v1 of the model). This sucks, since your field isn't going 
+   to make sense to people looking at the note type, but it is the way it must be if we want to assure compatibility
+   over time. 
+"""
+
 
 class AnkiCard(Enum):
     AUDIO_TO_ARTIST = 1
