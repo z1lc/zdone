@@ -3,7 +3,7 @@ import datetime
 import pickle
 import re
 from json import loads, dumps
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 
 import pytz
 import requests
@@ -14,12 +14,12 @@ from habitipy import Habitipy
 from requests import HTTPError
 from toodledo import Toodledo
 # watch out, this dependency is actually py-trello
-from trello import TrelloClient
+from trello import TrelloClient, trellolist
 
 from app import kv, redis_client, db, socketio
 from app.models import User, TaskCompletion
 from app.storage import TokenStoragePostgres
-from app.util import today, today_datetime, failure, success
+from app.util import today, today_datetime, failure, success, JsonDict
 from app.ztasks import ZDTask, ZDSubTask
 
 TOODLEDO_UNORDERED_TASKS_PLACEHOLDER: ZDTask = ZDTask(
@@ -122,8 +122,8 @@ def get_toodledo(user: User = current_user):
         scope="basic tasks notes outlines lists share write folders")
 
 
-def needs_to_cron_habitica(dailys) -> bool:
-    dailys_with_history = [daily for daily in dailys if len(daily['history']) > 0]
+def needs_to_cron_habitica(dailys: List[JsonDict]) -> bool:
+    dailys_with_history: List[JsonDict] = [daily for daily in dailys if len(daily['history']) > 0]
     most_recent_completed_at = max(
         [max(daily['history'], key=lambda v: v['date'])['date'] for daily in dailys_with_history])
     most_recent_completed_at = datetime.datetime.fromtimestamp(int(most_recent_completed_at / 1000),
@@ -139,16 +139,17 @@ def get_habitica_tasks(user: User = current_user) -> List[ZDTask]:
         # cron rolls over to next day in the case of uncompleted dailys yesterday
         # however, seems to send back 502's occasionally if called frequently.
         try:
-            dailys = get_habitica(user).tasks.user.get(type='dailys')
+            dailys: List[JsonDict] = get_habitica(user).tasks.user.get(type='dailys')
             if needs_to_cron_habitica(dailys):
                 get_habitica(user).cron.post()
                 dailys = get_habitica(user).tasks.user.get(type='dailys')
         except HTTPError:
             dailys = []
 
-        habit_list = []
-        habitica_day_string = {0: "m", 1: "t", 2: "w", 3: "th", 4: "f", 5: "s", 6: "su"}[today().weekday()]
+        habit_list: List[ZDTask] = []
+        habitica_day_string: str = {0: "m", 1: "t", 2: "w", 3: "th", 4: "f", 5: "s", 6: "su"}[today().weekday()]
         for habit in dailys:
+            due: datetime.date
             if habit['repeat'][habitica_day_string] and not habit['completed']:
                 due = today()
             else:
@@ -157,7 +158,7 @@ def get_habitica_tasks(user: User = current_user) -> List[ZDTask]:
                 else:  # filter out tasks that are never due
                     continue
 
-            completed_datetime = None
+            completed_datetime: Optional[datetime.datetime] = None
             if habit['completed']:
                 completed_datetime = today_datetime()
             else:
@@ -170,7 +171,7 @@ def get_habitica_tasks(user: User = current_user) -> List[ZDTask]:
                         break
                     i += 1
 
-            sub_tasks = []
+            sub_tasks: List[ZDSubTask] = []
             for subtask in habit['checklist']:
                 sub_tasks.append(ZDSubTask(
                     subtask['id'],
@@ -179,11 +180,11 @@ def get_habitica_tasks(user: User = current_user) -> List[ZDTask]:
                     "",
                     "habitica"))
 
-            time_and_notes = habit['notes'].split("\n")
-            time = float(time_and_notes[0]) if re.match("^\\d+(\\.\\d+)?$", time_and_notes[0]) else 0
-            notes = "\n".join(time_and_notes[1:])
+            time_and_notes: str = habit['notes'].split("\n")
+            time: float = float(time_and_notes[0]) if re.match("^\\d+(\\.\\d+)?$", time_and_notes[0]) else 0.0
+            notes: str = "\n".join(time_and_notes[1:])
 
-            task = ZDTask(
+            task: ZDTask = ZDTask(
                 habit['_id'],
                 habit['text'],
                 # use notes field in habitica for estimated minutes
@@ -200,26 +201,26 @@ def get_habitica_tasks(user: User = current_user) -> List[ZDTask]:
     return g.habitica
 
 
-def complete_habitica_task(task_id, subtask_id, user: User = current_user):
+def complete_habitica_task(task_id: str, subtask_id: str, user: User = current_user) -> None:
     if subtask_id:
         get_habitica(user).tasks[task_id].checklist[subtask_id].score.post()
     else:
         get_habitica(user).tasks[task_id].score.up.post()
 
 
-def complete_toodledo_task(task_id, user: User = current_user):
-    tasks = [{
+def complete_toodledo_task(task_id, user: User = current_user) -> requests.Response:
+    tasks: List[JsonDict] = [{
         "id": task_id,
         # unclear what timestamp should be used here. manual testing suggested this was the right one
         "completed": int(datetime.datetime(today().year, today().month, today().day).timestamp()),
         "reschedule": "1"
     }]
-    endpoint = "http://api.toodledo.com/3/tasks/edit.php?access_token={access_token}&tasks={tasks}".format(
-        access_token=loads(user.toodledo_token_json)["access_token"], tasks=dumps(tasks))
-    requests.post(url=endpoint)
+    endpoint: str = f"http://api.toodledo.com/3/tasks/edit.php?access_token={loads(user.toodledo_token_json)}" \
+                    f"&tasks={dumps(tasks)}"
+    return requests.post(url=endpoint)
 
 
-def add_toodledo_task(name, due_date, length_minutes, user: User = current_user):
+def add_toodledo_task(name, due_date, length_minutes, user: User = current_user) -> requests.Response:
     tasks = [{
         "title": name,
         "duedate": int(parser.parse(due_date).timestamp()),
@@ -268,7 +269,7 @@ def get_toodledo_tasks(redis_client, user: User = current_user) -> List[ZDTask]:
     return g.toodledo
 
 
-def get_homepage_info(user: User = current_user, skew_sort=False):
+def get_homepage_info(user: User = current_user, skew_sort: bool = False) -> JsonDict:
     minutes_completed_today = 0.0
     tasks_completed, tasks_to_do, tasks_backlog, nonrecurring_tasks_coming_up = [], [], [], []
     prioritized_tasks, unprioritized_tasks = get_task_order_from_db("priorities", user)
@@ -285,7 +286,7 @@ def get_homepage_info(user: User = current_user, skew_sort=False):
 
     i = 0
     minutes_allocated = 0.0
-    all_tasks = get_all_tasks(user)
+    all_tasks: List[ZDTask] = get_all_tasks(user)
     # try sorting by skew
     if skew_sort:
         all_tasks.sort(key=lambda t: (t.skew, -t.interval), reverse=True)
@@ -340,7 +341,7 @@ def get_homepage_info(user: User = current_user, skew_sort=False):
     }
 
 
-def get_tasks_without_required_fields(all_tasks):
+def get_tasks_without_required_fields(all_tasks: List[ZDTask]) -> List[ZDTask]:
     bad_tasks = []
     for task in all_tasks:
         if task.completed_datetime is None:
@@ -351,7 +352,7 @@ def get_tasks_without_required_fields(all_tasks):
     return bad_tasks
 
 
-def get_open_trello_lists():
+def get_open_trello_lists() -> List[trellolist.List]:
     if current_user.trello_api_key and current_user.trello_api_access_token:
         client = TrelloClient(
             api_key=current_user.trello_api_key,

@@ -2,6 +2,7 @@ import itertools
 import os
 import uuid
 from json import dumps
+from typing import List
 
 from flask import render_template, request, make_response, jsonify, redirect, send_file
 from flask import url_for, flash
@@ -18,10 +19,10 @@ from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_
     follow_unfollow_artists, get_random_song_family, get_tracks, update_last_fm_scrobble_counts, \
     get_top_recommendations, get_artists_images
 from .taskutils import add_toodledo_task, get_all_tasks, do_update_time, get_homepage_info, get_open_trello_lists, \
-    do_update_task, get_task_order_from_db
+    do_update_task, get_task_order_from_db, TOODLEDO_UNORDERED_TASKS_PLACEHOLDER
 from .themoviedb import get_stuff
 from .util import today, today_datetime, failure, success, api_key_failure, jsonp, validate_api_key
-from .ztasks import htmlize_note
+from .ztasks import htmlize_note, ZDTask
 
 
 @app.errorhandler(500)
@@ -94,7 +95,7 @@ def show_priorities():
 @app.route('/list')
 @login_required
 def enhanced_list():
-    tasks = get_all_tasks(current_user)
+    tasks: List[ZDTask] = get_all_tasks(current_user)
     tasks.sort(key=lambda t: (t.skew, -t.interval), reverse=True)
     to_return = "<table><tr><th>Name</th><th>Due Date</th><th>Last Success</th><th>Interval</th><th>Skew</th></tr>"
     for task in tasks:
