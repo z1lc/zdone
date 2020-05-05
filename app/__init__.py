@@ -7,15 +7,13 @@ from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from flask_talisman import Talisman
 from sentry_sdk.integrations.flask import FlaskIntegration
-from sentry_sdk.integrations.redis import RedisIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from app import make_json_serializable
 from app.config import Config
 
 sentry_sdk.init(
     dsn="https://4dbd095718e34cb7bc4f7d64ecf488c4@sentry.io/1678958",
-    integrations=[FlaskIntegration(), RedisIntegration(), SqlalchemyIntegration()],
+    integrations=[FlaskIntegration()],
     send_default_pii=True
 )
 
