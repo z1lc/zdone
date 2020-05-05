@@ -26,9 +26,6 @@ tmdbsimple==2.2.0
 email_validator==1.1.0
 pytest==5.4.1
 mypy==0.770
-# After upgrading Python to 3.8, it became necessary to include PyOpenSSL in requirements to avoid SSL issues that are
-# described in https://github.com/eventlet/eventlet/issues/526. No idea why, but this made the exceptions go away.
-pyopenssl==19.1.0
 
 
 git+git://github.com/z1lc/spotipy.git#egg=spotipy
