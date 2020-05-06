@@ -11,6 +11,7 @@ import spotipy
 from flask import redirect
 from sentry_sdk import capture_exception
 from spotipy import oauth2
+from sqlalchemy.exc import IntegrityError
 
 from app import kv, redis_client, db
 from app.models import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay, User, TopTrack
@@ -179,7 +180,13 @@ def add_or_get_track(sp, track_uri: str) -> SpotifyTrack:
                              spotify_artist_uri=spotify_artist.uri,
                              duration_milliseconds=sp_track['duration_ms'])
         db.session.add(track)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()  # uh oh, let's roll back this session
+
+            # potentially another thread added the track between this thread's read & write. try reading it here again
+            track = SpotifyTrack.query.filter_by(uri=track_uri).one()
     return track
 
 
