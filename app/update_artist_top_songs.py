@@ -26,17 +26,13 @@ if __name__ == '__main__':
                 dropped, top_tracks = refresh_top_tracks(sp, artist.uri)
                 print(f'[{round(i / len(artists) * 100)}%] '
                       f'Updated mappings for artist {artist.name}, dropping {dropped} & adding {len(top_tracks)}.')
-            except SpotifyException as probably_token_expiration:
-                print(f'Received Spotify exception {probably_token_expiration}. '
-                      f'Will try to refresh access token and try again.')
+                break
+            except Exception as e:
+                print(f'Received exception {e}. Will try to refresh access token and try again.')
                 sp = get_spotify("zdone", user)
                 if try_count == MAX_RETRIES_PER_ARTIST:
                     # looks like we weren't able to resolve this with just a token refresh.
                     # publish this to Sentry so we know what's going on.
-                    capture_exception(probably_token_expiration)
-            except Exception as e:
-                print(f'Received unhandled exception while trying to get top tracks for artist {artist.name}.')
-                print('Exception was sent to Sentry.')
-                capture_exception(e)
+                    capture_exception(e)
 
     print('Updated all artists. Exiting...')

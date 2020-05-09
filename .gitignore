@@ -3,3 +3,4 @@
 *.pyc
 *_cache
 instance/
+.cache*
