@@ -63,6 +63,8 @@ def follow_unfollow_artists(user: User) -> None:
 
 
 def update_last_fm_scrobble_counts(user: User):
+    if user.last_fm_username is None:
+        return
     if user.last_fm_last_refresh_time is None or \
             pytz.timezone('US/Pacific').localize(user.last_fm_last_refresh_time) < (
             today_datetime() - timedelta(days=7)):

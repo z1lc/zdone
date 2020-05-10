@@ -229,7 +229,6 @@ def spotify():
     uris = []
     total_tracks = 0
     if "total_track_counts" in request.args:
-        update_last_fm_scrobble_counts(current_user)
         tracks = get_tracks(current_user)
         total_tracks = len(tracks)
         for track in tracks:
