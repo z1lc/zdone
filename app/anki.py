@@ -94,7 +94,7 @@ def generate_track_apkg(user: User, filename: str) -> None:
 
     # released to nobody for now since have to consider backwards-compatibility
     if user.id <= 0:
-        for managed_artist in get_followed_managed_spotify_artists_for_user(user):
+        for managed_artist in get_followed_managed_spotify_artists_for_user(user, False):
             artist: SpotifyArtist = SpotifyArtist.query.filter_by(uri=managed_artist.spotify_artist_uri).one()
             img_src: Optional[str]
             if artist.good_image and artist.spotify_image_url:

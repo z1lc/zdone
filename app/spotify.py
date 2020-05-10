@@ -196,8 +196,10 @@ def do_add_artists(user: User, artist_uris: List[str], remove_not_included: bool
     sp = get_spotify("", user)
     existing_managed_artist_uris = [msa.spotify_artist_uri for msa in
                                     ManagedSpotifyArtist.query.filter_by(user_id=user.id).all()]
+    # if we pass true get_followed_managed_spotify_artists_for_user, we cause infinite loop:
+    # do_add_artists -> get_followed_managed_spotify_artists_for_user -> follow_unfollow_artists -> do_add_artists
     currently_unfollowed_managed_artist_uris = [msa.spotify_artist_uri for msa in
-                                                get_followed_managed_spotify_artists_for_user(user)]
+                                                get_followed_managed_spotify_artists_for_user(user, False)]
 
     to_add = set(artist_uris).difference(set(existing_managed_artist_uris))
     for artist_uri in to_add:
@@ -277,7 +279,9 @@ def refresh_top_tracks(sp, artist_uri: str):
     return dropped, to_return
 
 
-def get_followed_managed_spotify_artists_for_user(user: User):
+def get_followed_managed_spotify_artists_for_user(user: User, should_update: bool):
+    if should_update:
+        follow_unfollow_artists(user)
     return ManagedSpotifyArtist.query.filter_by(user_id=user.id, following='true').all()
 
 
@@ -287,7 +291,7 @@ def get_tracks(user: User) -> List[JsonDict]:
     if isinstance(sp, str):
         return []
     dedup_map = {}
-    my_managed_artists = get_followed_managed_spotify_artists_for_user(user)
+    my_managed_artists = get_followed_managed_spotify_artists_for_user(user, True)
     managed_arists_uris = set([artist.spotify_artist_uri for artist in my_managed_artists])
 
     # get liked tracks with artists that are in ARTISTS
