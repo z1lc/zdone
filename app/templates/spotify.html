@@ -12,19 +12,6 @@
           }
         });
       });
-      function download_iframe_oc() {
-        var iframe = document.createElement('iframe');
-        iframe.onload = function() {
-          window.location.reload();
-          $("div.loading").html("<br><br>Download complete!<br>Reloading page...");
-          $("div.loading").css({
-            "background-color": "rgba(0,0,0,.7)"
-          });
-        };
-        iframe.src = '/spotify/download_apkg';
-        document.body.appendChild(iframe);
-        $("div.loading").css("visibility", "visible");
-      }
     </script>
 <style>
     body {
@@ -32,58 +19,13 @@
         margin: auto;
         padding: 20px;
     }
-    /* https://stackoverflow.com/a/20741964 */
-    .loading {
-        visibility: hidden;
-        width: 100%;
-        height: 100%;
-        position: fixed;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        background-color: rgba(0,0,0,.5);
-        color: white;
-        font-size: 30px;
-        text-align: center;
-    }
-    .loading-wheel {
-        width: 30px;
-        height: 30px;
-        margin-top: -60px;
-        margin-left: -60px;
-
-        position: absolute;
-        top: 50%;
-        left: 50%;
-
-        border-width: 45px;
-        border-radius: 50%;
-        box-sizing: unset;
-        -webkit-animation: spin 1s linear infinite;
-    }
-    .style-2 .loading-wheel {
-        border-style: double;
-        border-color: #ccc transparent;
-    }
-    @-webkit-keyframes spin {
-        0% {
-            -webkit-transform: rotate(0);
-        }
-        100% {
-            -webkit-transform: rotate(-360deg);
-        }
-    }
-    iframe {
-        display: none;
-    }
 </style>
 {% endblock %}
 
 {% block body %}
 <h1>Spotify + Anki</h1>
     Looking for <a href="/spotify/help">Help</a>?<br>
-    Download the <a id="download_link" href="javascript:void(0)" onclick="download_iframe_oc()">latest set of songs</a> (be patient, this may take up to 30 seconds).
+    Download the <a href="/spotify/download_apkg">latest set of songs</a> (be patient, this may take up to 30 seconds).
 <h2><a name="AUM">Artists Under Management</a></h2>
     {% if not totals_given and internal_user %}
         <a href="?total_track_counts#AUM">Show total track count for artists</a> (includes top + liked; warning, this will take a while)
@@ -123,5 +65,4 @@
     <b>{{ total_tracks }}</b> total tracks<br>
     <b>{{ total_artists }}</b> total artists (includes unmanaged artists featured on tracks by managed artists).
 {% endif %}
-<div class="loading style-2"><div class="loading-wheel"></div></div>
 {% endblock %}
