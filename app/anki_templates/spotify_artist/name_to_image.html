@@ -1,0 +1,18 @@
+<div id="textPart">
+    {% if is_front %}
+        Visualize <span class="rsAnkiBold">{{ '{{Name}}' }}</span>
+    {% else %}
+        <span class="rsAnkiBold">{{ '{{Name}}' }}</span>
+    {% endif %}
+</div>
+
+<div id="imagePart" class="{% if is_front %}rsAnkiPersonNoteType{% else %}rsAnswer{% endif %}">
+    {% if is_front %}
+        <img src="_blank_person.png">
+    {% else %}
+        {{ '{{Image}}' }}
+    {% endif %}
+</div>
+
+
+{{ script_include|safe }}

@@ -3,6 +3,7 @@ from typing import Dict, List, Optional
 
 import genanki
 from genanki import Model, Deck
+from jinja2 import Environment, PackageLoader, select_autoescape, StrictUndefined, TemplateNotFound
 from jsmin import jsmin
 
 from app.models import LegacySpotifyTrackNoteGuidMapping, SpotifyArtist, User
@@ -39,12 +40,49 @@ https://github.com/z1lc/genanki. See https://gist.github.com/z1lc/544a971164bf61
 versions of the code (edited it multiple times & tried importing to test functionality)
 """
 
+env: Environment = Environment(
+    loader=PackageLoader('app', 'anki_templates'),
+    autoescape=select_autoescape(['html', 'xml']),
+    undefined=StrictUndefined
+)
 
+
+# DO NOT CHANGE THESE ENUM NAMES or you will cause backwards incompatibility: the names are used as template names
 class AnkiCard(Enum):
-    AUDIO_TO_ARTIST = 1
-    AUDIO_AND_ALBUMART_TO_ALBUM = 2
-    ARTIST_IMAGE_TO_NAME = 3
-    ARTIST_NAME_TO_IMAGE = 4
+    # Spotify Track model
+    AUDIO_TO_ARTIST = (1, 'spotify_track')
+    AUDIO_AND_ALBUM_ART_TO_ALBUM = (2, 'spotify_track')  # only used by me, not externally
+
+    # Spotify Artist model
+    IMAGE_TO_NAME = (3, 'spotify_artist')
+    NAME_TO_IMAGE = (4, 'spotify_artist')
+    NAME_AND_IMAGE_TO_SONG = (5, 'spotify_artist')
+    SONGS_TO_NAME = (6, 'spotify_artist')
+    NAME_AND_IMAGE_TO_GENRES = (7, 'spotify_artist')
+    NAME_AND_IMAGE_TO_SIMILAR_ARTISTS = (8, 'spotify_artist')
+    NAME_AND_IMAGE_TO_YEARS_ACTIVE = (9, 'spotify_artist')
+    EXTRA_ARTIST_TEMPLATE_1 = (10, 'spotify_artist')
+    EXTRA_ARTIST_TEMPLATE_2 = (11, 'spotify_artist')
+    EXTRA_ARTIST_TEMPLATE_3 = (12, 'spotify_artist')
+    EXTRA_ARTIST_TEMPLATE_4 = (13, 'spotify_artist')
+    EXTRA_ARTIST_TEMPLATE_5 = (14, 'spotify_artist')
+    EXTRA_ARTIST_TEMPLATE_6 = (15, 'spotify_artist')
+    EXTRA_ARTIST_TEMPLATE_7 = (16, 'spotify_artist')
+    EXTRA_ARTIST_TEMPLATE_8 = (17, 'spotify_artist')
+    EXTRA_ARTIST_TEMPLATE_9 = (18, 'spotify_artist')
+    EXTRA_ARTIST_TEMPLATE_10 = (19, 'spotify_artist')
+
+    def __init__(self, unique_number, directory):
+        self.unique_number = unique_number
+        self.directory = directory
+
+    def get_template_name(self) -> str:
+        return self.name \
+            .replace('_', ' ') \
+            .title() \
+            .replace('To', '>') \
+            .replace('And', '+') \
+            .replace(' ', '')
 
 
 class SpotifyTrackNote(genanki.Note):
@@ -93,7 +131,7 @@ def generate_track_apkg(user: User, filename: str) -> None:
         deck.add_note(track_as_note)
 
     # released to nobody for now since have to consider backwards-compatibility
-    if user.id <= 0:
+    if user.id <= 1:
         for managed_artist in get_followed_managed_spotify_artists_for_user(user, False):
             artist: SpotifyArtist = SpotifyArtist.query.filter_by(uri=managed_artist.spotify_artist_uri).one()
             img_src: Optional[str]
@@ -109,28 +147,28 @@ def generate_track_apkg(user: User, filename: str) -> None:
                     fields=[
                         artist.uri,
                         artist.name,
-                        f"<img src='{img_src}'>"
+                        f"<img src='{img_src}'>",
+                        '',
+                        '',
+                        '',
+                        '',
+                        '',
+                        '',
+                        '',
+                        '',
+                        '',
+                        '',
+                        '',
+                        '',
+                        '',
+                        '',
+                        '',
                     ])
                 deck.add_note(artist_as_note)
     genanki.Package(deck).write_to_file(filename)
 
 
 def get_artist_model(user: User) -> Model:
-    rs_anki_enabled: bool = user.uses_rsAnki_javascript
-    api_key: str = user.api_key
-
-    templates: List[JsonDict] = [
-        {
-            'name': 'Image>Name',
-            'qfmt': get_front(AnkiCard.ARTIST_IMAGE_TO_NAME, api_key, rs_anki_enabled),
-            'afmt': get_back(AnkiCard.ARTIST_IMAGE_TO_NAME, rs_anki_enabled),
-        },
-        {
-            'name': 'Name>Image',
-            'qfmt': get_front(AnkiCard.ARTIST_NAME_TO_IMAGE, api_key, rs_anki_enabled),
-            'afmt': get_back(AnkiCard.ARTIST_NAME_TO_IMAGE, rs_anki_enabled),
-        }]
-
     return genanki.Model(
         SPOTIFY_ARTIST_MODEL_ID,
         'Spotify Artist',
@@ -138,30 +176,55 @@ def get_artist_model(user: User) -> Model:
             {'name': 'Artist URI'},
             {'name': 'Name'},
             {'name': 'Image'},
+            {'name': 'Songs'},
+            {'name': 'Albums'},
+            {'name': 'Genres'},
+            {'name': 'Similar Artists'},
+            {'name': 'Years Active'},
+            {'name': 'Extra Field 1'},  # Reserved for future use
+            {'name': 'Extra Field 2'},  # Reserved for future use
+            {'name': 'Extra Field 3'},  # Reserved for future use
+            {'name': 'Extra Field 4'},  # Reserved for future use
+            {'name': 'Extra Field 5'},  # Reserved for future use
+            {'name': 'Extra Field 6'},  # Reserved for future use
+            {'name': 'Extra Field 7'},  # Reserved for future use
+            {'name': 'Extra Field 8'},  # Reserved for future use
+            {'name': 'Extra Field 9'},  # Reserved for future use
+            {'name': 'Extra Field 10'},  # Reserved for future use
         ],
-        css=get_rs_anki_css() if rs_anki_enabled else get_default_css(),
-        templates=templates
+        css=get_rs_anki_css() if user.uses_rsAnki_javascript else get_default_css(),
+        templates=[
+            get_template(AnkiCard.IMAGE_TO_NAME, user),
+            get_template(AnkiCard.NAME_TO_IMAGE, user),
+            get_template(AnkiCard.NAME_AND_IMAGE_TO_SONG, user),
+            get_template(AnkiCard.SONGS_TO_NAME, user),
+            get_template(AnkiCard.NAME_AND_IMAGE_TO_GENRES, user),
+            get_template(AnkiCard.NAME_AND_IMAGE_TO_SIMILAR_ARTISTS, user),
+            get_template(AnkiCard.NAME_AND_IMAGE_TO_YEARS_ACTIVE, user),
+            get_template(AnkiCard.EXTRA_ARTIST_TEMPLATE_1, user),
+            get_template(AnkiCard.EXTRA_ARTIST_TEMPLATE_2, user),
+            get_template(AnkiCard.EXTRA_ARTIST_TEMPLATE_3, user),
+            get_template(AnkiCard.EXTRA_ARTIST_TEMPLATE_4, user),
+            get_template(AnkiCard.EXTRA_ARTIST_TEMPLATE_5, user),
+            get_template(AnkiCard.EXTRA_ARTIST_TEMPLATE_6, user),
+            get_template(AnkiCard.EXTRA_ARTIST_TEMPLATE_7, user),
+            get_template(AnkiCard.EXTRA_ARTIST_TEMPLATE_8, user),
+            get_template(AnkiCard.EXTRA_ARTIST_TEMPLATE_9, user),
+            get_template(AnkiCard.EXTRA_ARTIST_TEMPLATE_10, user),
+        ]
     )
 
 
 def get_track_model(user: User) -> Model:
-    rs_anki_enabled: bool = user.uses_rsAnki_javascript
-    api_key: str = user.api_key
     should_generate_albumart_card: bool = user.username == "rsanek"
     legacy_model_id: int = 1579060616046
 
     templates: List[JsonDict] = [
-        {
-            'name': 'Audio>Artist',
-            'qfmt': get_front(AnkiCard.AUDIO_TO_ARTIST, api_key, rs_anki_enabled),
-            'afmt': get_back(AnkiCard.AUDIO_TO_ARTIST, rs_anki_enabled),
-        }]
+        get_template(AnkiCard.AUDIO_TO_ARTIST, user)
+    ]
     if should_generate_albumart_card:
-        templates.append({
-            'name': 'Audio+AlbumArt>Album',
-            'qfmt': get_front(AnkiCard.AUDIO_AND_ALBUMART_TO_ALBUM, api_key, rs_anki_enabled),
-            'afmt': get_back(AnkiCard.AUDIO_AND_ALBUMART_TO_ALBUM, rs_anki_enabled),
-        })
+        templates.append(get_template(AnkiCard.AUDIO_AND_ALBUM_ART_TO_ALBUM, user))
+
     return genanki.Model(
         # the legacy model ID was from when I imported my model to everyone else. I migrated to the publically-facing,
         # default model ID, but kept existing users on my old model ID for simplicity.
@@ -174,87 +237,46 @@ def get_track_model(user: User) -> Model:
             {'name': 'Album'},
             {'name': 'Album Art'},
         ],
-        css="@import '_anki.css';" if rs_anki_enabled else get_default_css(),
+        css="@import '_anki.css';" if user.uses_rsAnki_javascript else get_default_css(),
         templates=templates
     )
 
 
-def get_back(card_type: AnkiCard, rs_anki_enabled: bool) -> str:
+def get_template(card_type: AnkiCard, user: User) -> JsonDict:
+    rs_anki_enabled: bool = user.uses_rsAnki_javascript
+    api_key: str = user.api_key
+    return {
+        'name': card_type.get_template_name(),
+        'qfmt': render_front(card_type, api_key, rs_anki_enabled),
+        'afmt': render_back(card_type, api_key, rs_anki_enabled),
+    }
+
+
+def render_template(card_type: AnkiCard, is_front: bool, api_key: str, rs_anki_enabled: bool) -> str:
     script_include = get_rs_anki_custom_script() if rs_anki_enabled else get_default_script()
-    if card_type == AnkiCard.AUDIO_TO_ARTIST:
-        text_part = """What artist?
-<hr>
-<ul>
-<li><span class="rsAnswer">{{Artist(s)}}</span></li>
-<li>{{Track Name}}</li>
-<li>{{Album}}</li>
-</ul>"""
-        image_part = "{{Album Art}}"
-    elif card_type == AnkiCard.AUDIO_AND_ALBUMART_TO_ALBUM:
-        text_part = """What album?
-<hr>
-<ul>
-<li><span class="rsAnswer">{{Album}}</span></li>
-<li>{{Track Name}}</li>
-<li>{{Artist(s)}}</li>
-</ul>"""
-        image_part = "{{Album Art}}"
-    elif card_type == AnkiCard.ARTIST_IMAGE_TO_NAME:
-        text_part = """<span class="rsAnswer rsAnkiBold">{{Name}}</span>"""
-        image_part = "{{Image}}"
-    elif card_type == AnkiCard.ARTIST_NAME_TO_IMAGE:
-        text_part = """<span class="rsAnkiBold">{{Name}}</span>"""
-        image_part = """<span class="rsAnswer">{{Image}}</span>"""
-    else:
-        raise ValueError('Did not recognize card type.')
-    return f"""<div id="textPart">
-{text_part}
-</div>
-
-<div id="imagePart">{image_part}</div>
-
-
-{script_include}"""
-
-
-def get_front(card_type: AnkiCard, api_key: str, rs_anki_enabled: bool) -> str:
-    extra_include = f"""<script type="text/javascript">
-{get_minified_js(api_key)}
+    if is_front and card_type in [AnkiCard.AUDIO_TO_ARTIST, AnkiCard.AUDIO_AND_ALBUM_ART_TO_ALBUM]:
+        script_include += f"""<script type="text/javascript">
+{get_minified_js_for_song_jump(api_key)}
 </script>"""
-    css_class = ""
-    if card_type == AnkiCard.AUDIO_TO_ARTIST:
-        text_part = """What artist?<br>
-<input id="jump" type="submit" onclick="jump()" value="Jump to Random Location"><br><br>
-<div id="error" style="color:red"></div>"""
-        image_part = ""
-    elif card_type == AnkiCard.AUDIO_AND_ALBUMART_TO_ALBUM:
-        text_part = """What album?<br>
-<input id="jump" type="submit" onclick="jump()" value="Jump to Random Location"><br><br>
-<div id="error" style="color:red"></div>"""
-        image_part = "{{Album Art}}"
-    elif card_type == AnkiCard.ARTIST_IMAGE_TO_NAME:
-        text_part = "What artist?"
-        image_part = "{{Image}}"
-        extra_include = ""
-    elif card_type == AnkiCard.ARTIST_NAME_TO_IMAGE:
-        text_part = """Visualize <span class="rsAnkiBold">{{Name}}</span>"""
-        image_part = """<img src="_blank_person.png">"""
-        extra_include = ""
-        css_class = "rsAnkiPersonNoteType"
-    else:
-        raise ValueError('Did not recognize card type.')
-    script_include = get_rs_anki_custom_script() if rs_anki_enabled else get_default_script()
-    return f"""<div id="textPart">{text_part}
-</div>
-
-<div id="imagePart" class="{css_class}">{image_part}</div>
+    try:
+        return env.get_template(card_type.directory + '/' + card_type.name.lower() + '.html') \
+            .render(is_front=is_front, script_include=script_include)
+    except TemplateNotFound as e:
+        # don't require us to write blank HTML templates for the extras if we don't want to
+        if "extra" in card_type.name.lower():
+            return ""
+        raise e
 
 
-{script_include}
-{extra_include}"""
+def render_back(card_type: AnkiCard, api_key: str, rs_anki_enabled: bool) -> str:
+    return render_template(card_type, False, api_key, rs_anki_enabled)
 
 
-def get_minified_js(api_key: str) -> str:
+def render_front(card_type: AnkiCard, api_key: str, rs_anki_enabled: bool) -> str:
+    return render_template(card_type, True, api_key, rs_anki_enabled)
+
+
+def get_minified_js_for_song_jump(api_key: str) -> str:
     return jsmin(f"""
 function pr(data) {{
   if (typeof data.reason !== 'undefined') {{

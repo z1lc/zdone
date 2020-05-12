@@ -1,0 +1,18 @@
+<div id="textPart">What album?
+    {% if is_front %}
+        <br>
+        <input id="jump" type="submit" onclick="jump()" value="Jump to Random Location"><br><br>
+        <div id="error" style="color:red"></div>
+    {% else %}
+        <hr>
+        <ul>
+            <li><span class="rsAnswer">{{ '{{Album}}' }}</span></li>
+            <li>{{ '{{Track Name}}' }}</li>
+            <li>{{ '{{Artist(s)}}' }}</li>
+        </ul>
+    {% endif %}
+</div>
+
+<div id="imagePart">{{ '{{Album Art}}' }}</div>
+
+{{ script_include|safe }}
