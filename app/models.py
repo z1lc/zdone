@@ -44,6 +44,8 @@ class User(UserMixin, BaseModel):
 
     uses_rsAnki_javascript: bool = db.Column(db.Boolean, server_default='false', nullable=False)
 
+    pushover_user_key: str = db.Column(db.String(128), unique=True)
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -151,3 +153,20 @@ class kv(BaseModel):
     id: int = db.Column(db.Integer, primary_key=True)
     k: str = db.Column(db.Text, unique=True)
     v: str = db.Column(db.Text)
+
+
+class Reminder(BaseModel):
+    __tablename__ = "reminders"
+    id: int = db.Column(db.Integer, primary_key=True)
+    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    title: str = db.Column(db.Text)
+    message: str = db.Column(db.Text)
+    active: bool = db.Column(db.Boolean, server_default='true', nullable=False)
+
+
+class ReminderNotification(BaseModel):
+    __tablename__ = "reminder_notifications"
+    id: int = db.Column(db.Integer, primary_key=True)
+    reminder_id: int = db.Column(db.Integer, db.ForeignKey('reminders.id'), nullable=False)
+    sent_at = db.Column(db.DateTime, nullable=False)
+    sent_via = db.Column(db.String, nullable=False)
