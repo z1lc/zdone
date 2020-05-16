@@ -8,7 +8,7 @@ from app.models import Reminder, User, ReminderNotification
 # This code is scheduled to run once daily by the Heroku Scheduler
 if __name__ == '__main__':
     print('Will send a single notification to everyone who has a Pushover user key.')
-    for user in User.query.filter(User.pushover_user_key.isnot(None)).all():
+    for user in User.query.filter(User.pushover_user_key.isnot(None)).all():  # type: ignore
         prepared_sql = f"""select r.id
 from reminders r
          left join reminder_notifications rn on r.id = rn.reminder_id
