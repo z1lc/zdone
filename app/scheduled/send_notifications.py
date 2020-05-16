@@ -1,9 +1,7 @@
-import datetime
+from app import db
+from app.models import User
 
-from pushover import Client
-
-from app import kv, db
-from app.models import Reminder, User, ReminderNotification
+from app.notification import send_and_log_notification
 
 # This code is scheduled to run once daily by the Heroku Scheduler
 if __name__ == '__main__':
@@ -17,18 +15,4 @@ group by 1
 order by coalesce(max(rn.sent_at), '2020-01-01') asc
 limit 1;"""
         oldest_reminder_id = list(db.engine.execute(prepared_sql))[0][0]
-        oldest_reminder = Reminder.query.filter_by(id=oldest_reminder_id).one()
-        client = Client(user.pushover_user_key, api_token=kv.get('PUSHOVER_API_TOKEN'))
-        client.send_message(
-            title=oldest_reminder.title,
-            message=oldest_reminder.message
-        )
-        print(f'Sent notification {oldest_reminder.title}: {oldest_reminder.message}'
-              f' to clients for user {user.username}.')
-        notification = ReminderNotification(
-            reminder_id=oldest_reminder.id,
-            sent_at=datetime.datetime.now(),
-            sent_via="pushover"
-        )
-        db.session.add(notification)
-        db.session.commit()
+        send_and_log_notification(user, oldest_reminder_id)
