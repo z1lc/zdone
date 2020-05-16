@@ -15,7 +15,7 @@ flask_migrate==2.5.3
 flask_wtf==0.14.3
 flask_socketio==4.3.0
 eventlet==0.25.2
-sentry-sdk[flask]==0.14.3
+sentry-sdk[flask]==0.14.4
 newrelic==5.12.1.141
 mock==4.0.2
 py-trello==0.16.0
