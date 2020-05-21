@@ -3,7 +3,7 @@ from typing import List
 from sentry_sdk import capture_exception
 
 from app.models import SpotifyArtist, User
-from app.spotify import get_spotify, refresh_top_tracks, update_last_fm_scrobble_counts
+from app.spotify import get_spotify, get_top_tracks, update_last_fm_scrobble_counts
 
 MAX_RETRIES_PER_ARTIST = 2
 
@@ -27,7 +27,7 @@ if __name__ == '__main__':
         while try_count < MAX_RETRIES_PER_ARTIST:
             try_count += 1
             try:
-                dropped, top_tracks = refresh_top_tracks(sp, artist.uri)
+                dropped, top_tracks = get_top_tracks(sp, artist, allow_refresh=True)
                 print(f'[{round(i / len(artists) * 100)}%] '
                       f'Updated mappings for artist {artist.name}, dropping {dropped} & adding {len(top_tracks)}.')
                 break

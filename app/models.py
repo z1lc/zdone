@@ -79,6 +79,7 @@ class SpotifyArtist(BaseModel):
     spotify_image_url: str = db.Column(db.Text)
     good_image: bool = db.Column(db.Boolean, nullable=False, server_default='false')
     image_override_name: str = db.Column(db.String(128), nullable=True)
+    last_top_tracks_refresh = db.Column(db.DateTime, nullable=True)
 
     def get_bare_uri(self):
         return self.uri.split("spotify:artist:")[1]

@@ -1,3 +1,4 @@
+import datetime
 import json
 import random
 from concurrent.futures import ThreadPoolExecutor
@@ -262,24 +263,29 @@ def get_liked_page(sp, offset: int) -> List[JsonDict]:
     return []
 
 
-# TODO: add a column for last successful refresh & only refresh once per week
-def refresh_top_tracks(sp, artist_uri: str):
-    dropped = TopTrack.query.filter_by(artist_uri=artist_uri).delete()
-    top_tracks = sp.artist_top_tracks(artist_id=artist_uri)['tracks']
-    to_return = []
-    for ordinal, top_track in enumerate(top_tracks, 1):
-        track = add_or_get_track(sp, top_track['uri'])
-        top_track_db = TopTrack(track_uri=track.uri,
-                                artist_uri=artist_uri,
-                                ordinal=ordinal,
-                                api_response=json.dumps(top_track))
-        db.session.add(top_track_db)
-        to_return.append(top_track_db)
-    db.session.commit()
-    return dropped, to_return
+def get_top_tracks(sp, artist: SpotifyArtist, allow_refresh: bool = False) -> Tuple[List[TopTrack], List[TopTrack]]:
+    should_refresh = allow_refresh and (artist.last_top_tracks_refresh is None or
+                                        artist.last_top_tracks_refresh < (datetime.datetime.now() - timedelta(days=7)))
+    if should_refresh:
+        dropped = TopTrack.query.filter_by(artist_uri=artist.uri).delete()
+        top_tracks = sp.artist_top_tracks(artist_id=artist.uri)['tracks']
+        to_return = []
+        for ordinal, top_track in enumerate(top_tracks, 1):
+            track = add_or_get_track(sp, top_track['uri'])
+            top_track_db = TopTrack(track_uri=track.uri,
+                                    artist_uri=artist.uri,
+                                    ordinal=ordinal,
+                                    api_response=json.dumps(top_track))
+            db.session.add(top_track_db)
+            to_return.append(top_track_db)
+        artist.last_top_tracks_refresh = datetime.datetime.now()
+        db.session.commit()
+        return dropped, to_return
+    else:
+        return [], TopTrack.query.filter_by(artist_uri=artist.uri).all()
 
 
-def get_followed_managed_spotify_artists_for_user(user: User, should_update: bool):
+def get_followed_managed_spotify_artists_for_user(user: User, should_update: bool) -> List[ManagedSpotifyArtist]:
     if should_update:
         follow_unfollow_artists(user)
     return ManagedSpotifyArtist.query.filter_by(user_id=user.id, following='true').all()
@@ -316,14 +322,14 @@ def get_tracks(user: User) -> List[JsonDict]:
     for artist in my_managed_artists:
         top_tracks = TopTrack.query.filter_by(artist_uri=artist.spotify_artist_uri).all()
         if not top_tracks:
-            _, top_tracks = refresh_top_tracks(sp, artist.spotify_artist_uri)
+            _, top_tracks = get_top_tracks(sp, SpotifyArtist.query.filter_by(uri=artist.spotify_artist_uri).one())
         for top_track in top_tracks[:artist.num_top_tracks]:
             dedup_map[top_track.track_uri] = json.loads(top_track.api_response)
 
     output = dedup_map.values()
 
-    print(f"ensuring all tracks are in db {today_datetime()}")
-    bulk_add_tracks(sp, [track['uri'] for track in output])
+    print(f"[skipped] ensuring all tracks are in db {today_datetime()}")
+    # bulk_add_tracks(sp, [track['uri'] for track in output])
     print(f"before output {today_datetime()}")
     return list(output)
 
