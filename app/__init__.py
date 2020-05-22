@@ -20,11 +20,17 @@ sentry_sdk.init(
 )
 
 app = Flask(__name__)
-Talisman(content_security_policy={
+Talisman(app, content_security_policy={
     'default-src': [
         '\'self\'',
+        '\'unsafe-inline\'',
         '*.jquery.com',
-        '*.w3schools.com'
+        '*.w3schools.com',
+        '*.cloudflare.com',
+        '*.googleapis.com',
+        '*.gstatic.com',
+        '*.datatables.net',
+        '*.fontawesome.com'
     ]
 })
 app.config.from_object(Config)
