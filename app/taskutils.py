@@ -215,7 +215,7 @@ def complete_toodledo_task(task_id, user: User = current_user) -> requests.Respo
         "completed": int(datetime.datetime(today().year, today().month, today().day).timestamp()),
         "reschedule": "1"
     }]
-    endpoint: str = f"http://api.toodledo.com/3/tasks/edit.php?access_token={loads(user.toodledo_token_json)}" \
+    endpoint: str = f"https://api.toodledo.com/3/tasks/edit.php?access_token={loads(user.toodledo_token_json)}" \
                     f"&tasks={dumps(tasks)}"
     return requests.post(url=endpoint)
 
@@ -226,7 +226,7 @@ def add_toodledo_task(name, due_date, length_minutes, user: User = current_user)
         "duedate": int(parser.parse(due_date).timestamp()),
         "duration": length_minutes
     }]
-    endpoint = "http://api.toodledo.com/3/tasks/add.php?access_token={access_token}&tasks={tasks}".format(
+    endpoint = "https://api.toodledo.com/3/tasks/add.php?access_token={access_token}&tasks={tasks}".format(
         access_token=loads(user.toodledo_token_json)["access_token"], tasks=dumps(tasks))
     return requests.post(url=endpoint)
 
