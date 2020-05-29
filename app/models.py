@@ -56,6 +56,11 @@ class User(UserMixin, BaseModel):
         return '<User {}>'.format(self.username)
 
 
+@login.user_loader
+def load_user(id) -> User:
+    return User.query.get(int(id))
+
+
 class ManagedSpotifyArtist(BaseModel):
     __tablename__ = "managed_spotify_artists"
     id: int = db.Column(db.Integer, primary_key=True)
@@ -143,11 +148,6 @@ class TaskCompletion(BaseModel):
     subtask_id: str = db.Column(db.String(128))
     duration_seconds: int = db.Column(db.Integer)
     at = db.Column(db.DateTime)
-
-
-@login.user_loader
-def load_user(id) -> User:
-    return User.query.get(int(id))
 
 
 class kv(BaseModel):
