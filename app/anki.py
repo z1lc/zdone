@@ -131,7 +131,7 @@ def generate_track_apkg(user: User, filename: str) -> None:
         deck.add_note(track_as_note)
 
     # released to nobody for now since have to consider backwards-compatibility
-    if user.id <= 1:
+    if user.id <= 6:
         for managed_artist in get_followed_managed_spotify_artists_for_user(user, False):
             artist: SpotifyArtist = SpotifyArtist.query.filter_by(uri=managed_artist.spotify_artist_uri).one()
             img_src: Optional[str]
