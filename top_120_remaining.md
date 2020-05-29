@@ -117,3 +117,13 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * Barry Manilow
 * Kiss
 * ~~Aretha Franklin~~
+
+##CZ Todo
+* Chinaski
+* Lucie Bílá
+* Karel Gott
+* Waldemar Matuška
+* Petr Hapka
+* DIVOKEJ BILL
+* Kryštof
+* Richard Muller
