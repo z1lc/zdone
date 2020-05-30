@@ -1,5 +1,11 @@
 {{ '{{#Years Active}}' }}
-<div id="textPart"></div>
+<div id="textPart">
+    {% if is_front %}
+
+    {% else %}
+        <span class="rsAnswer"></span>
+    {% endif %}
+</div>
 <div id="imagePart"></div>
 
 {{ script_include|safe }}
