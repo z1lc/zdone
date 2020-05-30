@@ -1,6 +1,7 @@
-# Spotify Anki Artist note type
+# Future Anki Culture note types
 
-## Fields
+## Artist
+### Fields
  * ~~Name~~
  * Songs
    * only ones you have in your library/have listened to?
@@ -13,7 +14,7 @@
  * ~~Image~~
    * ~~sourced from Spotify / provided backup image if one from Spotify sucks~~
 
-## Cards
+### Cards
  * ~~image>name~~
  * ~~name>image~~
  * name+image>song
@@ -23,3 +24,19 @@
    * similar artists that you also track bolded/green?
  * name+image>years active
    * based on album release dates?
+ * name+image>albums
+ * albums>name
+
+## Movie
+### Fields
+ * Name
+ * Actors (+ roles?)
+ * Poster Image
+ * Video
+
+### Cards
+ * Name>Actors
+ * Actors+Roles>Name
+ * Poster>Name
+ * Name>Poster
+ * Video>Name 
