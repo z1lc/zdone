@@ -1,3 +1,4 @@
+import re
 from enum import Enum
 from typing import Dict, List, Optional
 
@@ -6,6 +7,7 @@ from genanki import Model, Deck
 from jinja2 import Environment, PackageLoader, select_autoescape, StrictUndefined, TemplateNotFound
 from jsmin import jsmin
 
+from app import db
 from app.models import LegacySpotifyTrackNoteGuidMapping, SpotifyArtist, User
 from app.spotify import get_tracks, get_followed_managed_spotify_artists_for_user
 from app.util import JsonDict
@@ -130,10 +132,20 @@ def generate_track_apkg(user: User, filename: str) -> None:
             track_as_note.guid = legacy_mappings.get(track['uri'])
         deck.add_note(track_as_note)
 
-    # released to nobody for now since have to consider backwards-compatibility
+    top_played_tracks_sql = f"""
+select spotify_artist_uri, spotify_track_uri, st.name, count(*) from spotify_tracks st
+join spotify_artists sa on st.spotify_artist_uri = sa.uri
+join spotify_plays sp on st.uri = sp.spotify_track_uri
+where user_id = {user.id}
+group by 1, 2, 3
+order by 4 desc"""
+    top_played_tracks = list(db.engine.execute(top_played_tracks_sql))
+
+    # released internally only so far
     if user.id <= 6:
         for managed_artist in get_followed_managed_spotify_artists_for_user(user, False):
             artist: SpotifyArtist = SpotifyArtist.query.filter_by(uri=managed_artist.spotify_artist_uri).one()
+
             img_src: Optional[str]
             if artist.good_image and artist.spotify_image_url:
                 img_src = artist.spotify_image_url
@@ -141,6 +153,18 @@ def generate_track_apkg(user: User, filename: str) -> None:
                 img_src = f"https://www.zdone.co/static/images/artists/{artist.image_override_name}"
             else:
                 img_src = None
+
+            top_played_tracks_for_artist = [clean_track_name(row[2]) for row in top_played_tracks if
+                                            row[0] == managed_artist.spotify_artist_uri]
+            top_played_tracks_for_artist = list(dict.fromkeys(top_played_tracks_for_artist))
+
+            # we want to make sure you have actually listened to the artist for a bit, so let's say minimum 3 songs
+            if len(top_played_tracks_for_artist) >= 3:
+                # also don't want the list to be too long, though, so limit to 5
+                songs = '<ul><li>' + '</li><li>'.join(top_played_tracks_for_artist[:5]) + '</li></ul>'
+            else:
+                songs = ''
+
             if img_src:
                 artist_as_note = SpotifyArtistNote(
                     model=artist_model,
@@ -148,7 +172,7 @@ def generate_track_apkg(user: User, filename: str) -> None:
                         artist.uri,
                         artist.name,
                         f"<img src='{img_src}'>",
-                        '',
+                        songs,
                         '',
                         '',
                         '',
@@ -166,6 +190,30 @@ def generate_track_apkg(user: User, filename: str) -> None:
                     ])
                 deck.add_note(artist_as_note)
     genanki.Package(deck).write_to_file(filename)
+
+
+def clean_track_name(name: str) -> str:
+    REGEXES: List[str] = [
+        " - (\\d{4} )?Remaster(ed)?( \\d{4})?$",
+        " - (Stereo|Original) Mix$",
+        " - Bonus Track$",
+        " - Radio Edit$",
+        " (\\(|\\[)(feat\\.|with).*?(\\)|\\])",
+        " - [A-z ]+ Remix",
+        " - [A-z ]+ (Radio )?Mix",
+        " - (\\d{4}|Stereo|Acoustic|Single) Version",
+        " - Panic! At The Disco Version",
+        " - With Introduction",
+        " \\(Remix\\)",
+        " - Remix",
+        " - Extended",
+        " - From \"[A-z ]+\" Soundtrack",
+        " - Featured in [A-z ]+",
+        " - Avicii By Avicii"
+    ]
+    for regex in REGEXES:
+        name = re.sub(regex, "", name)
+    return name
 
 
 def get_artist_model(user: User) -> Model:

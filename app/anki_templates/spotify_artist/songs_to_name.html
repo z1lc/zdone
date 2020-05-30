@@ -1,12 +1,14 @@
 {{ '{{#Songs}}' }}
 <div id="textPart">
     {% if is_front %}
-
+        What artist is known for...<br>
+        {{ '{{Songs}}' }}
     {% else %}
-        <span class="rsAnswer"></span>
+        <span class="rsAnswer rsAnkiBold">{{ '{{Name}}' }}</span><br>
+        {{ '{{Songs}}' }}
     {% endif %}
 </div>
-<div id="imagePart"></div>
+<div id="imagePart">{% if not is_front %}{{ '{{Image}}' }}{% endif %}</div>
 
 {{ script_include|safe }}
 {{ '{{/Songs}}' }}

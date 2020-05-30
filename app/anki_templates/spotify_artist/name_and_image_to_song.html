@@ -1,12 +1,13 @@
 {{ '{{#Songs}}' }}
 <div id="textPart">
     {% if is_front %}
-
+        Name a song by <span class="rsAnkiBold">{{ '{{Name}}' }}</span>
     {% else %}
-        <span class="rsAnswer"></span>
+        <span class="rsAnkiBold">{{ '{{Name}}' }}</span><br>
+        <span class="rsAnswerMulti">{{ '{{Songs}}' }}</span>
     {% endif %}
 </div>
-<div id="imagePart"></div>
+<div id="imagePart">{{ '{{Image}}' }}</div>
 
 {{ script_include|safe }}
 {{ '{{/Songs}}' }}
