@@ -125,21 +125,16 @@ def add_or_get_album(sp, spotify_album_uri: str):
 def populate_null(user: User) -> None:
     unpopulated = SpotifyTrack.query.filter_by(spotify_album_uri=None).all()
     sp = get_spotify("", user)
-    i = 0
-    for item in unpopulated:
-        try_count = 0
-        while try_count < 3:
-            try_count += 1
-            try:
-                item.spotify_album_uri = sp.track(item.uri)['album']['uri']
-                break
-            except Exception:
-                sp = get_spotify("", user)
-        i += 1
-        if i % 100 == 0:
-            print(
-                f"Wrote 100 more artists. Total this run is {round(i / len(unpopulated) * 1000) / 10}%, {i} / {len(unpopulated)}")
-            db.session.commit()
+
+    batchsize = 50
+    for i in range(0, len(unpopulated), batchsize):
+        batch = unpopulated[i:i + batchsize]
+        tracks = sp.tracks([t.uri for t in batch])
+        for j, item in enumerate(batch):
+            item.spotify_album_uri = tracks['tracks'][j]['album']['uri']
+        print(f"Wrote 50 more artists. Total this run is {round(i / len(unpopulated) * 1000) / 10}%, "
+              f"{i} / {len(unpopulated)}")
+        db.session.commit()
 
 
 def add_or_get_artist(sp, spotify_artist_uri: str):
