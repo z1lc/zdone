@@ -108,7 +108,7 @@ class SpotifyTrack(BaseModel):
     uri: str = db.Column(db.String(128), primary_key=True)
     name: str = db.Column(db.String(1024), nullable=False)
     spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
-    spotify_album_uri: str = db.Column(db.String(128))  # , db.ForeignKey('spotify_albums.uri'), nullable=False
+    spotify_album_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_albums.uri'), nullable=False)
     duration_milliseconds: int = db.Column(db.Integer, nullable=False)
 
 
