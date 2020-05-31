@@ -123,7 +123,9 @@ def add_or_get_album(sp, spotify_album_uri: str):
 
 
 def populate_null(user: User) -> None:
-    top_played_tracks_sql = f"""select distinct spotify_album_uri from spotify_tracks"""
+    top_played_tracks_sql = f"""select distinct spotify_album_uri
+from spotify_tracks
+where spotify_album_uri not in (select uri from spotify_albums)"""
     unpopulated = [a[0] for a in list(db.engine.execute(top_played_tracks_sql))]
     sp = get_spotify("", user)
 
