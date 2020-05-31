@@ -90,11 +90,25 @@ class SpotifyArtist(BaseModel):
         return self.uri.split("spotify:artist:")[1]
 
 
+class SpotifyAlbum(BaseModel):
+    __tablename__ = "spotify_albums"
+    uri: str = db.Column(db.String(128), primary_key=True)
+    name: str = db.Column(db.String(128), nullable=False)
+    spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
+    album_type: str = db.Column(db.String(128), nullable=False)
+    spotify_image_url: str = db.Column(db.Text)
+    released_at = db.Column(db.Date, nullable=False)
+
+    def get_bare_uri(self):
+        return self.uri.split("spotify:album:")[1]
+
+
 class SpotifyTrack(BaseModel):
     __tablename__ = "spotify_tracks"
     uri: str = db.Column(db.String(128), primary_key=True)
     name: str = db.Column(db.String(1024), nullable=False)
     spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
+    spotify_album_uri: str = db.Column(db.String(128))  # , db.ForeignKey('spotify_albums.uri'), nullable=False
     duration_milliseconds: int = db.Column(db.Integer, nullable=False)
 
 

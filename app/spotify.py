@@ -9,13 +9,13 @@ from typing import Optional, List, Tuple
 import pytz
 import requests
 import spotipy
+from dateutil import parser
 from flask import redirect
-from sentry_sdk import capture_exception
 from spotipy import oauth2
 from sqlalchemy.exc import IntegrityError
 
 from app import kv, redis_client, db
-from app.models import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay, User, TopTrack
+from app.models import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay, User, TopTrack, SpotifyAlbum
 from app.util import today_datetime, today, JsonDict
 
 # Scopes that are currently requested for public users -- only request things that are necessary
@@ -105,6 +105,43 @@ def get_cached_token_info(sp_oauth, user: User) -> Optional[JsonDict]:
     return None
 
 
+def add_or_get_album(sp, spotify_album_uri: str):
+    album = SpotifyAlbum.query.filter_by(uri=spotify_album_uri).one_or_none()
+    if not album:
+        sp_album = sp.album(spotify_album_uri)
+        album = SpotifyAlbum(
+            uri=spotify_album_uri,
+            name=sp_album['name'],
+            spotify_artist_uri=sp_album['artists'][0]['uri'],
+            album_type=sp_album['album_type'],
+            released_at=parser.parse(sp_album['release_date']).date(),
+            spotify_image_url=sp_album['images'][0]['url'] if sp_album['images'] else None
+        )
+        db.session.add(album)
+        db.session.commit()
+    return album
+
+
+def populate_null(user: User) -> None:
+    unpopulated = SpotifyTrack.query.filter_by(spotify_album_uri=None).all()
+    sp = get_spotify("", user)
+    i = 0
+    for item in unpopulated:
+        try_count = 0
+        while try_count < 3:
+            try_count += 1
+            try:
+                item.spotify_album_uri = sp.track(item.uri)['album']['uri']
+                break
+            except Exception:
+                sp = get_spotify("", user)
+        i += 1
+        if i % 100 == 0:
+            print(
+                f"Wrote 100 more artists. Total this run is {round(i / len(unpopulated) * 1000) / 10}%, {i} / {len(unpopulated)}")
+            db.session.commit()
+
+
 def add_or_get_artist(sp, spotify_artist_uri: str):
     artist = SpotifyArtist.query.filter_by(uri=spotify_artist_uri).one_or_none()
     if not artist:
@@ -117,17 +154,6 @@ def add_or_get_artist(sp, spotify_artist_uri: str):
         db.session.add(artist)
         db.session.commit()
     return artist
-
-
-def populate_null_artists(user: User) -> None:
-    try:
-        unpopulated_artists = SpotifyArtist.query.filter_by(name='').all()
-        sp = get_spotify("", user)
-        for artist in unpopulated_artists:
-            artist.name = sp.artist(artist.uri)['name']
-        db.session.commit()
-    except Exception as e:
-        capture_exception(e)
 
 
 def maybe_get_spotify_authorize_url(full_url: str, user: User) -> Optional[str]:
@@ -178,9 +204,11 @@ def add_or_get_track(sp, track_uri: str) -> SpotifyTrack:
     if not track:
         sp_track = sp.track(track_uri)
         spotify_artist = add_or_get_artist(sp, sp_track['artists'][0]['uri'])
+        spotify_album = add_or_get_album(sp, sp_track['album']['uri'])
         track = SpotifyTrack(uri=track_uri,
                              name=sp_track['name'],
                              spotify_artist_uri=spotify_artist.uri,
+                             spotify_album_uri=spotify_album.uri,
                              duration_milliseconds=sp_track['duration_ms'])
         db.session.add(track)
         try:
@@ -329,7 +357,7 @@ def get_tracks(user: User) -> List[JsonDict]:
     output = dedup_map.values()
 
     print(f"[skipped] ensuring all tracks are in db {today_datetime()}")
-    # bulk_add_tracks(sp, [track['uri'] for track in output])
+    bulk_add_tracks(sp, [track['uri'] for track in output])
     print(f"before output {today_datetime()}")
     return list(output)
 
