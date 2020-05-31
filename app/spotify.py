@@ -123,16 +123,27 @@ def add_or_get_album(sp, spotify_album_uri: str):
 
 
 def populate_null(user: User) -> None:
-    unpopulated = SpotifyTrack.query.filter_by(spotify_album_uri=None).all()
+    top_played_tracks_sql = f"""select distinct spotify_album_uri from spotify_tracks"""
+    unpopulated = [a[0] for a in list(db.engine.execute(top_played_tracks_sql))]
     sp = get_spotify("", user)
 
-    batchsize = 50
+    batchsize = 20
     for i in range(0, len(unpopulated), batchsize):
         batch = unpopulated[i:i + batchsize]
-        tracks = sp.tracks([t.uri for t in batch])
+        albums = sp.albums(batch)
         for j, item in enumerate(batch):
-            item.spotify_album_uri = tracks['tracks'][j]['album']['uri']
-        print(f"Wrote 50 more artists. Total this run is {round(i / len(unpopulated) * 1000) / 10}%, "
+            sp_album = albums['albums'][j]
+            add_or_get_artist(sp, sp_album['artists'][0]['uri'])
+            album = SpotifyAlbum(
+                uri=item,
+                name=sp_album['name'],
+                spotify_artist_uri=sp_album['artists'][0]['uri'],
+                album_type=sp_album['album_type'],
+                released_at=parser.parse(sp_album['release_date']).date(),
+                spotify_image_url=sp_album['images'][0]['url'] if sp_album['images'] else None
+            )
+            db.session.add(album)
+        print(f"Wrote 20 more artists. Total this run is {round(i / len(unpopulated) * 1000) / 10}%, "
               f"{i} / {len(unpopulated)}")
         db.session.commit()
 

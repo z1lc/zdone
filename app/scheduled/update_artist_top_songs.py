@@ -1,8 +1,9 @@
-from typing import List
+from typing import List, Tuple
 
 from sentry_sdk import capture_exception
 
-from app.models import SpotifyArtist, User
+from app import db
+from app.models import SpotifyArtist, User, ManagedSpotifyArtist
 from app.spotify import get_spotify, get_top_tracks, update_last_fm_scrobble_counts
 
 MAX_RETRIES_PER_ARTIST = 2
@@ -14,9 +15,14 @@ if __name__ == '__main__':
         update_last_fm_scrobble_counts(registered_user)
         print(f'Updated scrobble counts for user {registered_user.username}')
 
-    print('Will update the top songs for all artists in table `spotify_artists`.')
+    print('Will update the top songs for all followed artists in table `managed_spotify_artists`.')
     print('Getting artists...')
-    artists: List[SpotifyArtist] = SpotifyArtist.query.all()
+    managed_artists: List[Tuple[ManagedSpotifyArtist, SpotifyArtist]] = \
+        db.session.query(ManagedSpotifyArtist, SpotifyArtist) \
+            .join(ManagedSpotifyArtist) \
+            .filter_by(following=True) \
+            .all()
+    artists: List[SpotifyArtist] = [artist for _, artist in managed_artists]
     print(f'Got {len(artists)} artists.')
     user: User = User.query.filter_by(username="rsanek").one()
     sp = get_spotify("zdone", user)
