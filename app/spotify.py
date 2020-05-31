@@ -132,6 +132,8 @@ where spotify_album_uri not in (select uri from spotify_albums)"""
     batchsize = 20
     for i in range(0, len(unpopulated), batchsize):
         batch = unpopulated[i:i + batchsize]
+        if i % 1000 == 0:
+            sp = get_spotify("", user)
         albums = sp.albums(batch)
         for j, item in enumerate(batch):
             sp_album = albums['albums'][j]

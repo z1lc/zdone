@@ -93,7 +93,7 @@ class SpotifyArtist(BaseModel):
 class SpotifyAlbum(BaseModel):
     __tablename__ = "spotify_albums"
     uri: str = db.Column(db.String(128), primary_key=True)
-    name: str = db.Column(db.String(128), nullable=False)
+    name: str = db.Column(db.Text, nullable=False)
     spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
     album_type: str = db.Column(db.String(128), nullable=False)
     spotify_image_url: str = db.Column(db.Text)
