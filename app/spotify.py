@@ -122,6 +122,7 @@ def add_or_get_album(sp, spotify_album_uri: str):
     return album
 
 
+# Unused right now, but nice to keep around if/when I need to do various backfills
 def populate_null(user: User) -> None:
     top_played_tracks_sql = f"""select distinct spotify_album_uri
 from spotify_tracks

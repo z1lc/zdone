@@ -1,6 +1,6 @@
 import uuid
 
-from app.anki import get_track_model, get_artist_model, AnkiCard, clean_track_name
+from app.anki import get_track_model, get_artist_model, AnkiCard, clean_track_name, clean_album_name
 from app.models import User
 
 rsanek_user = User(id=1,
@@ -63,3 +63,26 @@ def test_clean_track_name():
     assert "Into the Unknown" == clean_track_name("Into the Unknown - Panic! At The Disco Version")
     assert "Diving with Whales" == clean_track_name("Diving with Whales - Daniel Portman Radio Mix")
     assert "Antidote" == clean_track_name("Antidote - Extended")
+
+
+def test_clean_album_name():
+    assert "So" == clean_album_name("So (25th Anniversary Deluxe Edition)")
+    assert "÷" == clean_album_name("÷ (Deluxe)")
+    assert "The Joshua Tree" == clean_album_name("The Joshua Tree (Super Deluxe)")
+    assert "Can't Buy the Mood" == clean_album_name("Can't Buy the Mood (Deluxe Edition)")
+    assert "Rare" == clean_album_name("Rare (Bonus Track Version)")
+    assert "Led Zeppelin IV" == clean_album_name("Led Zeppelin IV (Deluxe Edition; Remaster)")
+    assert "Ready to Die" == clean_album_name("Ready to Die (The Remaster)")
+    assert "1989" == clean_album_name("1989 (Big Machine Radio Release Special)")
+    assert "x" == clean_album_name("x (Wembley Edition)")
+    assert "Help!" == clean_album_name("Help! (Remastered)")
+    assert "Peter Gabriel 1: Car" == clean_album_name("Peter Gabriel 1: Car (Remastered Version)")
+    assert "Caution" == clean_album_name("Caution (Radio Edit)")
+    assert "A Star Is Born Soundtrack" == clean_album_name("A Star Is Born Soundtrack (Without Dialogue)")
+    assert "My Way" == clean_album_name("My Way (Expanded Edition)")
+    assert "Led Zeppelin II" == clean_album_name("Led Zeppelin II (1994 Remaster)")
+    assert "Led Zeppelin III" == clean_album_name("Led Zeppelin III (Remaster)")
+    assert "Pet Sounds" == clean_album_name("Pet Sounds (Original Mono & Stereo Mix Versions)")
+    assert "Discovery" == clean_album_name("Discovery (Deluxe / Remastered 2015)")
+    assert "I Walk the Line" == clean_album_name("I Walk the Line (Stereo Version)")
+    assert "Lady Soul" == clean_album_name("Lady Soul (With Bonus Selections)")

@@ -63,8 +63,8 @@ class AnkiCard(Enum):
     NAME_AND_IMAGE_TO_GENRES = (7, 'spotify_artist')
     NAME_AND_IMAGE_TO_SIMILAR_ARTISTS = (8, 'spotify_artist')
     NAME_AND_IMAGE_TO_YEARS_ACTIVE = (9, 'spotify_artist')
-    EXTRA_ARTIST_TEMPLATE_1 = (10, 'spotify_artist')
-    EXTRA_ARTIST_TEMPLATE_2 = (11, 'spotify_artist')
+    EXTRA_ARTIST_TEMPLATE_1 = (10, 'spotify_artist')  # Albums > Name+Image
+    EXTRA_ARTIST_TEMPLATE_2 = (11, 'spotify_artist')  # Name+Image > Albums
     EXTRA_ARTIST_TEMPLATE_3 = (12, 'spotify_artist')
     EXTRA_ARTIST_TEMPLATE_4 = (13, 'spotify_artist')
     EXTRA_ARTIST_TEMPLATE_5 = (14, 'spotify_artist')
@@ -141,6 +141,17 @@ group by 1, 2, 3
 order by 4 desc"""
     top_played_tracks = list(db.engine.execute(top_played_tracks_sql))
 
+    top_played_albums_sql = f"""
+select sar.uri, spotify_album_uri, sal.name, released_at, count(*)
+from spotify_tracks st
+         join spotify_artists sar on st.spotify_artist_uri = sar.uri
+         join spotify_plays sp on st.uri = sp.spotify_track_uri
+         join spotify_albums sal on sal.uri = st.spotify_album_uri
+where user_id = {user.id} and album_type='album'
+group by 1, 2, 3, 4
+order by 4 desc"""
+    top_played_albums = list(db.engine.execute(top_played_albums_sql))
+
     # released internally only so far
     if user.id <= 6:
         for managed_artist in get_followed_managed_spotify_artists_for_user(user, False):
@@ -157,13 +168,16 @@ order by 4 desc"""
             top_played_tracks_for_artist = [clean_track_name(row[2]) for row in top_played_tracks if
                                             row[0] == managed_artist.spotify_artist_uri]
             top_played_tracks_for_artist = list(dict.fromkeys(top_played_tracks_for_artist))
+            songs = create_html_unordered_list(top_played_tracks_for_artist)
 
-            # we want to make sure you have actually listened to the artist for a bit, so let's say minimum 3 songs
-            if len(top_played_tracks_for_artist) >= 3:
-                # also don't want the list to be too long, though, so limit to 5
-                songs = '<ul><li>' + '</li><li>'.join(top_played_tracks_for_artist[:5]) + '</li></ul>'
-            else:
-                songs = ''
+            top_played_albums_for_artist = [(clean_album_name(row[2]), row[3].year) for row in top_played_albums if
+                                            row[0] == managed_artist.spotify_artist_uri]
+            top_played_albums_for_artist = list(dict.fromkeys(top_played_albums_for_artist))
+            albums = create_html_unordered_list([f'<i>{name}</i> ({year})' for name, year in top_played_albums_for_artist])
+
+            genres = ''
+            similar_artists = ''
+            years_active = ''
 
             if img_src:
                 artist_as_note = SpotifyArtistNote(
@@ -173,10 +187,10 @@ order by 4 desc"""
                         artist.name,
                         f"<img src='{img_src}'>",
                         songs,
-                        '',
-                        '',
-                        '',
-                        '',
+                        albums,
+                        genres,
+                        similar_artists,
+                        years_active,
                         '',
                         '',
                         '',
@@ -190,6 +204,33 @@ order by 4 desc"""
                     ])
                 deck.add_note(artist_as_note)
     genanki.Package(deck).write_to_file(filename)
+
+
+def clean_album_name(name: str) -> str:
+    REGEXES: List[str] = [
+        " \\((\\d{4} )?Remaster(ed)?( \\d{4})?\\)$",
+        " \\((Super |25th Anniversary )?Deluxe( Edition)?(; Remaster)?\\)$",
+        " \\(Bonus Track Version\\)$",
+        " \\(The Remaster\\)$",
+        " \\(Big Machine Radio Release Special\\)$",
+        " \\((Wembley |Expanded )Edition\\)$",
+        " \\(Remastered( Version)?\\)$",
+        " \\(Radio Edit\\)$",
+        " \\(Without Dialogue\\)$",
+        " \\((Original Mono & )?Stereo (Mix )?Version(s)?\\)$",
+        " \\(Deluxe / Remastered 2015\\)$",
+        " \\(With Bonus Selections\\)$",
+    ]
+    for regex in REGEXES:
+        name = re.sub(regex, "", name)
+    return name
+
+
+# we want to make sure you have actually listened to the artist for a bit, so let's say minimum 3 songs
+def create_html_unordered_list(input_list: List, min_length: int = 3, max_length: int = 5) -> str:
+    if len(input_list) < min_length:
+        return ''
+    return '<ul><li>' + '</li><li>'.join(input_list[:max_length]) + '</li></ul>'
 
 
 def clean_track_name(name: str) -> str:
