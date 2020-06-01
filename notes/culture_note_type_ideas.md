@@ -4,26 +4,25 @@
 ### Fields
  * ~~Name~~
  * ~~Songs (only ones you have listened to)~~
- * Albums
-   * only if you have ≥2-3 songs from that album?
-   * along with years?
+ * ~~Albums (only ones you have listened to, includes years)~~
+ * Genres
  * Similar artists
    * only other artists you also follow? or those are at least prioritized vs. listing others?
- * Genres
+ * Years active
+   * based on album release dates?
  * ~~Image (sourced from Spotify / provided backup image if one from Spotify sucks)~~
 
 ### Cards
  * ~~image>name~~
  * ~~name>image~~
- * ~~name+image>song~~
+ * ~~name+image>song~~ (currently not using, since doesn't seem all that valuable)
  * ~~songs>name~~
+ * ~~name+image>albums~~
+ * ~~albums>name+image~~
  * name+image>genres
  * name+image>similar artists
    * similar artists that you also track bolded/green?
  * name+image>years active
-   * based on album release dates?
- * name+image>albums
- * albums>name
 
 ## Movie
 ### Fields
