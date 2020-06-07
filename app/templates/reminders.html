@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block within_head %}
+    <style>
+        body {
+            max-width: 1500px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        li {
+            margin: 0 0 10px 0;
+        }
+
+        li.inactive {
+            color: gray;
+            font-style: italic;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <h1>Reminders</h1>
+    <ul>
+        {% for reminder in reminders %}
+            <li class="{% if reminder.active %}active{% else %}inactive{% endif %}">
+                {{ reminder.title }}<br>{{ reminder.message }}
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

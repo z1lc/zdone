@@ -1,9 +1,14 @@
 import datetime
+from typing import List
 
 from pushover import Client
 
 from app import kv, db
 from app.models import Reminder, User, ReminderNotification
+
+
+def get_reminders(user: User) -> List[Reminder]:
+    return Reminder.query.filter_by(user_id=user.id).all()
 
 
 def send_and_log_notification(user: User, reminder_id: int, log: bool = True) -> None:
