@@ -343,6 +343,14 @@ def index():
         maybe_not_set += f"Habitica auth not set for user {current_user.username}!<br>"
     if maybe_not_set:
         return redirect(url_for('spotify'))
+    if current_user.username == "will":
+        return redirect(url_for('old'))
+    return redirect(url_for('spotify'))
+
+
+@app.route("/old")
+@login_required
+def old():
     info = get_homepage_info(skew_sort="sort" in request.args)
     info['times']['minutes_total_rounded'] = \
         round(info['times']['minutes_allocated'] + info['times']['minutes_completed_today'])
@@ -363,6 +371,19 @@ def index():
                            num_unsorted_tasks=info['num_unsorted_tasks'],
                            percentage=info['percentage'],
                            background=info['background'])
+
+
+@app.route('/movies')
+def movies():
+    return get_stuff()
+
+
+@app.route('/artist_photos')
+def artist_photos():
+    return get_artists_images()
+
+
+"""****************************************************** API ******************************************************"""
 
 
 @app.route("/api")
@@ -439,13 +460,3 @@ def api_update_time():
                 return do_update_time(int(time), user)
             except Exception as e:
                 return failure(str(e))
-
-
-@app.route('/movies')
-def movies():
-    return get_stuff()
-
-
-@app.route('/artist_photos')
-def artist_photos():
-    return get_artists_images()
