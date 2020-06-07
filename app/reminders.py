@@ -20,6 +20,7 @@ def send_and_log_notification(user: User, reminder_id: int, log: bool = True) ->
         title=reminder.title,
         message=reminder.message,
         priority=-1,
+        html=1,
         # url_title='Tap to re-learn habit',
         # url="https://zdone.co/reset/" + str(reminder_id)
     )
