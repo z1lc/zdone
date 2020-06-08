@@ -112,7 +112,7 @@ def add_or_get_album(sp, spotify_album_uri: str):
         album = SpotifyAlbum(
             uri=spotify_album_uri,
             name=sp_album['name'],
-            spotify_artist_uri=add_or_get_artist(sp, sp_album['artists'][0]['uri']),
+            spotify_artist_uri=add_or_get_artist(sp, sp_album['artists'][0]['uri']).uri,
             album_type=sp_album['album_type'],
             released_at=parser.parse(sp_album['release_date']).date(),
             spotify_image_url=sp_album['images'][0]['url'] if sp_album['images'] else None
