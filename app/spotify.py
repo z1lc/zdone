@@ -15,6 +15,7 @@ from spotipy import oauth2
 from sqlalchemy.exc import IntegrityError
 
 from app import kv, redis_client, db
+from app.log import log
 from app.models import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay, User, TopTrack, SpotifyAlbum
 from app.util import today_datetime, today, JsonDict
 
@@ -148,7 +149,7 @@ where spotify_album_uri not in (select uri from spotify_albums)"""
                 spotify_image_url=sp_album['images'][0]['url'] if sp_album['images'] else None
             )
             db.session.add(album)
-        print(f"Wrote 20 more artists. Total this run is {round(i / len(unpopulated) * 1000) / 10}%, "
+        log(f"Wrote 20 more artists. Total this run is {round(i / len(unpopulated) * 1000) / 10}%, "
               f"{i} / {len(unpopulated)}")
         db.session.commit()
 
@@ -298,7 +299,7 @@ def get_liked_page(sp, offset: int) -> List[JsonDict]:
             return sp.current_user_saved_tracks(limit=50, offset=offset)['items']
         except Exception as e:
             continue
-    print('returned nothing')
+    log('returned nothing')
     return []
 
 
@@ -331,7 +332,7 @@ def get_followed_managed_spotify_artists_for_user(user: User, should_update: boo
 
 
 def get_tracks(user: User) -> List[JsonDict]:
-    print(f"get tracks {today_datetime()}")
+    log(f"get tracks {today_datetime()}")
     sp = get_spotify("zdone", user)
     if isinstance(sp, str):
         return []
@@ -341,7 +342,7 @@ def get_tracks(user: User) -> List[JsonDict]:
 
     # get liked tracks with artists that are in ARTISTS
     liked_tracks = list()
-    print(f"getting liked {today_datetime()}")
+    log(f"getting liked {today_datetime()}")
 
     pages = sp.current_user_saved_tracks(limit=1)['total'] // 50 + 1
     offsets = [x * 50 for x in range(0, pages)]
@@ -356,7 +357,7 @@ def get_tracks(user: User) -> List[JsonDict]:
             if artist in managed_arists_uris:
                 dedup_map[track['uri']] = track
 
-    print(f"getting top 3 tracks per artist {today_datetime()}")
+    log(f"getting top 3 tracks per artist {today_datetime()}")
     # get top 3 tracks for each artist in ARTISTS
     for artist in my_managed_artists:
         top_tracks = TopTrack.query.filter_by(artist_uri=artist.spotify_artist_uri).all()
@@ -367,9 +368,9 @@ def get_tracks(user: User) -> List[JsonDict]:
 
     output = dedup_map.values()
 
-    print(f"[skipped] ensuring all tracks are in db {today_datetime()}")
+    log(f"[skipped] ensuring all tracks are in db {today_datetime()}")
     # bulk_add_tracks(sp, [track['uri'] for track in output])
-    print(f"before output {today_datetime()}")
+    log(f"before output {today_datetime()}")
     return list(output)
 
 

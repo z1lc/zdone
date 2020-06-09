@@ -4,6 +4,7 @@ from typing import List
 from pushover import Client
 
 from app import kv, db
+from app.log import log
 from app.models import Reminder, User, ReminderNotification
 
 
@@ -11,7 +12,7 @@ def get_reminders(user: User) -> List[Reminder]:
     return Reminder.query.filter_by(user_id=user.id).all()
 
 
-def send_and_log_notification(user: User, reminder_id: int, log: bool = True) -> None:
+def send_and_log_notification(user: User, reminder_id: int, should_log: bool = True) -> None:
     reminder = Reminder.query.filter_by(id=reminder_id).one()
     if reminder.user_id != user.id:
         raise ValueError(f'User {user.username} does not own reminder with id {reminder.id}.')
@@ -24,9 +25,9 @@ def send_and_log_notification(user: User, reminder_id: int, log: bool = True) ->
         # url_title='Tap to re-learn habit',
         # url="https://zdone.co/reset/" + str(reminder_id)
     )
-    print(f'Sent notification {reminder.title}: {reminder.message}'
-          f' to clients for user {user.username}.')
-    if log:
+    log(f'Sent notification {reminder.title}: {reminder.message}'
+        f' to clients for user {user.username}.')
+    if should_log:
         notification = ReminderNotification(
             reminder_id=reminder.id,
             sent_at=datetime.datetime.now(),

@@ -14,6 +14,7 @@ from werkzeug.urls import url_parse
 from . import redis_client, app, db, kv
 from .anki import generate_track_apkg
 from .forms import LoginForm, RegistrationForm
+from .log import log
 from .models import User, ManagedSpotifyArtist, SpotifyArtist
 from .reminders import get_reminders
 from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, follow_unfollow_artists, \
@@ -296,11 +297,11 @@ def spotify_anki_import():
 @app.route('/spotify/download_apkg/')
 @login_required
 def spotify_download_apkg():
-    print(f"endpoint hit {today_datetime()}")
+    log(f"endpoint hit {today_datetime()}")
     filename: str = os.path.join(app.instance_path, f'songs-{current_user.username}.apkg')
     os.makedirs(app.instance_path, exist_ok=True)
     generate_track_apkg(current_user, filename)
-    print(f"before sendfile {today_datetime()}")
+    log(f"before sendfile {today_datetime()}")
     return send_file(filename, as_attachment=True, add_etags=False, cache_timeout=0)
 
 

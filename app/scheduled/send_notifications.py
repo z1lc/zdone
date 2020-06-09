@@ -1,11 +1,12 @@
 from app import db
+from app.log import log
 from app.models import User
 
 from app.reminders import send_and_log_notification
 
 # This code is scheduled to run once daily by the Heroku Scheduler
 if __name__ == '__main__':
-    print('Will send a single notification to everyone who has a Pushover user key.')
+    log('Will send a single notification to everyone who has a Pushover user key.')
     for user in User.query.filter(User.pushover_user_key.isnot(None)).all():  # type: ignore
         # select the reminder with the least total amount of existing notifications, breaking ties by preferring
         # reminders with the longest time since last notification.
@@ -28,5 +29,5 @@ where active and user_id = {user.id} and reminder_id not in (select * from last_
 group by 1, 2
 order by 3 asc, 4 asc;"""
         oldest_reminder_id = list(db.engine.execute(prepared_sql))[0][0]
-        # print(f"would have sent reminder id {oldest_reminder_id} for user {user.username}")
+        # log(f"would have sent reminder id {oldest_reminder_id} for user {user.username}")
         send_and_log_notification(user, oldest_reminder_id)
