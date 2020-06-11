@@ -219,6 +219,7 @@ def clean_album_name(name: str) -> str:
         " \\((Original Mono & )?Stereo (Mix )?Version(s)?\\)$",
         " \\(Deluxe / Remastered 2015\\)$",
         " \\(With Bonus Selections\\)$",
+        " \\(Benny Benassi Presents The Biz\\)",
     ]
     for regex in REGEXES:
         name = re.sub(regex, "", name)
@@ -249,7 +250,8 @@ def clean_track_name(name: str) -> str:
         " - Extended",
         " - From \"[A-z ]+\" Soundtrack",
         " - Featured in [A-z ]+",
-        " - Avicii By Avicii"
+        " - Avicii By Avicii",
+        " \\(Isak Original Extended\\) - Benny Benassi Presents The Biz",
     ]
     for regex in REGEXES:
         name = re.sub(regex, "", name)

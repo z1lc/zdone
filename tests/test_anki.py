@@ -63,6 +63,7 @@ def test_clean_track_name():
     assert "Into the Unknown" == clean_track_name("Into the Unknown - Panic! At The Disco Version")
     assert "Diving with Whales" == clean_track_name("Diving with Whales - Daniel Portman Radio Mix")
     assert "Antidote" == clean_track_name("Antidote - Extended")
+    assert "Satisfaction" == clean_track_name("Satisfaction (Isak Original Extended) - Benny Benassi Presents The Biz")
 
 
 def test_clean_album_name():
@@ -86,3 +87,4 @@ def test_clean_album_name():
     assert "Discovery" == clean_album_name("Discovery (Deluxe / Remastered 2015)")
     assert "I Walk the Line" == clean_album_name("I Walk the Line (Stereo Version)")
     assert "Lady Soul" == clean_album_name("Lady Soul (With Bonus Selections)")
+    assert "Hypnotica" == clean_album_name("Hypnotica (Benny Benassi Presents The Biz)")
