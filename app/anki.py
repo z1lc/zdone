@@ -170,10 +170,9 @@ order by 4 desc"""
             top_played_tracks_for_artist = list(dict.fromkeys(top_played_tracks_for_artist))
             songs = create_html_unordered_list(top_played_tracks_for_artist)
 
-            top_played_albums_for_artist = [(clean_album_name(row[2]), row[3].year) for row in top_played_albums if
-                                            row[0] == managed_artist.spotify_artist_uri]
-            top_played_albums_for_artist = list(dict.fromkeys(top_played_albums_for_artist))
-            albums = create_html_unordered_list([f'<i>{name}</i> ({year})' for name, year in top_played_albums_for_artist])
+            top_played_albums_for_artist = {clean_album_name(row[2]): row[3].year for row in top_played_albums if
+                                            row[0] == managed_artist.spotify_artist_uri}
+            albums = create_html_unordered_list([f'<i>{name}</i> ({year})' for name, year in top_played_albums_for_artist.items()])
 
             genres = ''
             similar_artists = ''
