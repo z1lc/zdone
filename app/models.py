@@ -21,6 +21,8 @@ class User(UserMixin, BaseModel):
     username: str = db.Column(db.String(64), index=True, unique=True)
     email: str = db.Column(db.String(128), index=True, unique=True)
     password_hash: str = db.Column(db.String(128))
+    current_time_zone: str = db.Column(db.String(128), nullable=True)
+
     maximum_minutes_per_day: int = db.Column(db.Integer, nullable=False, server_default='120')
 
     api_key: str = db.Column(db.String(128), unique=True, nullable=False)
