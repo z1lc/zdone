@@ -8,6 +8,8 @@
  * Genres
  * Similar artists
    * only other artists you also follow? or those are at least prioritized vs. listing others?
+ * Collaborating artists (artists that have been featured on each others' tracks)
+   * potentially easier to recall?
  * Years active
    * based on album release dates?
  * ~~Image (sourced from Spotify / provided backup image if one from Spotify sucks)~~
