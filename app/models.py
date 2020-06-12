@@ -1,3 +1,5 @@
+import datetime
+
 from flask_login import UserMixin
 # see https://github.com/dropbox/sqlalchemy-stubs/issues/76#issuecomment-595839159
 from flask_sqlalchemy.model import DefaultMeta
@@ -66,7 +68,7 @@ class ManagedSpotifyArtist(BaseModel):
     id: int = db.Column(db.Integer, primary_key=True)
     user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
-    date_added = db.Column(db.Date, nullable=False, server_default=func.current_date())
+    date_added: datetime.date = db.Column(db.Date, nullable=False, server_default=func.current_date())
     comment: str = db.Column(db.String(128))
     num_top_tracks: int = db.Column(db.Integer, server_default='3')  # TODO: expose to users & allow editing
     following: bool = db.Column(db.Boolean, server_default='true', nullable=True)
@@ -84,7 +86,7 @@ class SpotifyArtist(BaseModel):
     spotify_image_url: str = db.Column(db.Text)
     good_image: bool = db.Column(db.Boolean, nullable=False, server_default='false')
     image_override_name: str = db.Column(db.String(128), nullable=True)
-    last_top_tracks_refresh = db.Column(db.DateTime, nullable=True)
+    last_top_tracks_refresh: datetime.datetime = db.Column(db.DateTime, nullable=True)
 
     def get_bare_uri(self):
         return self.uri.split("spotify:artist:")[1]
@@ -97,7 +99,7 @@ class SpotifyAlbum(BaseModel):
     spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
     album_type: str = db.Column(db.String(128), nullable=False)
     spotify_image_url: str = db.Column(db.Text)
-    released_at = db.Column(db.Date, nullable=False)
+    released_at: datetime.date = db.Column(db.Date, nullable=False)
 
     def get_bare_uri(self):
         return self.uri.split("spotify:album:")[1]
@@ -117,7 +119,7 @@ class SpotifyPlay(BaseModel):
     id: int = db.Column(db.Integer, primary_key=True)
     user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     spotify_track_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False)
+    created_at: datetime.datetime = db.Column(db.DateTime, nullable=False)
 
 
 class TopTrack(BaseModel):
@@ -161,7 +163,7 @@ class ExternalServiceTaskCompletion(BaseModel):
     task_id: str = db.Column(db.String(128), nullable=False)
     subtask_id: str = db.Column(db.String(128))
     duration_seconds: int = db.Column(db.Integer)
-    at = db.Column(db.DateTime)
+    at: datetime.datetime = db.Column(db.DateTime)
 
 
 class kv(BaseModel):
@@ -183,5 +185,5 @@ class ReminderNotification(BaseModel):
     __tablename__ = "reminder_notifications"
     id: int = db.Column(db.Integer, primary_key=True)
     reminder_id: int = db.Column(db.Integer, db.ForeignKey('reminders.id'), nullable=False)
-    sent_at = db.Column(db.DateTime, nullable=False)
+    sent_at: datetime.datetime = db.Column(db.DateTime, nullable=False)
     sent_via = db.Column(db.String, nullable=False)
