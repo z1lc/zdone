@@ -17,7 +17,7 @@ from toodledo import Toodledo
 from trello import TrelloClient, trellolist
 
 from app import kv, redis_client, db, socketio
-from app.models import User, TaskCompletion
+from app.models import User, ExternalServiceTaskCompletion
 from app.storage import TokenStoragePostgres
 from app.util import today, today_datetime, failure, success, JsonDict
 from app.ztasks import ZDTask, ZDSubTask
@@ -77,8 +77,8 @@ def do_update_task(update: str,
         else:
             return failure(f"unexpected service type '{service}'")
 
-        task_completion = TaskCompletion(user_id=user.id, service=service, task_id=task_id, subtask_id=subtask_id,
-                                         duration_seconds=duration_seconds, at=datetime.datetime.now())
+        task_completion = ExternalServiceTaskCompletion(user_id=user.id, service=service, task_id=task_id, subtask_id=subtask_id,
+                                                        duration_seconds=duration_seconds, at=datetime.datetime.now())
         db.session.add(task_completion)
         db.session.commit()
     else:

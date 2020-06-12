@@ -153,8 +153,8 @@ class LegacySpotifyTrackNoteGuidMapping(BaseModel):
     )
 
 
-class TaskCompletion(BaseModel):
-    __tablename__ = "task_completions"
+class ExternalServiceTaskCompletion(BaseModel):
+    __tablename__ = "external_service_task_completions"
     id: int = db.Column(db.Integer, primary_key=True)
     user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     service: str = db.Column(db.String(128), nullable=False)
