@@ -305,7 +305,7 @@ def get_liked_page(sp, offset: int) -> List[JsonDict]:
 
 def get_top_tracks(sp, artist: SpotifyArtist, allow_refresh: bool = False) -> Tuple[List[TopTrack], List[TopTrack]]:
     should_refresh = allow_refresh and (artist.last_top_tracks_refresh is None or
-                                        artist.last_top_tracks_refresh < (datetime.datetime.now() - timedelta(days=7)))
+                                        artist.last_top_tracks_refresh < (datetime.datetime.utcnow() - timedelta(days=7)))
     if should_refresh:
         dropped = TopTrack.query.filter_by(artist_uri=artist.uri).delete()
         top_tracks = sp.artist_top_tracks(artist_id=artist.uri)['tracks']
@@ -318,7 +318,7 @@ def get_top_tracks(sp, artist: SpotifyArtist, allow_refresh: bool = False) -> Tu
                                     api_response=json.dumps(top_track))
             db.session.add(top_track_db)
             to_return.append(top_track_db)
-        artist.last_top_tracks_refresh = datetime.datetime.now()
+        artist.last_top_tracks_refresh = datetime.datetime.utcnow()
         db.session.commit()
         return dropped, to_return
     else:

@@ -30,7 +30,7 @@ def send_and_log_notification(user: User, reminder_id: int, should_log: bool = T
     if should_log:
         notification = ReminderNotification(
             reminder_id=reminder.id,
-            sent_at=datetime.datetime.now(),
+            sent_at=datetime.datetime.utcnow(),
             sent_via="pushover"
         )
         db.session.add(notification)

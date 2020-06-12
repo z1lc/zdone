@@ -78,7 +78,7 @@ def do_update_task(update: str,
             return failure(f"unexpected service type '{service}'")
 
         task_completion = ExternalServiceTaskCompletion(user_id=user.id, service=service, task_id=task_id, subtask_id=subtask_id,
-                                                        duration_seconds=duration_seconds, at=datetime.datetime.now())
+                                                        duration_seconds=duration_seconds, at=datetime.datetime.utcnow())
         db.session.add(task_completion)
         db.session.commit()
     else:
@@ -234,7 +234,7 @@ def add_toodledo_task(name, due_date, length_minutes, user: User = current_user)
 def get_toodledo_tasks(redis_client, user: User = current_user) -> List[ZDTask]:
     if 'toodledo' not in g:
         account = get_toodledo(user).GetAccount()
-        last_deleted = account.lastDeleteTask or datetime.datetime.now()
+        last_deleted = account.lastDeleteTask or datetime.datetime.utcnow()
         server_last_mod = max(account.lastEditTask.timestamp(), last_deleted.timestamp())
         db_last_mod = redis_client.get("toodledo:" + user.username + ":last_mod")
         if db_last_mod is None or float(db_last_mod) < server_last_mod:
@@ -243,7 +243,7 @@ def get_toodledo_tasks(redis_client, user: User = current_user) -> List[ZDTask]:
             all_uncomplete = get_toodledo(user).GetTasks(params={"fields": fields, "comp": 0})
             recent_complete = get_toodledo(user).GetTasks(
                 params={"fields": fields, "comp": 1,
-                        "after": int((datetime.datetime.today() - datetime.timedelta(days=2)).timestamp())})
+                        "after": int((datetime.datetime.utcnow() - datetime.timedelta(days=2)).timestamp())})
             full_api_response = all_uncomplete + recent_complete
             redis_client.set("toodledo:" + user.username, pickle.dumps(full_api_response))
             redis_client.set("toodledo:" + user.username + ":last_mod", server_last_mod)
