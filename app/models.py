@@ -182,6 +182,7 @@ class Reminder(BaseModel):
     title: str = db.Column(db.Text)
     message: str = db.Column(db.Text)
     active: bool = db.Column(db.Boolean, server_default='true', nullable=False)
+    inactive_explanation: str = db.Column(db.Text)
 
 
 class ReminderNotification(BaseModel):
