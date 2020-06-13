@@ -14,9 +14,16 @@
 
   function nextTask() {
     $('#countdownExample .values').css('color', 'black');
-    task = tasks.shift();
-    $('#countdownExample .name').html(task.name);
-    $('#countdownExample .note').html(task.note);
+    if (tasks.length > 0) {
+      task = tasks.shift();
+      $('#countdownExample .name').html(task.name);
+      $('#countdownExample .note').html(task.note);
+    } else {
+      $('#countdownExample .name').html("All done!");
+      $('#countdownExample .note').html("");
+      $("button#complete").hide();
+      $("button#defer").hide();
+    }
   }
 
   $(function () {

@@ -62,7 +62,7 @@ def do_update_task(update: str,
                    duration_seconds: int = 0,
                    user: User = current_user) -> Tuple[Response, int]:
     if service == "zdone":
-        task = Task.query.filter(id=int(task_id)).one()
+        task = Task.query.filter_by(id=int(task_id)).one()
         log = TaskLog(
             task_id=task.id,
             at=datetime.datetime.utcnow(),
