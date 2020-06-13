@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block within_head %}
+<script data-api-key="{{ api_key }}" src="{{ url_for('static',filename='scripts/app.js') }}"></script>
+<script src="//kit.fontawesome.com/874826286d.js"></script>
+<script>
+  $.ajaxSetup({
+    headers: {
+      'x-api-key': "{{ api_key }}"
+    }
+  });
+  let task;
+  let tasks;
+
+  function nextTask() {
+    $('#countdownExample .values').css('color', 'black');
+    task = tasks.shift();
+    $('#countdownExample .name').html(task.name);
+    $('#countdownExample .note').html(task.note);
+  }
+
+  $(function () {
+    $.get(
+      "/api?zdone",
+      function (data) {
+        tasks = data["tasks_to_do"];
+        $('div.button').css('visibility', 'visible');
+        nextTask();
+      }
+    );
+    $("button#complete").click(function (event) {
+      completeItem(task.service, task.id, task.subtask_id, task.length_minutes);
+      nextTask();
+      event.preventDefault();
+    });
+    $("button#defer").click(function (event) {
+      deferItem(task.service, task.id, task.subtask_id, task.length_minutes);
+      nextTask();
+      event.preventDefault();
+    });
+  });
+</script>
+<style>
+    .subtask {
+        margin: 10px;
+    }
+
+    #countdownExample {
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .name {
+        font-weight: bold;
+    }
+
+    #countdownExample > div {
+        margin: 20px;
+    }
+
+    div.button {
+        visibility: hidden;
+    }
+
+    body {
+        font-size: 40px;
+    }
+
+    div.note {
+        font-size: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div id="countdownExample">
+    <div class="name">Loading tasks...</div>
+    <div class="note"></div>
+    <div class="subtasks"></div>
+    <div class="values"></div>
+    <div class="button">
+        <button id="defer">Defer 3 Days</button> &nbsp;
+        <button id="complete">Complete</button>
+    </div>
+
+</div>
+{% endblock %}

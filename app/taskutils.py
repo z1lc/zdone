@@ -17,7 +17,7 @@ from toodledo import Toodledo
 from trello import TrelloClient, trellolist
 
 from app import kv, redis_client, db, socketio
-from app.models import User, ExternalServiceTaskCompletion
+from app.models import User, ExternalServiceTaskCompletion, TaskLog, Task
 from app.storage import TokenStoragePostgres
 from app.util import today, today_datetime, failure, success, JsonDict
 from app.ztasks import ZDTask, ZDSubTask
@@ -61,6 +61,22 @@ def do_update_task(update: str,
                    subtask_id: str,
                    duration_seconds: int = 0,
                    user: User = current_user) -> Tuple[Response, int]:
+    if service == "zdone":
+        task = Task.query.filter(id=int(task_id)).one()
+        log = TaskLog(
+            task_id=task.id,
+            at=datetime.datetime.utcnow(),
+            at_time_zone=user.current_time_zone,
+            action=update
+        )
+        db.session.add(log)
+        if update == "complete":
+            task.last_completion = datetime.datetime.now(pytz.timezone(user.current_time_zone))
+        elif update == "defer":
+            task.defer_until = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date()\
+                               + datetime.timedelta(days=3)
+        db.session.commit()
+        return success()
     if update == "defer":
         redis_client.append("hidden:" + user.username + ":" + str(today()), (task_id + "|||").encode())
         redis_client.expire("hidden:" + user.username + ":" + str(today()), datetime.timedelta(days=7))
@@ -77,8 +93,10 @@ def do_update_task(update: str,
         else:
             return failure(f"unexpected service type '{service}'")
 
-        task_completion = ExternalServiceTaskCompletion(user_id=user.id, service=service, task_id=task_id, subtask_id=subtask_id,
-                                                        duration_seconds=duration_seconds, at=datetime.datetime.utcnow())
+        task_completion = ExternalServiceTaskCompletion(user_id=user.id, service=service, task_id=task_id,
+                                                        subtask_id=subtask_id,
+                                                        duration_seconds=duration_seconds,
+                                                        at=datetime.datetime.utcnow())
         db.session.add(task_completion)
         db.session.commit()
     else:

@@ -68,7 +68,7 @@ function deferItem(service, id, subtaskId, length = 0) {
 }
 
 function updateItem(service, id, subtaskId, updateAction, durationSeconds) {
-  if (service === "toodledo" || service === "habitica") {
+  if (service === "toodledo" || service === "habitica" || service === "zdone") {
     $
       .ajax({
         contentType: "application/json",

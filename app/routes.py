@@ -1,9 +1,11 @@
 import itertools
 import os
 import uuid
+import datetime
 from json import dumps
 from typing import List
 
+import pytz
 from flask import render_template, request, make_response, jsonify, redirect, send_file
 from flask import url_for, flash
 from flask_login import current_user, login_user, logout_user
@@ -15,7 +17,7 @@ from . import redis_client, app, db, kv
 from .anki import generate_track_apkg
 from .forms import LoginForm, RegistrationForm
 from .log import log
-from .models import User, ManagedSpotifyArtist, SpotifyArtist
+from .models import User, ManagedSpotifyArtist, SpotifyArtist, Task
 from .reminders import get_reminders
 from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, follow_unfollow_artists, \
     get_random_song_family, get_tracks, get_top_recommendations, get_artists_images, populate_null
@@ -347,6 +349,9 @@ def index():
         return redirect(url_for('spotify'))
     if current_user.username == "will":
         return redirect(url_for('old'))
+    if current_user.username == "rsanek":
+        return render_template('maintenance2.html',
+                               api_key=current_user.api_key)
     return redirect(url_for('spotify'))
 
 
@@ -400,7 +405,27 @@ def api():
     if not user:
         return api_key_failure()
     else:
-        r = dumps(get_homepage_info(user, "sort" in request.args))
+        if "zdone" in request.args:
+            tasks = Task.query.filter_by(user_id=int(user.id)).all()
+            ret_tasks = []
+            for task in tasks:
+                user_local_date = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date()
+                after_defer = task.defer_until is None or user_local_date > task.defer_until
+                due = task.calculate_skew(user_local_date) >= 1
+                if after_defer and due:
+                    ret_tasks.append({
+                        "id": task.id,
+                        "service": "zdone",
+                        "name": task.title,
+                        "note": task.description,
+                        "subtask_id": None,
+                        "length_minutes": None,
+                    })
+            r = {
+                "tasks_to_do": ret_tasks
+            }
+        else:
+            r = dumps(get_homepage_info(user, "sort" in request.args))
         r = make_response(r)
         r.mimetype = 'application/json'
         return r, 200
