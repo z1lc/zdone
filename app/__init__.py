@@ -30,7 +30,9 @@ Talisman(app, content_security_policy={
         '*.googleapis.com',
         '*.gstatic.com',
         '*.datatables.net',
-        '*.fontawesome.com'
+        '*.fontawesome.com',
+        '*.googletagmanager.com',
+        '*.google-analytics.com',
     ]
 })
 app.config.from_object(Config)
