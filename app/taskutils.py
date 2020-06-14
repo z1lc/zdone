@@ -355,7 +355,8 @@ def get_homepage_info(user: User = current_user, skew_sort: bool = False) -> Jso
         "times": times,
         "num_unsorted_tasks": len(unprioritized_tasks),
         "percentage": min(100, max(0, percent_done)),
-        "background": "red !important" if times['minutes_completed_today'] < 30 else "#2196F3 !important"
+        "background": "red !important" if times['minutes_completed_today'] < 30 else "#2196F3 !important",
+        "time_zone": user.current_time_zone,
     }
 
 

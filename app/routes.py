@@ -422,7 +422,8 @@ def api():
                         "length_minutes": None,
                     })
             r = {
-                "tasks_to_do": ret_tasks
+                "tasks_to_do": ret_tasks,
+                "time_zone": user.current_time_zone,
             }
         else:
             r = dumps(get_homepage_info(user, "sort" in request.args))

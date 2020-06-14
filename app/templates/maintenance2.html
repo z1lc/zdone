@@ -31,8 +31,19 @@
       "/api?zdone",
       function (data) {
         tasks = data["tasks_to_do"];
-        $('div.button').css('visibility', 'visible');
-        nextTask();
+        serverTimeZone = data["time_zone"]
+        deviceTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        if (serverTimeZone !== deviceTimeZone) {
+          $('#countdownExample .name').html("Time zone mismatch!")
+          $('#countdownExample .note').html(
+            `Your device's time zone is set to '${deviceTimeZone}' but the server setting is '${serverTimeZone}'.<br>` +
+            `Please update the server time zone to avoid inaccurate data.`);
+          $('div.button2').css('display', 'block');
+        } else {
+          $('div.button').css('display', 'block');
+          nextTask();
+        }
       }
     );
     $("button#complete").click(function (event) {
@@ -42,6 +53,12 @@
     });
     $("button#defer").click(function (event) {
       deferItem(task.service, task.id, task.subtask_id, task.length_minutes);
+      nextTask();
+      event.preventDefault();
+    });
+    $("button#nocare").click(function (event) {
+      $('div.button2').css('display', 'none');
+      $('div.button').css('display', 'block');
       nextTask();
       event.preventDefault();
     });
@@ -65,8 +82,8 @@
         margin: 20px;
     }
 
-    div.button {
-        visibility: hidden;
+    div.button, div.button2 {
+        display: none;
     }
 
     body {
@@ -88,6 +105,9 @@
     <div class="button">
         <button id="defer">Defer 3 Days</button> &nbsp;
         <button id="complete">Complete</button>
+    </div>
+    <div class="button2">
+        <button id="nocare">I don't care</button>
     </div>
 
 </div>
