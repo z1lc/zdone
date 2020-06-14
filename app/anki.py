@@ -112,6 +112,7 @@ def generate_track_apkg(user: User, filename: str) -> None:
         'Spotify Tracks')
     track_model: Model = get_track_model(user)
     artist_model: Model = get_artist_model(user)
+    tags: List[str] = [] if user.default_spotify_anki_tag is None else [user.default_spotify_anki_tag]
     legacy_mappings: Dict[str, str] = {lm.spotify_track_uri: lm.anki_guid for lm in
                                        LegacySpotifyTrackNoteGuidMapping.query.filter_by(user_id=user.id).all()}
 
@@ -121,6 +122,7 @@ def generate_track_apkg(user: User, filename: str) -> None:
             inner_artists.append(inner_artist['name'])
         track_as_note = SpotifyTrackNote(
             model=track_model,
+            tags=tags,
             fields=[
                 track['uri'],
                 track['name'].replace('"', '\''),
@@ -181,6 +183,7 @@ order by 4 desc"""
             if img_src:
                 artist_as_note = SpotifyArtistNote(
                     model=artist_model,
+                    tags=tags,
                     fields=[
                         artist.uri,
                         artist.name,

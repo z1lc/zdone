@@ -48,6 +48,8 @@ class User(UserMixin, BaseModel):
     last_fm_last_refresh_time = db.Column(db.DateTime)
 
     uses_rsAnki_javascript: bool = db.Column(db.Boolean, server_default='false', nullable=False)
+    # default tag applied to cards on export
+    default_spotify_anki_tag: str = db.Column(db.Text)
 
     pushover_user_key: str = db.Column(db.String(128), unique=True)
 
