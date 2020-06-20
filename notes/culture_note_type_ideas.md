@@ -1,4 +1,5 @@
 # Future Anki Culture note types
+see [Whimsical](https://whimsical.com/WKr5BEqNM9EgYW9nE76vvc) for ideas
 
 ## Artist
 ### Fields
@@ -22,9 +23,20 @@
  * ~~name+image>albums~~
  * ~~albums>name+image~~
  * name+image>genres
- * name+image>similar artists
+ * name+image>similar/collaborating artists
    * similar artists that you also track bolded/green?
  * name+image>years active
+   * could get annoying with years?
+ * years active+genres>name+image
+
+## Genre
+### Fields
+ * Name
+ * Artists (once you have 3+ artists)
+
+### Cards
+ * name>artists
+   * Ex. "name an artist part of the **pop** genre"
 
 ## Movie
 ### Fields
