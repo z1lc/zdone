@@ -408,8 +408,9 @@ def api():
         if "zdone" in request.args:
             tasks = Task.query.filter_by(user_id=int(user.id)).all()
             ret_tasks = []
+            user_local_date = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date()
+            tasks.sort(key=lambda t: t.calculate_skew(user_local_date), reverse=True)
             for task in tasks:
-                user_local_date = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date()
                 after_defer = task.defer_until is None or user_local_date > task.defer_until
                 due = task.calculate_skew(user_local_date) >= 1
                 if after_defer and due:
