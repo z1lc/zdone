@@ -42,6 +42,7 @@
           $('div.button2').css('display', 'block');
         } else {
           $('div.button').css('display', 'block');
+          $('div.reminder').html(`<b>${data["reminder_title"]}</b><br>${data["reminder_message"]}`);
           nextTask();
         }
       }
@@ -90,6 +91,10 @@
         font-size: 40px;
     }
 
+    .reminder {
+        font-size: 20px;
+    }
+
     div.note {
         font-size: 15px;
     }
@@ -110,6 +115,7 @@
     <div class="button2">
         <button id="nocare">I don't care</button>
     </div>
+    <div class="reminder"></div>
 
 </div>
 {% endblock %}

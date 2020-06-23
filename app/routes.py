@@ -1,7 +1,7 @@
+import datetime
 import itertools
 import os
 import uuid
-import datetime
 from json import dumps
 from typing import List
 
@@ -18,7 +18,7 @@ from .anki import generate_track_apkg
 from .forms import LoginForm, RegistrationForm
 from .log import log
 from .models import User, ManagedSpotifyArtist, SpotifyArtist, Task
-from .reminders import get_reminders
+from .reminders import get_reminders, get_most_recent_reminder
 from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, follow_unfollow_artists, \
     get_random_song_family, get_tracks, get_top_recommendations, get_artists_images, populate_null
 from .taskutils import add_toodledo_task, get_all_tasks, do_update_time, get_homepage_info, get_open_trello_lists, \
@@ -422,9 +422,13 @@ def api():
                         "subtask_id": None,
                         "length_minutes": None,
                     })
+
+            latest_reminder = get_most_recent_reminder(user)
             r = {
                 "tasks_to_do": ret_tasks,
                 "time_zone": user.current_time_zone,
+                "reminder_title": latest_reminder.title,
+                "reminder_message": latest_reminder.message,
             }
         else:
             r = dumps(get_homepage_info(user, "sort" in request.args))
