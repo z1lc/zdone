@@ -20,7 +20,7 @@ newrelic==5.14.1.144
 mock==4.0.2
 py-trello==0.16.0
 ebisu==2.0.0
-pylast==3.2.1
+pylast==3.3.0
 jsmin==2.2.2
 tmdbsimple==2.2.24
 email_validator==1.1.1
