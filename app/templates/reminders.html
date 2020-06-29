@@ -24,7 +24,7 @@
     <ul>
         {% for reminder in reminders %}
             <li class="{% if reminder.active %}active{% else %}inactive{% endif %}">
-                {{ reminder.title }}<br>{{ reminder.message }}
+                {{ reminder.title }}<br>{{ reminder.message|safe }}
             </li>
         {% endfor %}
     </ul>
