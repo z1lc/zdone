@@ -1,8 +1,10 @@
 # Future Anki Culture note types
 see [Whimsical](https://whimsical.com/WKr5BEqNM9EgYW9nE76vvc) for ideas
 
-## Artist
-### Fields
+
+## Music
+### Artist
+#### Fields
  * ~~Name~~
  * ~~Songs (only ones you have listened to)~~
  * ~~Albums (only ones you have listened to, includes years)~~
@@ -15,7 +17,7 @@ see [Whimsical](https://whimsical.com/WKr5BEqNM9EgYW9nE76vvc) for ideas
    * based on album release dates?
  * ~~Image (sourced from Spotify / provided backup image if one from Spotify sucks)~~
 
-### Cards
+#### Cards
  * ~~image>name~~
  * ~~name>image~~
  * ~~name+image>song~~ (currently not using, since doesn't seem all that valuable)
@@ -29,16 +31,21 @@ see [Whimsical](https://whimsical.com/WKr5BEqNM9EgYW9nE76vvc) for ideas
    * could get annoying with years?
  * years active+genres>name+image
 
-## Genre
-### Fields
+### Genre
+#### Fields
  * Name
  * Artists (once you have 3+ artists)
 
-### Cards
+#### Cards
  * name>artists
    * Ex. "name an artist part of the **pop** genre"
 
-## Movie
+## Movies/TV
+Potential services:
+* [TMDb](https://www.themoviedb.org/) (Movies+TV, public API)
+* [Letterboxd](https://letterboxd.com/) (Movies, invite-only API)
+* [Mubi](https://mubi.com/) (Movies, undocumented API)
+
 ### Fields
  * Name
  * Actors (+ roles?)
