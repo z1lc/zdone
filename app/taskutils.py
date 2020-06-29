@@ -73,7 +73,7 @@ def do_update_task(update: str,
         if update == "complete":
             task.last_completion = datetime.datetime.now(pytz.timezone(user.current_time_zone))
         elif update == "defer":
-            task.defer_until = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date()\
+            task.defer_until = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date() \
                                + datetime.timedelta(days=3)
         db.session.commit()
         return success()

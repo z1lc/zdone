@@ -21,8 +21,7 @@
     } else {
       $('#countdownExample .name').html("All done!");
       $('#countdownExample .note').html("");
-      $("button#complete").hide();
-      $("button#defer").hide();
+      $("div.button").hide();
     }
   }
 
@@ -54,6 +53,10 @@
     });
     $("button#defer").click(function (event) {
       deferItem(task.service, task.id, task.subtask_id, task.length_minutes);
+      nextTask();
+      event.preventDefault();
+    });
+    $("button#later").click(function (event) {
       nextTask();
       event.preventDefault();
     });
@@ -98,6 +101,10 @@
     div.note {
         font-size: 15px;
     }
+
+    button#later, button#defer {
+        font-size: 20px;
+    }
 </style>
 {% endblock %}
 
@@ -109,8 +116,9 @@
     <div class="subtasks"></div>
     <div class="values"></div>
     <div class="button">
-        <button id="defer">Defer 3 Days</button> &nbsp;
-        <button id="complete">Complete</button>
+        <button id="complete">Complete</button><br>
+        <button id="later">Later</button>
+        <button id="defer">Defer 3 Days</button>
     </div>
     <div class="button2">
         <button id="nocare">I don't care</button>
