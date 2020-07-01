@@ -19,7 +19,7 @@
       $('#countdownExample .name').html(task.name);
       $('#countdownExample .note').html(task.note);
     } else {
-      $('#countdownExample .name').html("All done!");
+      $('#countdownExample .name').html("All done!<br>Check <a href='https://trello.com/b/Kq6NQ2LP/backlogs'>Backlogs</a> for ideas.");
       $('#countdownExample .note').html("");
       $("div.button").hide();
     }
@@ -96,6 +96,8 @@
 
     .reminder {
         font-size: 20px;
+        position: fixed;
+        bottom: 0;
     }
 
     div.note {
