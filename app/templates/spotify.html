@@ -12,13 +12,18 @@
           }
         });
       });
-      function removeLink() {
-        anchor = $("a#download")
-        if (anchor.attr("href").includes("spotify")) {
-          anchor.removeAttr("href");
-          $("span#downloadExtra").html("<b>Downloading... please be patient!</b>");
-          location.href = "/spotify/download_apkg";
-        }
+      function removeLink(aSelector, spanSelector, spanHtml) {
+        const anchor = $(aSelector)
+        const target = anchor.attr("href");
+        anchor.removeAttr("href");
+        $(spanSelector).html(spanHtml);
+        location.href = target;
+      }
+      function removeLinkDownload() {
+        removeLink("a#download", "span#downloadExtra", "<b>Downloading... please be patient!</b>");
+      }
+      function removeLinkAUM() {
+        removeLink("a#AUMLink", "span#AUMExtra", "<b>Loading total track counts... please be patient!</b>");
       }
     </script>
 <style>
@@ -33,10 +38,10 @@
 {% block body %}
 <h1>Spotify + Anki</h1>
     Looking for <a href="/spotify/help">Help</a>?<br>
-    <span id="downloadExtra">Download the <a id="download" href="/spotify/download_apkg" onclick="removeLink()">latest set of songs</a>.</span>
+    <span id="downloadExtra">Download the <a id="download" href="/spotify/download_apkg" onclick="removeLinkDownload()">latest set of songs</a>.</span>
 <h2><a name="AUM">Artists Under Management</a></h2>
     {% if not totals_given and internal_user %}
-        <a href="?total_track_counts#AUM">Show total track count for artists</a> (includes top + liked; warning, this will take a while)
+        <span id="AUMExtra"><a id="AUMLink" href="?total_track_counts#AUM" onclick="removeLinkAUM()">Show total track count for artists</a> (includes top + liked)</span>
     {% endif %}
 <table id="managed_artists_table">
 <thead>
