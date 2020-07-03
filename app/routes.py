@@ -423,12 +423,25 @@ def api():
                         "length_minutes": None,
                     })
 
+            for tlist in get_open_trello_lists():
+                for tcard in tlist.list_cards():
+                    ret_tasks.append({
+                        "id": tcard.id,
+                        "service": "trello",
+                        "name": f"<a href='{tcard.url}'>{tlist.name}</a>: {tcard.name}",
+                        "note": tcard.description.replace('\n', '<br>'),
+                        "subtask_id": None,
+                        "length_minutes": None,
+                    })
+
             latest_reminder = get_most_recent_reminder(user)
             r = {
                 "tasks_to_do": ret_tasks,
                 "time_zone": user.current_time_zone,
-                "reminder_title": latest_reminder.title,
-                "reminder_message": latest_reminder.message,
+                "latest_reminder": {
+                    "title": latest_reminder.title,
+                    "message": latest_reminder.message
+                },
             }
         else:
             r = dumps(get_homepage_info(user, "sort" in request.args))

@@ -12,15 +12,21 @@
   let task;
   let tasks;
 
+  function fade(selector, html) {
+    $(selector).fadeOut(150, function() {
+      $(this).html(html);
+    }).fadeIn(150);
+  }
+
   function nextTask() {
     $('#countdownExample .values').css('color', 'black');
     if (tasks.length > 0) {
       task = tasks.shift();
-      $('#countdownExample .name').html(task.name);
-      $('#countdownExample .note').html(task.note);
+      fade('#countdownExample .name', task.name);
+      fade('#countdownExample .note', task.note);
     } else {
-      $('#countdownExample .name').html("All done!<br>Check <a href='https://trello.com/b/Kq6NQ2LP/backlogs'>Backlogs</a> for ideas.");
-      $('#countdownExample .note').html("");
+      fade('#countdownExample .name', "All done!<br>Check <a href='https://trello.com/b/Kq6NQ2LP/backlogs'>Backlogs</a> for ideas.");
+      fade('#countdownExample .note', "");
       $("div.button").hide();
     }
   }
@@ -40,8 +46,9 @@
             `Please update the server time zone to avoid inaccurate data.`);
           $('div.button2').css('display', 'block');
         } else {
-          $('div.button').css('display', 'block');
-          $('div.reminder').html(`<b>${data["reminder_title"]}</b><br>${data["reminder_message"]}`);
+          $('div.reminder').html(`<b>${data["latest_reminder"]["title"]}</b><br>${data["latest_reminder"]["message"]}`);
+          $('div.button').fadeIn(500);
+          $('div.reminder').fadeIn(1000);
           nextTask();
         }
       }
@@ -98,6 +105,7 @@
         font-size: 20px;
         position: fixed;
         bottom: 0;
+        display: none;
     }
 
     div.note {

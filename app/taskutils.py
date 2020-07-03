@@ -77,6 +77,13 @@ def do_update_task(update: str,
                                + datetime.timedelta(days=3)
         db.session.commit()
         return success()
+    elif service == "trello":
+        client = TrelloClient(
+            api_key=current_user.trello_api_key,
+            api_secret=current_user.trello_api_access_token
+        )
+        client.get_card(task_id).change_list('5efeb6fae7aab58783af4a83')  # completed list
+        return success()
     if update == "defer":
         redis_client.append("hidden:" + user.username + ":" + str(today()), (task_id + "|||").encode())
         redis_client.expire("hidden:" + user.username + ":" + str(today()), datetime.timedelta(days=7))
