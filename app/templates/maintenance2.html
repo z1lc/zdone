@@ -19,7 +19,6 @@
   }
 
   function nextTask() {
-    $('#countdownExample .values').css('color', 'black');
     if (tasks.length > 0) {
       task = tasks.shift();
       fade('#countdownExample .name', task.name);
@@ -89,10 +88,6 @@
         font-weight: bold;
     }
 
-    #countdownExample > div {
-        margin: 20px;
-    }
-
     div.button, div.button2 {
         display: none;
     }
@@ -102,10 +97,19 @@
     }
 
     .reminder {
+        padding-top: 20px;
         font-size: 20px;
-        position: fixed;
-        bottom: 0;
         display: none;
+    }
+
+    div.taskContainer {
+        max-width: 700px;
+        margin: 5px auto auto;
+    }
+
+    .bottomContainer {
+        position: fixed;
+        bottom: 5px;
     }
 
     div.note {
@@ -121,19 +125,20 @@
 {% block body %}
 <base target="_blank">
 <div id="countdownExample">
-    <div class="name">Loading tasks...</div>
-    <div class="note"></div>
-    <div class="subtasks"></div>
-    <div class="values"></div>
-    <div class="button">
-        <button id="complete">Complete</button><br>
-        <button id="later">Later</button>
-        <button id="defer">Defer 3 Days</button>
+    <div class="taskContainer">
+        <div class="name">Loading tasks...</div>
+        <div class="note"></div>
     </div>
-    <div class="button2">
-        <button id="nocare">I don't care</button>
+    <div class="bottomContainer">
+        <div class="button">
+            <button id="complete">Complete</button><br>
+            <button id="later">Later</button>
+            <button id="defer">Defer 3 Days</button>
+        </div>
+        <div class="button2">
+            <button id="nocare">I don't care</button>
+        </div>
+        <div class="reminder"></div>
     </div>
-    <div class="reminder"></div>
-
 </div>
 {% endblock %}
