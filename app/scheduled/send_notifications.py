@@ -19,7 +19,7 @@ if __name__ == '__main__':
     last_two_notifications as (
         select reminder_id
         from reminder_notifications_joined
-        where user_id = {user.id} and reminder_id is not null
+        where user_id = {user.id} and reminder_id is not null and sent_at is not null
         order by sent_at desc
         limit 2
     )
