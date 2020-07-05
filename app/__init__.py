@@ -33,6 +33,7 @@ Talisman(app, content_security_policy={
         '*.fontawesome.com',
         '*.googletagmanager.com',
         '*.google-analytics.com',
+        '*.newrelic.com',
     ]
 })
 app.config.from_object(Config)
