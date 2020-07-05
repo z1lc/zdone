@@ -24,16 +24,17 @@ Talisman(app, content_security_policy={
     'default-src': [
         '\'self\'',
         '\'unsafe-inline\'',
-        '*.jquery.com',
-        '*.w3schools.com',
         '*.cloudflare.com',
-        '*.googleapis.com',
-        '*.gstatic.com',
         '*.datatables.net',
         '*.fontawesome.com',
-        '*.googletagmanager.com',
         '*.google-analytics.com',
+        '*.googleapis.com',
+        '*.googletagmanager.com',
+        '*.gstatic.com',
+        '*.jquery.com',
         '*.newrelic.com',
+        '*.sentry-cdn.com',
+        '*.w3schools.com',
     ]
 })
 app.config.from_object(Config)
