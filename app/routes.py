@@ -410,9 +410,12 @@ def api():
             ret_tasks = []
             user_local_date = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date()
             tasks.sort(key=lambda t: t.calculate_skew(user_local_date), reverse=True)
+            average_daily_load = 0
+
             for task in tasks:
-                after_defer = task.defer_until is None or user_local_date > task.defer_until
+                after_defer = task.defer_until is None or user_local_date >= task.defer_until
                 due = task.calculate_skew(user_local_date) >= 1
+                average_daily_load += 1 / task.ideal_interval
                 if after_defer and due:
                     ret_tasks.append({
                         "id": task.id,
@@ -422,6 +425,17 @@ def api():
                         "subtask_id": None,
                         "length_minutes": None,
                     })
+
+            if average_daily_load >= 3.0:
+                ret_tasks.insert(0, {
+                    "id": None,
+                    "service": "zdone",
+                    "name": "Reconfigure tasks",
+                    "note": f"Average daily task load is {round(average_daily_load, 2)}, which is ≥3. Remove tasks or "
+                            f"schedule them less frequently to avoid feeling overwhelmed.",
+                    "subtask_id": None,
+                    "length_minutes": None,
+                })
 
             for tlist in get_open_trello_lists():
                 for tcard in tlist.list_cards():

@@ -61,6 +61,8 @@ def do_update_task(update: str,
                    subtask_id: str,
                    duration_seconds: int = 0,
                    user: User = current_user) -> Tuple[Response, int]:
+    if task_id is None:
+        return failure(f"must pass a valid task_id")
     if service == "zdone":
         task = Task.query.filter_by(id=int(task_id)).one()
         log = TaskLog(
