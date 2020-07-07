@@ -43,4 +43,4 @@ class RegistrationForm(FlaskForm):
 class ReminderForm(FlaskForm):
     title = StringField('Title:', validators=[DataRequired()])
     message = StringField('Message:', validators=[DataRequired()], widget=TextArea())
-    submit = SubmitField('Add a reminder')
+    submit = SubmitField('Add reminder')
