@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
+from wtforms.widgets import TextArea
 
 from app.models import User
 
@@ -38,3 +39,8 @@ class RegistrationForm(FlaskForm):
     def validate_password(self, password):
         if len(password.data) < MINIMUM_PASSWORD_LENGTH:
             raise ValidationError(f'Please pick a password that is at least {MINIMUM_PASSWORD_LENGTH} characters long.')
+
+class ReminderForm(FlaskForm):
+    title = StringField('Title:', validators=[DataRequired()])
+    message = StringField('Message:', validators=[DataRequired()], widget=TextArea())
+    submit = SubmitField('Add reminder')

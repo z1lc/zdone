@@ -16,11 +16,36 @@
             color: gray;
             font-style: italic;
         }
+
+        textarea, input {
+            width: 700px;
+        }
     </style>
 {% endblock %}
 
 {% block body %}
     <h1>Reminders</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.title.label }}<br>
+            {{ form.title(size=79) }}<br>
+        </p>
+        <p>
+            {{ form.message.label }}<br>
+            {{ form.message(cols="80", rows="5") }}<br>
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+            <br>
+            {% endif %}
+        {% endwith %}   
+    <br>
     <ul>
         {% for reminder in reminders %}
             <li class="{% if reminder.active %}active{% else %}inactive{% endif %}">
