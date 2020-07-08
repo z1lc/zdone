@@ -394,7 +394,7 @@ def reminders():
         db.session.commit()
         form.title.data=""
         form.message.data=""
-        flash(f"You have added a new reminder.")
+        flash(f"Added '{reminder.title}' reminder.")
     return render_template("reminders.html", reminders=get_reminders(current_user), form=form)
 
 
