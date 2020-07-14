@@ -450,15 +450,21 @@ def api():
                 })
 
             for tlist in get_open_trello_lists():
+                i = 0
                 for tcard in tlist.list_cards():
-                    ret_tasks.append({
+                    item = {
                         "id": tcard.id,
                         "service": "trello",
                         "name": f"<a href='{tcard.url}'>{tlist.name}</a>: {tcard.name}",
                         "note": tcard.description.replace('\n', '<br>'),
                         "subtask_id": None,
                         "length_minutes": None,
-                    })
+                    }
+                    if tlist.name == "P0":
+                        ret_tasks.insert(i, item)
+                        i += 1
+                    else:
+                        ret_tasks.append(item)
 
             latest_reminder = get_most_recent_reminder(user)
             r = {
