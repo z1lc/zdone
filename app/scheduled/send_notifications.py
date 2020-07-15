@@ -28,6 +28,10 @@ from reminder_notifications_joined
 where active and user_id = {user.id} and reminder_id not in (select * from last_two_notifications)
 group by 1, 2
 order by 3 asc, 4 asc;"""
-        oldest_reminder_id = list(db.engine.execute(prepared_sql))[0][0]
-        # log(f"would have sent reminder id {oldest_reminder_id} for user {user.username}")
-        send_and_log_notification(user, oldest_reminder_id)
+        potential_reminders = list(db.engine.execute(prepared_sql))
+        if potential_reminders:
+            oldest_reminder_id = potential_reminders[0][0]
+            log(f"Will send notification for reminder id {oldest_reminder_id} for user {user.username}.")
+            send_and_log_notification(user, oldest_reminder_id)
+        else:
+            log(f"Did not find any acceptable reminders for user {user.username}.")
