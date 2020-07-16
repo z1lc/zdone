@@ -35,6 +35,8 @@ Talisman(app, content_security_policy={
         '*.newrelic.com',
         '*.sentry-cdn.com',
         '*.w3schools.com',
+        '*.tmdb.org',
+        '*.youtube.com',
     ]
 })
 app.config.from_object(Config)
