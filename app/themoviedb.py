@@ -46,9 +46,33 @@ def get_stuff():
         # ))
 
         result += "<br>".join([title + f' ({year_released})', description, cast_output, f"<img src='{image}'>",
-                               f'<iframe width="560" height="315" src="https://www.youtube.com/embed/{first_youtube_trailer}?controls=0&autoplay=1&mute=1" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'])
+                               '<div class="iframe-container"><div id="player"></div></div>'])
+        # f'<iframe width="560" height="315" src="https://www.youtube.com/embed/{first_youtube_trailer}?controls=0&autoplay=1&mute=1" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
 
-    return result
+    return result + """<script type="text/javascript">
+  var tag = document.createElement('script');
+
+  tag.src = "https://www.youtube.com/iframe_api";
+  var firstScriptTag = document.getElementsByTagName('script')[0];
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+  var player;
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('player', {
+      width: '100%',
+      videoId: '""" + first_youtube_trailer + """',
+      playerVars: { 'autoplay': 1, 'playsinline': 1 },
+      events: {
+        'onReady': onPlayerReady
+      }
+    });
+  }
+
+  function onPlayerReady(event) {
+    event.target.mute();
+    event.target.playVideo();
+  }
+</script>"""
 
 
 # def get_or_add_video(video):
