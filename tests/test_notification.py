@@ -1,6 +1,6 @@
 import pytest
 
-from app.models import User
+from app.models.base import User
 from app.reminders import send_and_log_notification
 
 

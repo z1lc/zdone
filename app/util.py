@@ -4,7 +4,7 @@ from typing import Dict, Any, Optional, Tuple, Union
 import pytz
 from flask import jsonify, Response
 
-from app.models import User
+from app.models.base import User
 
 JsonDict = Dict[str, Any]
 

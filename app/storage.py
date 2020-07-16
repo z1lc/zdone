@@ -4,7 +4,7 @@ from json import dumps, loads
 
 from toodledo import TokenStorageFile
 
-from app.models import User
+from app.models.base import User
 from . import db
 from .util import JsonDict
 

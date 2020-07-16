@@ -3,7 +3,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from wtforms.widgets import TextArea
 
-from app.models import User
+from app.models.base import User
 
 MINIMUM_PASSWORD_LENGTH = 10
 

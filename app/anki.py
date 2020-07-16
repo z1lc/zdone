@@ -8,7 +8,8 @@ from jinja2 import Environment, PackageLoader, select_autoescape, StrictUndefine
 from jsmin import jsmin
 
 from app import db
-from app.models import LegacySpotifyTrackNoteGuidMapping, SpotifyArtist, User
+from app.models.base import User
+from app.models.spotify import LegacySpotifyTrackNoteGuidMapping, SpotifyArtist
 from app.spotify import get_tracks, get_followed_managed_spotify_artists_for_user
 from app.util import JsonDict
 

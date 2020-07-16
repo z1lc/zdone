@@ -5,7 +5,8 @@ from pushover import Client
 
 from app import kv, db
 from app.log import log
-from app.models import Reminder, User, ReminderNotification
+from app.models.base import User
+from app.models.tasks import Reminder, ReminderNotification
 
 
 def get_reminders(user: User) -> List[Reminder]:

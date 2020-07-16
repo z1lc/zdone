@@ -17,7 +17,9 @@ from . import redis_client, app, db, kv
 from .anki import generate_track_apkg
 from .forms import LoginForm, RegistrationForm, ReminderForm
 from .log import log
-from .models import User, ManagedSpotifyArtist, SpotifyArtist, Task, Reminder
+from app.models.base import User
+from .models.spotify import ManagedSpotifyArtist, SpotifyArtist
+from .models.tasks import Reminder, Task
 from .reminders import get_reminders, get_most_recent_reminder
 from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, follow_unfollow_artists, \
     get_random_song_family, get_tracks, get_top_recommendations, get_artists_images, populate_null

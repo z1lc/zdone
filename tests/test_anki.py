@@ -1,7 +1,7 @@
 import uuid
 
 from app.anki import get_track_model, get_artist_model, AnkiCard, clean_track_name, clean_album_name
-from app.models import User
+from app.models.base import User
 
 rsanek_user = User(id=1,
                    username="rsanek",

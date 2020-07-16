@@ -16,7 +16,8 @@ from sqlalchemy.exc import IntegrityError
 
 from app import kv, redis_client, db
 from app.log import log
-from app.models import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay, User, TopTrack, SpotifyAlbum
+from app.models.base import User
+from app.models.spotify import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay, TopTrack, SpotifyAlbum
 from app.util import today_datetime, today, JsonDict
 
 # Scopes that are currently requested for public users -- only request things that are necessary

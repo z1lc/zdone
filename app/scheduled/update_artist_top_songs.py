@@ -4,7 +4,8 @@ from sentry_sdk import capture_exception
 
 from app import db
 from app.log import log
-from app.models import SpotifyArtist, User, ManagedSpotifyArtist
+from app.models.base import User
+from app.models.spotify import SpotifyArtist, ManagedSpotifyArtist
 from app.spotify import get_spotify, get_top_tracks, update_last_fm_scrobble_counts
 
 MAX_RETRIES_PER_ARTIST = 2

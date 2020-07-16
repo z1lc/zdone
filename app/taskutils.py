@@ -17,7 +17,8 @@ from toodledo import Toodledo
 from trello import TrelloClient, trellolist
 
 from app import kv, redis_client, db, socketio
-from app.models import User, ExternalServiceTaskCompletion, TaskLog, Task
+from app.models.base import User
+from app.models.tasks import ExternalServiceTaskCompletion, TaskLog, Task
 from app.storage import TokenStoragePostgres
 from app.util import today, today_datetime, failure, success, JsonDict
 from app.ztasks import ZDTask, ZDSubTask

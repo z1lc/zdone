@@ -1,4 +1,4 @@
-from app.models import User
+from app.models.base import User
 from app.spotify import populate_null
 
 if __name__ == '__main__':
