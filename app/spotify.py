@@ -65,6 +65,41 @@ def follow_unfollow_artists(user: User) -> None:
     do_add_artists(user, [artist['uri'] for artist in results], True)
 
 
+# via https://stackoverflow.com/a/434328
+def chunker(seq, size):
+    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+
+
+def update_spotify_anki_playlist(user: User):
+    # TODO released just to me so far, enable for all once I verify this works like I'd like
+    if user.spotify_token_json is None or user.spotify_token_json == '' or user.id != 1:
+        return
+
+    sp = get_spotify("zdone", user)
+    me = sp.me()
+
+    if user.spotify_playlist_uri is None:
+        returned = sp.user_playlist_create(
+            me['id'],
+            name="Anki Plays",
+            public=False,
+            description="All the songs that you have played through Spotify + Anki. "
+                        "Download this playlist to make jumping to random points in Anki faster!")
+        user.spotify_playlist_uri = returned['uri']
+        db.session.commit()
+
+    unique_uris = list(set([sp.spotify_track_uri for sp in SpotifyPlay.query.filter_by(user_id=user.id).all()]))
+
+    # as far as I can tell, the API doesn't have an easy way to avoid adding duplicate
+    # songs to a playlist, so here we delete all tracks in the playlist before re-adding.
+    sp.user_playlist_replace_tracks(user=me['id'], playlist_id=user.spotify_playlist_uri, tracks=[])
+    for track_uris in chunker(unique_uris, 100):
+        sp.user_playlist_add_tracks(user=me['id'],
+                                    playlist_id=user.spotify_playlist_uri,
+                                    tracks=track_uris,
+                                    )
+
+
 def update_last_fm_scrobble_counts(user: User):
     if user.last_fm_username is None:
         return
@@ -151,7 +186,7 @@ where spotify_album_uri not in (select uri from spotify_albums)"""
             )
             db.session.add(album)
         log(f"Wrote 20 more artists. Total this run is {round(i / len(unpopulated) * 1000) / 10}%, "
-              f"{i} / {len(unpopulated)}")
+            f"{i} / {len(unpopulated)}")
         db.session.commit()
 
 
@@ -306,7 +341,8 @@ def get_liked_page(sp, offset: int) -> List[JsonDict]:
 
 def get_top_tracks(sp, artist: SpotifyArtist, allow_refresh: bool = False) -> Tuple[List[TopTrack], List[TopTrack]]:
     should_refresh = allow_refresh and (artist.last_top_tracks_refresh is None or
-                                        artist.last_top_tracks_refresh < (datetime.datetime.utcnow() - timedelta(days=7)))
+                                        artist.last_top_tracks_refresh < (
+                                                    datetime.datetime.utcnow() - timedelta(days=7)))
     if should_refresh:
         dropped = TopTrack.query.filter_by(artist_uri=artist.uri).delete()
         top_tracks = sp.artist_top_tracks(artist_id=artist.uri)['tracks']

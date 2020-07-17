@@ -40,6 +40,7 @@ class User(UserMixin, BaseModel):
     trello_api_access_token: str = db.Column(db.String(128))
 
     spotify_token_json: str = db.Column(db.String(1024))
+    spotify_playlist_uri: str = db.Column(db.String(128), unique=True, nullable=True)
 
     last_fm_username: str = db.Column(db.String(128), unique=True)
     last_fm_last_refresh_time = db.Column(db.DateTime)
