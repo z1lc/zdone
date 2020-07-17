@@ -16,7 +16,7 @@ def get_stuff():
 
     result = ''
 
-    for movie in acct.rated_movies()['results']:
+    for movie in (acct.rated_movies()['results'] + acct.favorite_movies()['results']):
         m_id = movie['id']
         title = movie['original_title']
         description = movie['overview']
