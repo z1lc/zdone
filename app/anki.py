@@ -10,11 +10,13 @@ from jsmin import jsmin
 from app import db
 from app.models.base import User
 from app.models.spotify import LegacySpotifyTrackNoteGuidMapping, SpotifyArtist
+from app.models.videos import Video
 from app.spotify import get_tracks, get_followed_managed_spotify_artists_for_user
 from app.util import JsonDict
 
 SPOTIFY_TRACK_MODEL_ID: int = 1586000000000
 SPOTIFY_ARTIST_MODEL_ID: int = 1587000000000
+VIDEO_MODEL_ID: int = 1588000000000
 SPOTIFY_TRACK_DECK_ID: int = 1586000000000
 
 """
@@ -25,8 +27,8 @@ Things to keep in mind when adding new models / templates:
  * you cannot change the names or total count of fields in a model
 
 A general, long-term approach to avoiding compatibility problems:
- * Create many more fields than you're going to need at the beginning, naming them something unique (maybe adjectives?).
-   You're going to re-purpose these fields later for new fields that you'll need.
+ * Create many more fields than you're going to need at the beginning, naming them something unique.
+   You're going to re-purpose these empty fields later for new fields that you'll want to add.
  * Create many more templates than you need, again naming them something unique. This is again so that you can re-
    purpose later, though you need to make sure cards are not generated in advance for these empty placeholder templates.
    What you can do to make sure this is the case is by making the qfmt and afmt dependent on an unused field, and then 
@@ -75,6 +77,11 @@ class AnkiCard(Enum):
     EXTRA_ARTIST_TEMPLATE_9 = (18, 'spotify_artist')
     EXTRA_ARTIST_TEMPLATE_10 = (19, 'spotify_artist')
 
+    # Video model
+    POSTER_TO_NAME = (20, 'video')
+    NAME_TO_POSTER = (21, 'video')
+    VIDEO_TO_NAME = (22, 'video')
+
     def __init__(self, unique_number, directory):
         self.unique_number = unique_number
         self.directory = directory
@@ -102,6 +109,12 @@ class SpotifyTrackNote(genanki.Note):
 
 
 class SpotifyArtistNote(genanki.Note):
+    @property
+    def guid(self):
+        return genanki.guid_for(self.fields[0])
+
+
+class VideoNote(genanki.Note):
     @property
     def guid(self):
         return genanki.guid_for(self.fields[0])
@@ -155,7 +168,7 @@ group by 1, 2, 3, 4
 order by 4 desc"""
     top_played_albums = list(db.engine.execute(top_played_albums_sql))
 
-    # released internally only so far
+    # artists released internally only so far
     if user.id <= 6:
         for managed_artist in get_followed_managed_spotify_artists_for_user(user, False):
             artist: SpotifyArtist = SpotifyArtist.query.filter_by(uri=managed_artist.spotify_artist_uri).one()
@@ -175,7 +188,8 @@ order by 4 desc"""
 
             top_played_albums_for_artist = {clean_album_name(row[2]): row[3].year for row in top_played_albums if
                                             row[0] == managed_artist.spotify_artist_uri}
-            albums = create_html_unordered_list([f'<i>{name}</i> ({year})' for name, year in top_played_albums_for_artist.items()])
+            albums = create_html_unordered_list(
+                [f'<i>{name}</i> ({year})' for name, year in top_played_albums_for_artist.items()])
 
             genres = ''
             similar_artists = ''
@@ -206,6 +220,24 @@ order by 4 desc"""
                         '',
                     ])
                 deck.add_note(artist_as_note)
+
+    # videos not released yet
+    if user.id <= 1:
+        video_model = get_video_model(user)
+        for video in Video.query.all():
+            track_as_note = VideoNote(
+                model=video_model,
+                tags=tags,
+                fields=[
+                    video.id,
+                    f"<i>{video.name}</i>",
+                    video.description,
+                    str(video.release_date.date().year),
+                    video.youtube_trailer_key,
+                    f"<img src='{video.poster_image_url}'>",
+                ])
+            deck.add_note(track_as_note)
+
     genanki.Package(deck).write_to_file(filename)
 
 
@@ -260,6 +292,29 @@ def clean_track_name(name: str) -> str:
     for regex in REGEXES:
         name = re.sub(regex, "", name)
     return name
+
+
+def get_video_model(user: User) -> Model:
+    return genanki.Model(
+        VIDEO_MODEL_ID,
+        'Video',
+        fields=[
+            {'name': 'zdone Video ID'},
+            {'name': 'Name'},
+            {'name': 'Description'},
+            {'name': 'Year Released'},
+            {'name': 'YouTube Trailer Key'},
+            {'name': 'Poster Image'},
+            # TODO: add extra fields before public release
+        ],
+        css=(get_rs_anki_css() if user.uses_rsAnki_javascript else get_default_css()) + get_youtube_css(),
+        templates=[
+            get_template(AnkiCard.POSTER_TO_NAME, user),
+            get_template(AnkiCard.NAME_TO_POSTER, user),
+            get_template(AnkiCard.VIDEO_TO_NAME, user),
+            # TODO: add extra templates before public release
+        ]
+    )
 
 
 def get_artist_model(user: User) -> Model:
@@ -320,7 +375,7 @@ def get_track_model(user: User) -> Model:
         templates.append(get_template(AnkiCard.AUDIO_AND_ALBUM_ART_TO_ALBUM, user))
 
     return genanki.Model(
-        # the legacy model ID was from when I imported my model to everyone else. I migrated to the publically-facing,
+        # the legacy model ID was from when I imported my model to everyone else. I migrated to the publicly-facing,
         # default model ID, but kept existing users on my old model ID for simplicity.
         legacy_model_id if 1 < user.id <= 6 else SPOTIFY_TRACK_MODEL_ID,
         'Spotify Track',
@@ -348,10 +403,13 @@ def get_template(card_type: AnkiCard, user: User) -> JsonDict:
 
 def render_template(card_type: AnkiCard, is_front: bool, api_key: str, rs_anki_enabled: bool) -> str:
     script_include = get_rs_anki_custom_script() if rs_anki_enabled else get_default_script()
+
     if is_front and card_type in [AnkiCard.AUDIO_TO_ARTIST, AnkiCard.AUDIO_AND_ALBUM_ART_TO_ALBUM]:
-        script_include += f"""<script type="text/javascript">
-{get_minified_js_for_song_jump(api_key)}
-</script>"""
+        script_include += f"""<script type="text/javascript">{get_minified_js_for_song_jump(api_key)}</script>"""
+
+    if is_front and card_type in [AnkiCard.VIDEO_TO_NAME]:
+        script_include += f"""<script type="text/javascript">{get_minified_js_for_youtube_video()}</script>"""
+
     try:
         return env.get_template(card_type.directory + '/' + card_type.name.lower() + '.html') \
             .render(is_front=is_front, script_include=script_include)
@@ -368,6 +426,33 @@ def render_back(card_type: AnkiCard, api_key: str, rs_anki_enabled: bool) -> str
 
 def render_front(card_type: AnkiCard, api_key: str, rs_anki_enabled: bool) -> str:
     return render_template(card_type, True, api_key, rs_anki_enabled)
+
+
+# see https://developers.google.com/youtube/iframe_api_reference for docs
+def get_minified_js_for_youtube_video() -> str:
+    return jsmin("""
+  var tag = document.createElement('script');
+
+  tag.src = "https://www.youtube.com/iframe_api";
+  var firstScriptTag = document.getElementsByTagName('script')[0];
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+  var player;
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('player', {
+      width: '100%',
+      videoId: '{{YouTube Trailer Key}}',
+      playerVars: { 'autoplay': 1, 'playsinline': 1, 'start': 10 },
+      events: {
+        'onReady': onPlayerReady
+      }
+    });
+  }
+
+  function onPlayerReady(event) {
+    event.target.mute();
+    event.target.playVideo();
+  }""")
 
 
 def get_minified_js_for_song_jump(api_key: str) -> str:
@@ -403,6 +488,34 @@ def get_rs_anki_custom_script() -> str:
 
 def get_default_script() -> str:
     return """<script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js"></script>"""
+
+
+def get_youtube_css() -> str:
+    return """
+.video-container {
+  width: 95vw;
+  height: 85vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.video-container iframe {
+  pointer-events: none;
+  position: absolute;
+  top: -60px;
+  left: 0;
+  width: 100%;
+  height: calc(100% + 120px);
+}
+"""
 
 
 def get_rs_anki_css() -> str:

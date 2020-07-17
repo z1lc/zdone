@@ -1,7 +1,5 @@
 import datetime
 
-# see https://github.com/dropbox/sqlalchemy-stubs/issues/76#issuecomment-595839159
-from flask_sqlalchemy.model import DefaultMeta
 from sqlalchemy import func, UniqueConstraint, CheckConstraint
 
 from app import db

@@ -1,10 +1,9 @@
 import tmdbsimple
 
-from app import kv #, db
+from app import kv, db
+from app.models.videos import Video
 
 # https://developers.themoviedb.org/3/configuration/get-api-configuration
-# from app.models.tmdb import Video
-
 BASE_URL = 'https://image.tmdb.org/t/p/'
 POSTER_SIZE = 'w500'
 
@@ -17,7 +16,7 @@ def get_stuff():
 
     result = ''
 
-    for movie in acct.rated_movies()['results'][1:2]:
+    for movie in acct.rated_movies()['results']:
         m_id = movie['id']
         title = movie['original_title']
         description = movie['overview']
@@ -36,50 +35,29 @@ def get_stuff():
         cast = [f"{cast['name']} as {cast['character']}" for cast in m_credits['cast']][:3]
         cast_output = f"<ul>{''.join(['<li>' + as_string + '</li>' for as_string in cast])}</ul>"
 
-        # get_or_add_video(Video(
-        #     id=f"zdone:video:tmdb:{m_id}",
-        #     name=title,
-        #     description=description,
-        #     release_date=movie['release_date'],
-        #     youtube_trailer_key=first_youtube_trailer,
-        #     poster_image_url=image,
-        # ))
+        get_or_add_video(Video(
+            id=f"zdone:video:tmdb:{m_id}",
+            name=title,
+            description=description,
+            release_date=movie['release_date'],
+            youtube_trailer_key=first_youtube_trailer,
+            poster_image_url=image,
+        ))
 
-        result += "<br>".join([title + f' ({year_released})', description, cast_output, f"<img src='{image}'>",
-                               '<div class="iframe-container"><div id="player"></div></div>'])
-        # f'<iframe width="560" height="315" src="https://www.youtube.com/embed/{first_youtube_trailer}?controls=0&autoplay=1&mute=1" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
+        result += "<br>".join([title + f' ({year_released})',
+                               description,
+                               cast_output,
+                               f"<img src='{image}'>",
+                               ])
 
-    return result + """<script type="text/javascript">
-  var tag = document.createElement('script');
-
-  tag.src = "https://www.youtube.com/iframe_api";
-  var firstScriptTag = document.getElementsByTagName('script')[0];
-  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-  var player;
-  function onYouTubeIframeAPIReady() {
-    player = new YT.Player('player', {
-      width: '100%',
-      videoId: '""" + first_youtube_trailer + """',
-      playerVars: { 'autoplay': 1, 'playsinline': 1 },
-      events: {
-        'onReady': onPlayerReady
-      }
-    });
-  }
-
-  function onPlayerReady(event) {
-    event.target.mute();
-    event.target.playVideo();
-  }
-</script>"""
+    return result
 
 
-# def get_or_add_video(video):
-#     maybe_persisted_video = Video.query.filter_by(id=video.id).one_or_none()
-#     if not maybe_persisted_video:
-#         db.session.add(video)
-#         db.session.commit()
+def get_or_add_video(video):
+    maybe_persisted_video = Video.query.filter_by(id=video.id).one_or_none()
+    if not maybe_persisted_video:
+        db.session.add(video)
+        db.session.commit()
 
 
 def get_image_url(path):

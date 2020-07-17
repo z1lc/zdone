@@ -1,0 +1,20 @@
+<div id="textPart">
+    {% if is_front %}
+        What movie?<br>
+        <div class="video-container" >
+            <div class="video-foreground">
+                <div class="iframe-container"><div id="player"></div></div>
+            </div>
+        </div>
+    {% else %}
+        <span class="rsAnswer rsAnkiBold">{{ '{{Name}}' }}</span> ({{ '{{Year Released}}' }})<br>
+    {% endif %}
+</div>
+
+<div id="imagePart">
+    {% if not is_front %}
+        {{ '{{Poster Image}}' }}
+    {% endif %}
+</div>
+
+{{ script_include|safe }}

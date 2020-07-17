@@ -1,8 +1,5 @@
 import datetime
 
-# see https://github.com/dropbox/sqlalchemy-stubs/issues/76#issuecomment-595839159
-from flask_sqlalchemy.model import DefaultMeta
-
 from app import db
 from app.models.base import BaseModel
 
