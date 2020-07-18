@@ -10,7 +10,7 @@ from flask import render_template, request, make_response, jsonify, redirect, se
 from flask import url_for, flash
 from flask_login import current_user, login_user, logout_user
 from flask_login import login_required
-from sentry_sdk import last_event_id
+from sentry_sdk import last_event_id, capture_exception
 from werkzeug.urls import url_parse
 
 from . import redis_client, app, db, kv
@@ -335,6 +335,10 @@ def api_play_song_v2(api_key, track_uri, callback_function_name):
             return jsonp(callback_function_name,
                          failure("Did not detect a device playing music.<br>"
                                  "Please <a href='spotify:'>begin playback on your device</a> and return to this card."))
+        else:
+            capture_exception(e)
+            return jsonp(callback_function_name, failure("An unexpected server error occurred.<br>"
+                                                         "Please try again later."))
     return jsonp(callback_function_name, success())
 
 
