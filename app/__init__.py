@@ -32,7 +32,7 @@ Talisman(app, content_security_policy={
         '*.googletagmanager.com',
         '*.gstatic.com',
         '*.jquery.com',
-        '*.newrelic.com',
+        '*.sentry.io',
         '*.sentry-cdn.com',
         '*.w3schools.com',
         '*.tmdb.org',
