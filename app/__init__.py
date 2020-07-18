@@ -3,7 +3,6 @@ from flask import Flask
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_redis import FlaskRedis
-from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from flask_talisman import Talisman
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -42,7 +41,6 @@ Talisman(app, content_security_policy={
 })
 app.config.from_object(Config)
 db = SQLAlchemy(app)
-socketio = SocketIO(app)
 
 migrate = Migrate(app, db)
 redis_client = FlaskRedis(app)

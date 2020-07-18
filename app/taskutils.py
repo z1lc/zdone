@@ -16,7 +16,7 @@ from toodledo import Toodledo
 # watch out, this dependency is actually py-trello
 from trello import TrelloClient, trellolist
 
-from app import kv, redis_client, db, socketio
+from app import kv, redis_client, db
 from app.models.base import User
 from app.models.tasks import ExternalServiceTaskCompletion, TaskLog, Task
 from app.storage import TokenStoragePostgres
@@ -116,13 +116,13 @@ def do_update_task(update: str,
     if not subtask_id:
         length = [t.length_minutes for i, t in enumerate(get_all_tasks(user))
                   if t.service == service and t.id == task_id][0]
-    socketio.emit(user.api_key, {
-        'update': update,
-        'service': service,
-        'task_id': task_id,
-        'subtask_id': subtask_id if subtask_id else '',
-        'length_minutes': length
-    })
+    # socketio.emit(user.api_key, {
+    #     'update': update,
+    #     'service': service,
+    #     'task_id': task_id,
+    #     'subtask_id': subtask_id if subtask_id else '',
+    #     'length_minutes': length
+    # })
     return success()
 
 
