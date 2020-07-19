@@ -12,13 +12,13 @@ from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from app import make_json_serializable
 from app.config import Config
 
-sentry_sdk.init(
-    dsn="https://4dbd095718e34cb7bc4f7d64ecf488c4@sentry.io/1678958",
-    integrations=[FlaskIntegration(), RedisIntegration(), SqlalchemyIntegration()],
-    send_default_pii=True
-)
-
 app = Flask(__name__)
+if not app.debug:
+    sentry_sdk.init(
+        dsn="https://4dbd095718e34cb7bc4f7d64ecf488c4@sentry.io/1678958",
+        integrations=[FlaskIntegration(), RedisIntegration(), SqlalchemyIntegration()],
+        send_default_pii=True
+    )
 Talisman(app, content_security_policy={
     'default-src': [
         '\'self\'',
