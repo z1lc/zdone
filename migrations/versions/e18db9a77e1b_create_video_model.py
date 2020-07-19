@@ -22,7 +22,7 @@ def upgrade():
     sa.Column('id', sa.Text(), nullable=False),
     sa.Column('name', sa.Text(), nullable=False),
     sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('release_date', sa.DateTime(), nullable=True),
+    sa.Column('release_date', sa.Date(), nullable=True),
     sa.Column('youtube_trailer_key', sa.Text(), nullable=True),
     sa.Column('poster_image_url', sa.Text(), nullable=True),
     sa.PrimaryKeyConstraint('id')
