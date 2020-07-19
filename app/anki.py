@@ -230,6 +230,7 @@ order by 4 desc"""
                 tags=tags,
                 fields=[
                     video.id,
+                    video.film_or_tv,
                     f"<i>{video.name}</i>",
                     video.description,
                     str(video.release_date.date().year),
@@ -300,6 +301,7 @@ def get_video_model(user: User) -> Model:
         'Video',
         fields=[
             {'name': 'zdone Video ID'},
+            {'name': 'Video Type'},
             {'name': 'Name'},
             {'name': 'Description'},
             {'name': 'Year Released'},

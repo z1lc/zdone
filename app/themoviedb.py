@@ -28,6 +28,7 @@ def get_stuff():
             release_date=tv['first_air_date'],
             youtube_trailer_key=get_first_youtube_trailer(tv_details.videos()),
             poster_image_url=get_image_url(tv['poster_path']),
+            film_or_tv='TV show',
         ))
 
     for watched, movie in (
@@ -55,6 +56,7 @@ def get_stuff():
             release_date=movie['release_date'],
             youtube_trailer_key=get_first_youtube_trailer(movie_detail.videos()),
             poster_image_url=image,
+            film_or_tv='film',
         ))
 
         result += "<br>".join([title + f' ({year_released})',

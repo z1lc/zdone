@@ -13,3 +13,4 @@ class Video(BaseModel):
     release_date: datetime.datetime = db.Column(db.DateTime)
     youtube_trailer_key: str = db.Column(db.Text)
     poster_image_url: str = db.Column(db.Text)
+    film_or_tv: str = db.Column(db.Text, nullable=False, server_default='film')
