@@ -108,7 +108,7 @@ def update_last_fm_scrobble_counts(user: User):
     if user.last_fm_username is None:
         log(f'User {user.username} does not have a last.fm username set. Nothing to refresh.')
         return
-    if user.last_fm_last_refresh_time is None or \
+    elif user.last_fm_last_refresh_time is None or \
             pytz.timezone('US/Pacific').localize(user.last_fm_last_refresh_time) < (
             today_datetime() - timedelta(days=7)):
         done = False
@@ -130,6 +130,8 @@ def update_last_fm_scrobble_counts(user: User):
         user.last_fm_last_refresh_time = today_datetime()
         db.session.commit()
         log(f'Updated scrobble counts for user {user.username}')
+    else:
+        log(f'Skipping last.fm update for user {user.username} as they have a recent refresh.')
 
 
 def save_token_info(token_info, user: User):
