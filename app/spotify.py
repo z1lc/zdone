@@ -71,8 +71,10 @@ def chunker(seq, size):
 
 
 def update_spotify_anki_playlist(user: User):
-    # TODO released just to me so far, enable for all once I verify this works like I'd like
-    if user.spotify_token_json is None or user.spotify_token_json == '' or user.id != 1:
+    if user.spotify_token_json is None \
+            or user.spotify_token_json == '' \
+            or user.username not in ['rsanek', 'vsanek', 'jsankova', 'will']:
+        log(f'Skipping update for user {user.username} as they are not on the allowlist.')
         return
 
     sp = get_spotify("zdone", user)
@@ -99,9 +101,12 @@ def update_spotify_anki_playlist(user: User):
                                     tracks=track_uris,
                                     )
 
+    log(f'Updated Spotify playlist for user {user.username}')
+
 
 def update_last_fm_scrobble_counts(user: User):
     if user.last_fm_username is None:
+        log(f'User {user.username} does not have a last.fm username set. Nothing to refresh.')
         return
     if user.last_fm_last_refresh_time is None or \
             pytz.timezone('US/Pacific').localize(user.last_fm_last_refresh_time) < (
@@ -124,6 +129,7 @@ def update_last_fm_scrobble_counts(user: User):
             managed_spotify_artist.last_fm_scrobbles = name_to_plays.get(spotify_artist.name.lower(), None)
         user.last_fm_last_refresh_time = today_datetime()
         db.session.commit()
+        log(f'Updated scrobble counts for user {user.username}')
 
 
 def save_token_info(token_info, user: User):
