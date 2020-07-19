@@ -16,7 +16,24 @@ def get_stuff():
 
     result = ''
 
-    for movie in (acct.rated_movies()['results'] + acct.favorite_movies()['results']):
+    for watched, tv in (
+            [(True, rtv) for rtv in acct.rated_tv()['results']] +
+            [(True, ftv) for ftv in acct.favorite_tv()['results']] +
+            [(False, wtv) for wtv in acct.watchlist_tv()['results']]):
+        tv_details = tmdbsimple.TV(tv['id'])
+        get_or_add_video(Video(
+            id=f"zdone:video:tmdb:{tv['id']}",
+            name=tv['name'],
+            description=tv['overview'],
+            release_date=tv['first_air_date'],
+            youtube_trailer_key=get_first_youtube_trailer(tv_details.videos()),
+            poster_image_url=get_image_url(tv['poster_path']),
+        ))
+
+    for watched, movie in (
+            [(True, rtv) for rtv in acct.rated_movies()['results']] +
+            [(True, ftv) for ftv in acct.favorite_movies()['results']] +
+            [(False, wtv) for wtv in acct.watchlist_movies()['results']]):
         m_id = movie['id']
         title = movie['original_title']
         description = movie['overview']
@@ -24,10 +41,6 @@ def get_stuff():
         year_released = movie['release_date'][:4]
 
         movie_detail = tmdbsimple.Movies(m_id)
-        youtube_trailers = [m for m in movie_detail.videos()['results'] if m['site'] == 'YouTube']
-        first_youtube_trailer = ''
-        if youtube_trailers:
-            first_youtube_trailer = youtube_trailers[0]['key']
         # m_info = movie.info()
         # genres = ", ".join([name for _, name in m_info['genres']])
 
@@ -40,7 +53,7 @@ def get_stuff():
             name=title,
             description=description,
             release_date=movie['release_date'],
-            youtube_trailer_key=first_youtube_trailer,
+            youtube_trailer_key=get_first_youtube_trailer(movie_detail.videos()),
             poster_image_url=image,
         ))
 
@@ -51,6 +64,11 @@ def get_stuff():
                                ])
 
     return result
+
+
+def get_first_youtube_trailer(videos):
+    youtube_trailers = [m for m in videos['results'] if m['site'] == 'YouTube']
+    return youtube_trailers[0]['key'] if youtube_trailers else ''
 
 
 def get_or_add_video(video):
