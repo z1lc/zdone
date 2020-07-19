@@ -309,19 +309,6 @@ def spotify_download_apkg():
     return send_file(filename, as_attachment=True, add_etags=False, cache_timeout=0)
 
 
-# TODO: remove this endpoint once people are migrated off
-@app.route("/api/play_track")
-def api_play_song():
-    args = request.args
-    if not args or "track_uri" not in args or "api_key" not in args:
-        return failure("Request must set parameters 'track_uri' and 'api_key'.")
-    else:
-        track_uri = args.get('track_uri')
-        api_key = args.get('api_key')
-        api_play_song_v2(api_key, track_uri, "no_function")
-        return success()
-
-
 @app.route("/api/<api_key>/play/<track_uri>/<callback_function_name>")
 def api_play_song_v2(api_key, track_uri, callback_function_name):
     user = validate_api_key(api_key)
