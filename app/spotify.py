@@ -5,7 +5,7 @@ import random
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from random import randrange
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 
 import pytz
 import requests
@@ -397,7 +397,7 @@ def get_tracks(user: User) -> List[JsonDict]:
     dedup_map = {}
     my_managed_artists = get_followed_managed_spotify_artists_for_user(user, True)
     managed_arists_uris = set([artist.spotify_artist_uri for artist in my_managed_artists])
-    not_following_but_liked_tracks = collections.defaultdict(int)
+    not_following_but_liked_tracks: Dict[str, int] = collections.defaultdict(int)
 
     # get liked tracks, then filter for artists that are in ARTISTS
     log(f"getting liked {today_datetime()}")
