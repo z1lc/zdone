@@ -27,7 +27,7 @@ def get_stuff():
         get_or_add_video(Video(
             id=video_id,
             name=tv['name'],
-            description=tv['overview'],
+            description=clean_description(tv['overview'], tv['name'], "[TV show]"),
             release_date=tv['first_air_date'],
             youtube_trailer_key=get_first_youtube_trailer(tv_details.videos()),
             poster_image_url=get_full_tmdb_image_url(tv['poster_path']),
@@ -55,7 +55,7 @@ def get_stuff():
         get_or_add_video(Video(
             id=video_id,
             name=title,
-            description=description,
+            description=clean_description(description, title, "[film]"),
             release_date=movie['release_date'],
             youtube_trailer_key=get_first_youtube_trailer(movie_detail.videos()),
             poster_image_url=image,
@@ -65,6 +65,10 @@ def get_stuff():
         result += title + f' ({year_released})<br>'
 
     return result
+
+
+def clean_description(description, video_name, replacement):
+    return description.replace(video_name, replacement)
 
 
 def hydrate_credits(video_id, credits):

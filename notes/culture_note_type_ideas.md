@@ -59,16 +59,40 @@ Potential services:
 * [Letterboxd](https://letterboxd.com/) (Movies, invite-only API)
 * [Mubi](https://mubi.com/) (Movies, undocumented API)
 
-### Fields
- * Name
- * Actors (+ roles?)
- * Poster Image
- * Video
-   * Limitation: YouTube videos can autoplay only as muted. May not be a big deal/even a benefit if trailers have voiceovers that give away the movie. Either way, probably fine for MVP.
+### Video
+#### Fields
+ * ~~Name~~
+ * Description
+ * ~~Year released~~
+ * Actors & roles
+ * Director
+ * ~~Poster image~~
+ * ~~YouTube trailer video~~
+ * Watched?
+   * field that differentiates between things you've already watched vs. things that you've flagged as want to see. If you haven't seen it yet, you probably have less knowledge of the item.
 
-### Cards
- * Name>Actors
- * Actors+Roles>Name
- * Poster>Name
- * Name>Poster
- * Video>Name 
+#### Cards
+ * ~~Poster>Name~~
+ * ~~Name>Poster~~
+ * ~~Video>Name~~
+ * Description>Name
+ * Name>Description
+ * Name>Actors+Roles (if watched)
+ * Actors+Roles>Name (if watched) 
+ * Name>Director (if watched and have 3+ films under management with same director)
+
+
+### Actor
+#### Fields
+ * Name
+ * Birthday
+ * Photo
+ * Films they've been in (that you've seen + top ~2 from 'well known'? include role?)
+ * Co-stars (maybe? to promote more linkages between people)
+
+#### Cards
+ * Photo>Name
+ * Name>Photo
+ * Name>Films
+ * Films>Name
+ * Name>Co-star
