@@ -33,7 +33,7 @@ order by 3 asc, 4 asc;"""
         if potential_reminders:
             lowest_number_of_notifications = potential_reminders[0][2]
             potential_reminders = [p for p in potential_reminders if p[2] == lowest_number_of_notifications]
-            selected_reminder_id = random.choice(potential_reminders)
+            selected_reminder_id = random.choice(potential_reminders)[0]
             log(f"Will send notification for reminder id {selected_reminder_id} for user {user.username}.")
             send_and_log_notification(user, selected_reminder_id)
         else:
