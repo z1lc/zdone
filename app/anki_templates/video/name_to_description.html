@@ -1,0 +1,17 @@
+<div id="textPart">
+    {% if is_front %}
+        Describe <span class="rsAnkiBold">{{ '{{Name}}' }}</span> ({{ '{{Year Released}}' }}):
+    {% else %}
+        <span class="rsAnkiBold">{{ '{{Name}}' }}</span> ({{ '{{Year Released}}' }})<hr>
+        <span class="rsAnswer">{{ '{{Description}}' }}</span>
+    {% endif %}
+</div>
+
+<div id="imagePart">
+    {% if not is_front %}
+        {{ '{{Poster Image}}' }}
+    {% endif %}
+</div>
+
+
+{{ script_include|safe }}

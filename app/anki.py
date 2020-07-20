@@ -81,6 +81,8 @@ class AnkiCard(Enum):
     POSTER_TO_NAME = (20, 'video')
     NAME_TO_POSTER = (21, 'video')
     VIDEO_TO_NAME = (22, 'video')
+    DESCRIPTION_TO_NAME = (23, 'video')
+    NAME_TO_DESCRIPTION = (24, 'video')
 
     def __init__(self, unique_number, directory):
         self.unique_number = unique_number
@@ -314,6 +316,8 @@ def get_video_model(user: User) -> Model:
             get_template(AnkiCard.POSTER_TO_NAME, user),
             get_template(AnkiCard.NAME_TO_POSTER, user),
             get_template(AnkiCard.VIDEO_TO_NAME, user),
+            get_template(AnkiCard.DESCRIPTION_TO_NAME, user),
+            get_template(AnkiCard.NAME_TO_DESCRIPTION, user),
             # TODO: add extra templates before public release
         ]
     )

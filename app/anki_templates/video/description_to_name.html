@@ -1,0 +1,16 @@
+<div id="textPart">
+    What {{ '{{Video Type}}' }}?<br>
+    {{ '{{Description}}' }}<hr>
+    {% if not is_front %}
+        <span class="rsAnkiBold rsAnswer">{{ '{{Name}}' }}</span> ({{ '{{Year Released}}' }})<br>
+    {% endif %}
+</div>
+
+<div id="imagePart">
+    {% if not is_front %}
+        {{ '{{Poster Image}}' }}
+    {% endif %}
+</div>
+
+
+{{ script_include|safe }}

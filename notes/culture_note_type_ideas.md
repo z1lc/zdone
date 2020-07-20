@@ -62,7 +62,7 @@ Potential services:
 ### Video
 #### Fields
  * ~~Name~~
- * Description
+ * ~~Description~~
  * ~~Year released~~
  * Actors & roles
  * Director
@@ -75,8 +75,8 @@ Potential services:
  * ~~Poster>Name~~
  * ~~Name>Poster~~
  * ~~Video>Name~~
- * Description>Name
- * Name>Description
+ * ~~Description>Name~~
+ * ~~Name>Description~~
  * Name>Actors+Roles (if watched)
  * Actors+Roles>Name (if watched) 
  * Name>Director (if watched and have 3+ films under management with same director)
