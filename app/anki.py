@@ -233,7 +233,7 @@ order by 4 desc"""
                     video.film_or_tv,
                     f"<i>{video.name}</i>",
                     video.description,
-                    str(video.release_date.date().year),
+                    str(video.release_date.year),
                     video.youtube_trailer_key,
                     f"<img src='{video.poster_image_url}'>",
                 ])
