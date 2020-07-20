@@ -96,3 +96,11 @@ Potential services:
  * Name>Films
  * Films>Name
  * Name>Co-star
+
+## Art
+Potential services:
+* [Artsy.net](https://www.artsy.net/) (paintings+sculptures, public API)
+
+## Video Games
+Potential services:
+* [Steam](https://store.steampowered.com/) (some big titles & most indie games, public API)
