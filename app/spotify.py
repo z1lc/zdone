@@ -1,3 +1,4 @@
+import collections
 import datetime
 import json
 import random
@@ -350,7 +351,7 @@ def get_liked_page(sp, offset: int) -> List[JsonDict]:
 def get_top_tracks(sp, artist: SpotifyArtist, allow_refresh: bool = False) -> Tuple[List[TopTrack], List[TopTrack]]:
     should_refresh = allow_refresh and (artist.last_top_tracks_refresh is None or
                                         artist.last_top_tracks_refresh < (
-                                                    datetime.datetime.utcnow() - timedelta(days=7)))
+                                                datetime.datetime.utcnow() - timedelta(days=7)))
     if should_refresh:
         dropped = TopTrack.query.filter_by(artist_uri=artist.uri).delete()
         top_tracks = sp.artist_top_tracks(artist_id=artist.uri)['tracks']
@@ -376,6 +377,18 @@ def get_followed_managed_spotify_artists_for_user(user: User, should_update: boo
     return ManagedSpotifyArtist.query.filter_by(user_id=user.id, following='true').all()
 
 
+def get_all_liked_tracks(sp):
+    liked_tracks = list()
+
+    pages = sp.current_user_saved_tracks(limit=1)['total'] // 50 + 1
+    offsets = [x * 50 for x in range(0, pages)]
+    with ThreadPoolExecutor() as executor:
+        for saved in executor.map(get_liked_page, [sp] * pages, offsets):
+            liked_tracks.extend(saved)
+
+    return liked_tracks
+
+
 def get_tracks(user: User) -> List[JsonDict]:
     log(f"get tracks {today_datetime()}")
     sp = get_spotify("zdone", user)
@@ -384,23 +397,22 @@ def get_tracks(user: User) -> List[JsonDict]:
     dedup_map = {}
     my_managed_artists = get_followed_managed_spotify_artists_for_user(user, True)
     managed_arists_uris = set([artist.spotify_artist_uri for artist in my_managed_artists])
+    not_following_but_liked_tracks = collections.defaultdict(int)
 
-    # get liked tracks with artists that are in ARTISTS
-    liked_tracks = list()
+    # get liked tracks, then filter for artists that are in ARTISTS
     log(f"getting liked {today_datetime()}")
-
-    pages = sp.current_user_saved_tracks(limit=1)['total'] // 50 + 1
-    offsets = [x * 50 for x in range(0, pages)]
-    with ThreadPoolExecutor() as executor:
-        for saved in executor.map(get_liked_page, [sp] * pages, offsets):
-            liked_tracks.extend(saved)
+    liked_tracks = get_all_liked_tracks(sp)
 
     for item in liked_tracks:
         track = item['track']
         artists = [artist['uri'] for artist in track['artists']]
-        for artist in artists:
-            if artist in managed_arists_uris:
-                dedup_map[track['uri']] = track
+        if set(artists).intersection(managed_arists_uris):
+            dedup_map[track['uri']] = track
+        else:
+            for artist in track['artists']:
+                not_following_but_liked_tracks[artist['name']] = not_following_but_liked_tracks[artist['name']] + 1
+
+    print(sorted(not_following_but_liked_tracks.items(), key=lambda dict_item: -dict_item[1])[:10])
 
     log(f"getting top 3 tracks per artist {today_datetime()}")
     # get top 3 tracks for each artist in ARTISTS
