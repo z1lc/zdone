@@ -1,7 +1,8 @@
+import random
+
 from app import db
 from app.log import log
 from app.models.base import User
-
 from app.reminders import send_and_log_notification
 
 # This code is scheduled to run once daily by the Heroku Scheduler
@@ -30,8 +31,10 @@ group by 1, 2
 order by 3 asc, 4 asc;"""
         potential_reminders = list(db.engine.execute(prepared_sql))
         if potential_reminders:
-            oldest_reminder_id = potential_reminders[0][0]
-            log(f"Will send notification for reminder id {oldest_reminder_id} for user {user.username}.")
-            send_and_log_notification(user, oldest_reminder_id)
+            lowest_number_of_notifications = potential_reminders[0][2]
+            potential_reminders = [p for p in potential_reminders if p[2] == lowest_number_of_notifications]
+            selected_reminder_id = random.choice(potential_reminders)
+            log(f"Will send notification for reminder id {selected_reminder_id} for user {user.username}.")
+            send_and_log_notification(user, selected_reminder_id)
         else:
             log(f"Did not find any acceptable reminders for user {user.username}.")
