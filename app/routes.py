@@ -533,5 +533,5 @@ def api_update_time():
 @app.route('/trello_webhook', methods=['POST', 'HEAD'])
 def trello_webhook():
     req = request.get_json()
-    if req.get("body", {}).get("model", {}).get("name") == "Backlogs":
+    if req and req.get("body", {}).get("model", {}).get("name") == "Backlogs":
         get_updated_trello_cards(User.query.filter_by(username="rsanek").one(), force_refresh=True)
