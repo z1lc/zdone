@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block within_head %}
+    <title>spotify</title>
     <link rel="stylesheet" href="//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
     <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
     <script>
@@ -36,6 +37,7 @@
 {% endblock %}
 
 {% block body %}
+    Spotify + Anki | <a href="/reminders">Reminders</a> | <a href="/">Tasks</a>
 <h1>Spotify + Anki</h1>
     Looking for <a href="/spotify/help">Help</a>?<br>
     <span id="downloadExtra">Download the <a id="download" href="/spotify/download_apkg" onclick="removeLinkDownload()">latest set of songs</a>.</span>

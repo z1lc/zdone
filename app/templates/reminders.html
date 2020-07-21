@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block within_head %}
+    <title>reminders</title>
     <style>
         body {
             max-width: 1500px;
@@ -24,6 +25,7 @@
 {% endblock %}
 
 {% block body %}
+    <a href="/spotify">Spotify + Anki</a> | Reminders | <a href="/">Tasks</a>
     <h1>Reminders</h1>
     <form action="" method="post">
         {{ form.hidden_tag() }}
