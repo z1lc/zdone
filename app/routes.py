@@ -530,7 +530,7 @@ def api_update_time():
                 return failure(str(e))
 
 
-@app.route('/trello_webhook', methods=['POST'])
+@app.route('/trello_webhook', methods=['POST', 'HEAD'])
 def trello_webhook():
     req = request.get_json()
     if req.get("body", {}).get("model", {}).get("name") == "Backlogs":
