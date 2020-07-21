@@ -535,3 +535,4 @@ def trello_webhook():
     req = request.get_json()
     if req and req.get("body", {}).get("model", {}).get("name") == "Backlogs":
         get_updated_trello_cards(User.query.filter_by(username="rsanek").one(), force_refresh=True)
+    return success()
