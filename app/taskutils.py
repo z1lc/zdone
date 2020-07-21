@@ -391,3 +391,25 @@ def get_open_trello_lists() -> List[trellolist.List]:
 
         return backlog_board.list_lists('open')
     return []
+
+
+def get_updated_trello_cards(user: User, force_refresh: bool = False):
+    redis_key = f"trello-{user.username}"
+    if force_refresh or redis_client.get(redis_key) is None:
+        items = []
+        for tlist in get_open_trello_lists():
+            for tcard in tlist.list_cards():
+                item = {
+                    "id": tcard.id,
+                    "service": "trello",
+                    "name": f"<a href='{tcard.url}'>{tlist.name}</a>: {tcard.name}",
+                    "note": tcard.description.replace('\n', '<br>'),
+                    "list_name": tlist.name,
+                    "subtask_id": None,
+                    "length_minutes": None,
+                }
+                items.append(item)
+
+        redis_client.set(redis_key, pickle.dumps(items))
+
+    return pickle.loads(redis_client.get(redis_key))

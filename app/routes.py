@@ -13,18 +13,18 @@ from flask_login import login_required
 from sentry_sdk import last_event_id, capture_exception
 from werkzeug.urls import url_parse
 
+from app.models.base import User
 from . import redis_client, app, db, kv
 from .anki import generate_track_apkg
 from .forms import LoginForm, RegistrationForm, ReminderForm
 from .log import log
-from app.models.base import User
 from .models.spotify import ManagedSpotifyArtist, SpotifyArtist
 from .models.tasks import Reminder, Task
 from .reminders import get_reminders, get_most_recent_reminder
 from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, follow_unfollow_artists, \
     get_random_song_family, get_tracks, get_top_recommendations, get_artists_images, populate_null
 from .taskutils import add_toodledo_task, get_all_tasks, do_update_time, get_homepage_info, get_open_trello_lists, \
-    do_update_task, get_task_order_from_db, TOODLEDO_UNORDERED_TASKS_PLACEHOLDER
+    do_update_task, get_task_order_from_db, TOODLEDO_UNORDERED_TASKS_PLACEHOLDER, get_updated_trello_cards
 from .themoviedb import get_stuff
 from .util import today, today_datetime, failure, success, api_key_failure, jsonp, validate_api_key
 from .ztasks import htmlize_note, ZDTask
@@ -385,8 +385,8 @@ def reminders():
         )
         db.session.add(reminder)
         db.session.commit()
-        form.title.data=""
-        form.message.data=""
+        form.title.data = ""
+        form.message.data = ""
         flash(f"Added '{reminder.title}' reminder.")
     return render_template("reminders.html", reminders=get_reminders(current_user), form=form)
 
@@ -442,22 +442,13 @@ def api():
                     "length_minutes": None,
                 })
 
-            for tlist in get_open_trello_lists():
-                i = 0
-                for tcard in tlist.list_cards():
-                    item = {
-                        "id": tcard.id,
-                        "service": "trello",
-                        "name": f"<a href='{tcard.url}'>{tlist.name}</a>: {tcard.name}",
-                        "note": tcard.description.replace('\n', '<br>'),
-                        "subtask_id": None,
-                        "length_minutes": None,
-                    }
-                    if tlist.name == "P0":
-                        ret_tasks.insert(i, item)
-                        i += 1
-                    else:
-                        ret_tasks.append(item)
+            i = 0
+            for tcard in get_updated_trello_cards(user):
+                if tcard["list_name"] == "P0":
+                    ret_tasks.insert(i, tcard)
+                    i += 1
+                else:
+                    ret_tasks.append(tcard)
 
             latest_reminder = get_most_recent_reminder(user)
             r = {
@@ -537,3 +528,10 @@ def api_update_time():
                 return do_update_time(int(time), user)
             except Exception as e:
                 return failure(str(e))
+
+
+@app.route('/trello_webhook', methods=['POST'])
+def trello_webhook():
+    req = request.get_json()
+    if req.get("body", {}).get("model", {}).get("name") == "Backlogs":
+        get_updated_trello_cards(User.query.filter_by(username="rsanek").one(), force_refresh=True)
