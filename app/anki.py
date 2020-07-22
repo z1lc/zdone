@@ -10,7 +10,7 @@ from jsmin import jsmin
 from app import db
 from app.models.base import User
 from app.models.spotify import LegacySpotifyTrackNoteGuidMapping, SpotifyArtist
-from app.models.videos import Video
+from app.models.videos import Video, YouTubeVideoOverride
 from app.spotify import get_tracks, get_followed_managed_spotify_artists_for_user
 from app.util import JsonDict
 
@@ -225,6 +225,7 @@ order by 4 desc"""
 
     # videos not released yet
     if user.id <= 1:
+        youtube_overrides = {yto.video_id: yto.youtube_trailer_key for yto in YouTubeVideoOverride.query.all()}
         video_model = get_video_model(user)
         for video in Video.query.all():
             track_as_note = VideoNote(
@@ -236,7 +237,7 @@ order by 4 desc"""
                     f"<i>{video.name}</i>",
                     video.description,
                     str(video.release_date.year),
-                    video.youtube_trailer_key,
+                    youtube_overrides.get(video.id, video.youtube_trailer_key),
                     f"<img src='{video.poster_image_url}'>",
                 ])
             deck.add_note(track_as_note)

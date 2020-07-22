@@ -16,6 +16,13 @@ class Video(BaseModel):
     film_or_tv: str = db.Column(db.Text, nullable=False, server_default='film')
 
 
+# For situations where we don't like the API-provided YouTube video and want to override it with an alternative.
+class YouTubeVideoOverride(BaseModel):
+    __tablename__ = "youtube_video_overrides"
+    video_id: int = db.Column(db.Text, db.ForeignKey('videos.id'), primary_key=True)
+    youtube_trailer_key: str = db.Column(db.Text, nullable=True)
+
+
 class VideoPerson(BaseModel):
     __tablename__ = "video_persons"
     # format of id is zdone:person:service:service_id
