@@ -357,7 +357,7 @@ def old():
     info['times']['minutes_completed_today_rounded'] = \
         round(info['times']['minutes_completed_today'])
     return render_template('index.html',
-                           trello_lists=get_open_trello_lists(),
+                           trello_lists=get_open_trello_lists(current_user),
                            today=today(),
                            api_key=current_user.api_key,
                            tasks_completed=info['tasks_completed'],

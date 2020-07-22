@@ -381,11 +381,11 @@ def get_tasks_without_required_fields(all_tasks: List[ZDTask]) -> List[ZDTask]:
     return bad_tasks
 
 
-def get_open_trello_lists() -> List[trellolist.List]:
-    if current_user.trello_api_key and current_user.trello_api_access_token:
+def get_open_trello_lists(user: User) -> List[trellolist.List]:
+    if user.trello_api_key and user.trello_api_access_token:
         client = TrelloClient(
-            api_key=current_user.trello_api_key,
-            api_secret=current_user.trello_api_access_token
+            api_key=user.trello_api_key,
+            api_secret=user.trello_api_access_token
         )
         backlog_board = [board for board in client.list_boards() if board.name == 'Backlogs'][0]
 
@@ -397,7 +397,7 @@ def get_updated_trello_cards(user: User, force_refresh: bool = False):
     redis_key = f"trello-{user.username}"
     if force_refresh or redis_client.get(redis_key) is None:
         items = []
-        for tlist in get_open_trello_lists():
+        for tlist in get_open_trello_lists(user):
             for tcard in tlist.list_cards():
                 item = {
                     "id": tcard.id,
