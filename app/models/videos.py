@@ -11,16 +11,22 @@ class Video(BaseModel):
     name: str = db.Column(db.Text, nullable=False)
     description: str = db.Column(db.Text)
     release_date: datetime.date = db.Column(db.Date)
-    youtube_trailer_key: str = db.Column(db.Text)
+    youtube_trailer_key: str = db.Column(db.Text, db.ForeignKey('youtube_videos.key'))
     poster_image_url: str = db.Column(db.Text)
     film_or_tv: str = db.Column(db.Text, nullable=False, server_default='film')
+
+
+class YouTubeVideo(BaseModel):
+    __tablename__ = "youtube_videos"
+    key: str = db.Column(db.Text, primary_key=True)
+    duration_seconds: int = db.Column(db.Integer, nullable=False)
 
 
 # For situations where we don't like the API-provided YouTube video and want to override it with an alternative.
 class YouTubeVideoOverride(BaseModel):
     __tablename__ = "youtube_video_overrides"
     video_id: int = db.Column(db.Text, db.ForeignKey('videos.id'), primary_key=True)
-    youtube_trailer_key: str = db.Column(db.Text, nullable=True)
+    youtube_trailer_key: str = db.Column(db.Text, db.ForeignKey('youtube_videos.key'), nullable=True)
 
 
 class VideoPerson(BaseModel):

@@ -1,7 +1,11 @@
+from typing import Optional
+
+import isodate
 import tmdbsimple
+from pyyoutube import Api
 
 from app import kv, db
-from app.models.videos import Video, VideoPerson, VideoCredit
+from app.models.videos import Video, VideoPerson, VideoCredit, YouTubeVideo
 
 # https://developers.themoviedb.org/3/configuration/get-api-configuration
 BASE_URL = 'https://image.tmdb.org/t/p/'
@@ -9,6 +13,7 @@ POSTER_SIZE = 'w500'
 
 
 def get_stuff():
+    yt = Api(api_key=kv.get('YOUTUBE_API_KEY'))
     tmdbsimple.API_KEY = kv.get('TMDB_API_KEY')
     acct = tmdbsimple.Account(session_id=kv.get('TMDB_SESSION_ID'))
     acct.info()  # wild that you have to call this to avoid exceptions...
@@ -29,10 +34,12 @@ def get_stuff():
             name=tv['name'],
             description=clean_description(tv['overview'], tv['name'], "[TV show]"),
             release_date=tv['first_air_date'],
-            youtube_trailer_key=get_first_youtube_trailer(tv_details.videos()),
+            youtube_trailer_key=get_or_add_first_youtube_trailer(tv_details.videos(), yt),
             poster_image_url=get_full_tmdb_image_url(tv['poster_path']),
             film_or_tv='TV show',
         ))
+
+        result += f"{tv['name']} ({tv['first_air_date'][:4]})<br>"
 
     for watched, movie in (
             [(True, rtv) for rtv in acct.rated_movies()['results']] +
@@ -57,12 +64,12 @@ def get_stuff():
             name=title,
             description=clean_description(description, title, "[film]"),
             release_date=movie['release_date'],
-            youtube_trailer_key=get_first_youtube_trailer(movie_detail.videos()),
+            youtube_trailer_key=get_or_add_first_youtube_trailer(movie_detail.videos(), yt),
             poster_image_url=image,
             film_or_tv='film',
         ))
 
-        result += title + f' ({year_released})<br>'
+        result += f"{title} ({year_released})<br>"
 
     return result
 
@@ -77,9 +84,31 @@ def hydrate_credits(video_id, credits):
     return
 
 
-def get_first_youtube_trailer(videos):
+def get_or_add_first_youtube_trailer(videos, yt) -> Optional[str]:
     youtube_trailers = [m for m in videos['results'] if m['site'] == 'YouTube']
-    return youtube_trailers[0]['key'] if youtube_trailers else ''
+    if youtube_trailers:
+        key = youtube_trailers[0]['key']
+        get_or_add_youtube_video(key, yt)
+        return key
+
+    return None
+
+
+def get_or_add_youtube_video(key: str, yt=None) -> YouTubeVideo:
+    if yt is None:
+        yt = Api(api_key=kv.get('YOUTUBE_API_KEY'))
+    maybe_video = YouTubeVideo.query.filter_by(key=key).one_or_none()
+    if not maybe_video:
+        video_data = yt.get_video_by_id(video_id=key)
+        pt_string = video_data.items[0].contentDetails.duration
+        maybe_video = YouTubeVideo(
+            key=key,
+            duration_seconds=isodate.parse_duration(pt_string).total_seconds()
+        )
+        db.session.add(maybe_video)
+        db.session.commit()
+
+    return maybe_video
 
 
 def get_or_add_credit(video_id, credit):
