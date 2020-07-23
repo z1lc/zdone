@@ -25,7 +25,7 @@
 {% endblock %}
 
 {% block body %}
-    <a href="/spotify">Spotify + Anki</a> | Reminders | <a href="/">Tasks</a>
+    {{ navigation|safe }}
     <h1>Reminders</h1>
     <form action="" method="post">
         {{ form.hidden_tag() }}

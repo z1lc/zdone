@@ -9,6 +9,20 @@ from app.models.base import User
 JsonDict = Dict[str, Any]
 
 
+def get_navigation(user: User, current_page: str) -> str:
+    pages = list()
+    pages.append('<a href="/spotify" target="_self">Music</a>' if current_page != "Music" else "Music")
+    # TODO: replace with user.tmdb_session_key when release
+    if user.id == 1:
+        pages.append('<a href="/video" target="_self">Video</a>' if current_page != "Video" else "Video")
+    if user.pushover_user_key:
+        pages.append(
+            '<a href="/reminders" target="_self">Reminders</a>' if current_page != "Reminders" else "Reminders")
+    if user.trello_api_key and user.trello_api_access_token:
+        pages.append('<a href="/" target="_self">Tasks</a>' if current_page != "Tasks" else "Tasks")
+    return " | ".join(pages)
+
+
 def today() -> datetime.date:
     return today_datetime().date()
 

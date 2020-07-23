@@ -26,7 +26,7 @@ from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_
 from .taskutils import add_toodledo_task, get_all_tasks, do_update_time, get_homepage_info, get_open_trello_lists, \
     do_update_task, get_task_order_from_db, TOODLEDO_UNORDERED_TASKS_PLACEHOLDER, get_updated_trello_cards
 from .themoviedb import get_stuff
-from .util import today, today_datetime, failure, success, api_key_failure, jsonp, validate_api_key
+from .util import today, today_datetime, failure, success, api_key_failure, jsonp, validate_api_key, get_navigation
 from .ztasks import htmlize_note, ZDTask
 
 
@@ -248,6 +248,7 @@ def spotify():
     #  or have multiple liked songs from
     recommendations = get_top_recommendations(current_user)[:3]
     return render_template('spotify.html',
+                           navigation=get_navigation(current_user, "Music"),
                            managed_artists=to_return,
                            totals_given="total_track_counts" in request.args,
                            total_tracks=total_tracks,
@@ -344,6 +345,7 @@ def index():
         return redirect(url_for('old'))
     if current_user.username == "rsanek":
         return render_template('maintenance2.html',
+                               navigation=get_navigation(current_user, "Tasks"),
                                api_key=current_user.api_key)
     return redirect(url_for('spotify'))
 
@@ -388,12 +390,17 @@ def reminders():
         form.title.data = ""
         form.message.data = ""
         flash(f"Added '{reminder.title}' reminder.")
-    return render_template("reminders.html", reminders=get_reminders(current_user), form=form)
+    return render_template("reminders.html",
+                           navigation=get_navigation(current_user, "Reminders"),
+                           reminders=get_reminders(current_user),
+                           form=form)
 
 
-@app.route('/movies')
+@app.route('/video')
 def movies():
-    return get_stuff()
+    return render_template("video.html",
+                           navigation=get_navigation(current_user, "Video"),
+                           stuff=get_stuff())
 
 
 @app.route('/artist_photos')

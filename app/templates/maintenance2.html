@@ -127,7 +127,7 @@
 {% block body %}
 <base target="_blank">
 <div id="countdownExample">
-    <div style="font-size: 12px; padding-top: 10px;"><a href="/spotify" target="_self">Spotify + Anki</a> | <a href="/reminders" target="_self">Reminders</a> | Tasks</div>
+    <div style="font-size: 12px; padding-top: 10px;">{{ navigation|safe }}</div>
     <div class="taskContainer">
         <div class="name">Loading tasks...</div>
         <div class="note"></div>

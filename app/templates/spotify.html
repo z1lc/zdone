@@ -37,7 +37,7 @@
 {% endblock %}
 
 {% block body %}
-    Spotify + Anki | <a href="/reminders">Reminders</a> | <a href="/">Tasks</a>
+    {{ navigation|safe }}
 <h1>Spotify + Anki</h1>
     Looking for <a href="/spotify/help">Help</a>?<br>
     <span id="downloadExtra">Download the <a id="download" href="/spotify/download_apkg" onclick="removeLinkDownload()">latest set of songs</a>.</span>
