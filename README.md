@@ -17,4 +17,3 @@ Much of the templating, user login/session management, and database schema/migra
 A few dependencies have been forked from their public versions to integrate additional functionality (see requirements.txt):
  * [spotipy](https://github.com/z1lc/spotipy) to allow selecting a custom offset to start songs at
  * [genanki](https://github.com/z1lc/genanki) to allow custom creation dates for notes
- * [Toodledo](https://github.com/z1lc/toodledo-python)

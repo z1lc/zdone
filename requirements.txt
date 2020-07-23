@@ -32,4 +32,3 @@ marshmallow==3.7.1
 
 git+git://github.com/z1lc/spotipy.git#egg=spotipy
 git+git://github.com/z1lc/genanki.git#egg=genanki
-git+git://github.com/z1lc/toodledo-python.git@f77d4b97c56e610f9c6d5f6f11da49ed3dfabc72#egg=Toodledo
