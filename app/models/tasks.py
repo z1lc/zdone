@@ -4,17 +4,6 @@ from app import db
 from app.models.base import BaseModel
 
 
-class ExternalServiceTaskCompletion(BaseModel):
-    __tablename__ = "external_service_task_completions"
-    id: int = db.Column(db.Integer, primary_key=True)
-    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    service: str = db.Column(db.String(128), nullable=False)
-    task_id: str = db.Column(db.String(128), nullable=False)
-    subtask_id: str = db.Column(db.String(128))
-    duration_seconds: int = db.Column(db.Integer)
-    at: datetime.datetime = db.Column(db.DateTime)
-
-
 class Reminder(BaseModel):
     __tablename__ = "reminders"
     id: int = db.Column(db.Integer, primary_key=True)
