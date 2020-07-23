@@ -23,8 +23,8 @@ from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_
     get_random_song_family, get_tracks, get_top_recommendations, get_artists_images, populate_null
 from .taskutils import do_update_task, get_updated_trello_cards
 from .themoviedb import get_stuff
-from .util import today_datetime, failure, success, api_key_failure, jsonp, validate_api_key, get_navigation
-from .ztasks import htmlize_note
+from .util import today_datetime, failure, success, api_key_failure, jsonp, validate_api_key, get_navigation, \
+    htmlize_note
 
 
 @app.errorhandler(500)

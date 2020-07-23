@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from app.ztasks import htmlize_note
+from app.util import htmlize_note
 
 
 class TestHtmlizeNote(TestCase):
