@@ -45,10 +45,7 @@ def login():
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
-            if current_user.id == 1:
-                next_page = url_for('spotify')
-            else:
-                next_page = url_for('index')
+            next_page = url_for('index')
         return redirect(next_page)
     passed_username = request.args.get('username')
     form.username.data = passed_username
