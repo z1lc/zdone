@@ -1,4 +1,5 @@
 import datetime
+import json
 import pickle
 from typing import List, Tuple
 
@@ -8,7 +9,7 @@ from flask_login import current_user
 # watch out, this dependency is actually py-trello
 from trello import TrelloClient, trellolist
 
-from app import redis_client, db
+from app import db
 from app.models.base import User
 from app.models.tasks import TaskLog, Task
 from app.util import failure, success
@@ -60,8 +61,7 @@ def get_open_trello_lists(user: User) -> List[trellolist.List]:
 
 
 def get_updated_trello_cards(user: User, force_refresh: bool = False):
-    redis_key = f"trello-{user.username}"
-    if force_refresh or redis_client.get(redis_key) is None:
+    if force_refresh or user.cached_trello_data is None:
         items = []
         for tlist in get_open_trello_lists(user):
             for tcard in tlist.list_cards():
@@ -76,6 +76,7 @@ def get_updated_trello_cards(user: User, force_refresh: bool = False):
                 }
                 items.append(item)
 
-        redis_client.set(redis_key, pickle.dumps(items))
+        user.cached_trello_data = json.dumps(items)
+        db.session.commit()
 
-    return pickle.loads(redis_client.get(redis_key))
+    return json.loads(user.cached_trello_data)

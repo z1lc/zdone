@@ -12,7 +12,7 @@ from sentry_sdk import last_event_id, capture_exception
 from werkzeug.urls import url_parse
 
 from app.models.base import User
-from . import redis_client, app, db, kv
+from . import app, db, kv
 from .anki import generate_track_apkg
 from .forms import LoginForm, RegistrationForm, ReminderForm
 from .log import log
@@ -114,9 +114,9 @@ def spotify_auth():
     maybe_url = maybe_get_spotify_authorize_url(request.url, user=current_user)
     if maybe_url:
         return redirect(maybe_url, 302)
-    last_spotify_track = redis_client.get("last_spotify_track")
+    last_spotify_track = current_user.last_spotify_track
     if last_spotify_track:
-        play_track(request.url, last_spotify_track.decode(), current_user)
+        play_track(request.url, last_spotify_track, current_user)
     return redirect(url_for("spotify"))
 
 

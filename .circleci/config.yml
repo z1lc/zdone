@@ -7,9 +7,6 @@ jobs: # A basic unit of work in a run
     docker: # run the steps with Docker
       # CircleCI Python images available at: https://hub.docker.com/r/circleci/python/
       - image: circleci/python:3.8.5
-        environment:
-          REDIS_URL: redis://localhost:6391
-      - image: circleci/redis:latest
     steps: # steps that comprise the `build` job
       - checkout # check out source code to working directory
       - run: sudo chown -R circleci:circleci /usr/local/bin

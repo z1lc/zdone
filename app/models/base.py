@@ -28,9 +28,12 @@ class User(UserMixin, BaseModel):
     trello_api_key: str = db.Column(db.String(128))
     # https://trello.com/1/authorize?expiration=never&name=zdone&scope=read,write&response_type=token&key=API_KEY
     trello_api_access_token: str = db.Column(db.String(128))
+    cached_trello_data: str = db.Column(db.Text, nullable=True)
 
     spotify_token_json: str = db.Column(db.String(1024))
     spotify_playlist_uri: str = db.Column(db.String(128), unique=True, nullable=True)
+    last_spotify_track: str = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=True)
+    last_random_play_offset: int = db.Column(db.Integer, nullable=True)
 
     last_fm_username: str = db.Column(db.String(128), unique=True)
     last_fm_last_refresh_time = db.Column(db.DateTime)
