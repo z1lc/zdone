@@ -321,7 +321,7 @@ def play_track(full_url: str, track_uri: str, user: User, offset: Optional[int] 
         last_random_play = user.last_random_play_offset
         if last_random_play and track.duration_milliseconds > RANDOM_RANGE_MS * 3:  # avoid infinite loop
             # try to pick a different spot in the song from the last random selection
-            while start - RANDOM_RANGE_MS < int(last_random_play.decode()) < start + RANDOM_RANGE_MS:
+            while start - RANDOM_RANGE_MS < last_random_play < start + RANDOM_RANGE_MS:
                 start = randrange(RANDOM_RANGE_MS, track.duration_milliseconds - RANDOM_RANGE_MS)
 
         user.last_random_play_offset = start
