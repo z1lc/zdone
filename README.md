@@ -17,7 +17,6 @@ Much of the templating, user login/session management, and database schema/migra
 A few dependencies have been forked from their public versions to integrate additional functionality (see requirements.txt):
  * [spotipy](https://github.com/z1lc/spotipy) to allow selecting a custom offset to start songs at
  * [genanki](https://github.com/z1lc/genanki) to allow custom creation dates for notes
- * [Toodledo](https://github.com/z1lc/toodledo-python)
 
 ## Milestones
  * 2019-08-01 [First commit](https://github.com/z1lc/zdone/commit/9f13a15ef013a073b1d2af17abefa08727f73aac)
@@ -29,3 +28,4 @@ A few dependencies have been forked from their public versions to integrate addi
  * 2020-05-16 [MVP](https://github.com/z1lc/zdone/commit/2399fe0a2db63664fd22e413f127adb9629a7f1d) for Reminders
  * 2020-06-13 [MVP](https://github.com/z1lc/zdone/commit/278d2f7e5a4611c3547affcaaa428f4cc7df9a12) for Tasks v2
  * 2020-07-16 [MVP](https://github.com/z1lc/zdone/commit/1a728255fd34a1d1e47c8ee822219be0c3538eee) for Movies & TV
+ * 2020-07-23 Tasks v1 sunsetted

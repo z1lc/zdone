@@ -25,16 +25,6 @@ class User(UserMixin, BaseModel):
 
     api_key: str = db.Column(db.String(128), unique=True, nullable=False)
 
-    # https://api.toodledo.com/3/account/authorize.php?response_type=code&client_id=ztasks&state=MY_STATE&scope=basic tasks notes outlines lists share write folders
-    # complete auth via Postman (see https://api.toodledo.com/3/account/index.php for full info)
-    toodledo_token_json: str = db.Column(db.String(512))
-
-    habitica_user_id: str = db.Column(db.String(128))
-    habitica_api_token: str = db.Column(db.String(128))
-
-    dependencies: str = db.Column(db.Text)
-    priorities: str = db.Column(db.Text)
-
     trello_api_key: str = db.Column(db.String(128))
     # https://trello.com/1/authorize?expiration=never&name=zdone&scope=read,write&response_type=token&key=API_KEY
     trello_api_access_token: str = db.Column(db.String(128))

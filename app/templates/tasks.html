@@ -54,12 +54,12 @@
       }
     );
     $("button#complete").click(function (event) {
-      completeItem(task.service, task.id, task.subtask_id, task.length_minutes);
+      completeItem(task.service, task.id);
       nextTask();
       event.preventDefault();
     });
     $("button#defer").click(function (event) {
-      deferItem(task.service, task.id, task.subtask_id, task.length_minutes);
+      deferItem(task.service, task.id);
       nextTask();
       event.preventDefault();
     });
