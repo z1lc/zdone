@@ -15,7 +15,7 @@ from flask import redirect
 from spotipy import oauth2
 from sqlalchemy.exc import IntegrityError
 
-from app import kv, redis_client, db
+from app import kv, db
 from app.log import log
 from app.models.base import User
 from app.models.spotify import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay, TopTrack, SpotifyAlbum
@@ -312,19 +312,20 @@ def do_add_artists(user: User, artist_uris: List[str], remove_not_included: bool
 def play_track(full_url: str, track_uri: str, user: User, offset: Optional[int] = None):
     sp = get_spotify(full_url, user)
     if isinstance(sp, str):
-        redis_client.set(f"last_spotify_track-{user.username}", track_uri.encode(), ex=10)
+        user.last_spotify_track = track_uri
+        db.session.commit()
         return redirect(sp)
     track = add_or_get_track(sp, track_uri)
-    maybe_redis_last_play_key = f"last_play-{user.username}-{track_uri}"
     if offset is None:
         start = randrange(RANDOM_RANGE_MS, track.duration_milliseconds - RANDOM_RANGE_MS)
-        last_random_play = redis_client.get(maybe_redis_last_play_key)
+        last_random_play = user.last_random_play_offset
         if last_random_play and track.duration_milliseconds > RANDOM_RANGE_MS * 3:  # avoid infinite loop
             # try to pick a different spot in the song from the last random selection
             while start - RANDOM_RANGE_MS < int(last_random_play.decode()) < start + RANDOM_RANGE_MS:
                 start = randrange(RANDOM_RANGE_MS, track.duration_milliseconds - RANDOM_RANGE_MS)
 
-        redis_client.set(maybe_redis_last_play_key, start, ex=60)
+        user.last_random_play_offset = start
+        db.session.commit()
     else:
         start = offset
     sp.start_playback(uris=[track_uri], position_ms=start)
