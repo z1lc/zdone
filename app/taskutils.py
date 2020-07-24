@@ -42,7 +42,8 @@ def do_update_task(update: str,
             api_key=current_user.trello_api_key,
             api_secret=current_user.trello_api_access_token
         )
-        client.get_card(task_id).change_list('5efeb6fae7aab58783af4a83')  # completed list
+        completed_list_id = [board for board in client.list_boards() if board.name == 'Completed via zdone'][0].id
+        client.get_card(task_id).change_list(completed_list_id)
         return success()
     else:
         return failure(f"unexpected service type '{service}'")
