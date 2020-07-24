@@ -24,7 +24,7 @@ if __name__ == '__main__':
         order by sent_at desc
         limit 2
     )
-select reminder_id, title, count(*), coalesce(max(sent_at), '2020-01-01')
+select reminder_id, title, count(sent_at), coalesce(max(sent_at), '2020-01-01')
 from reminder_notifications_joined
 where active and user_id = {user.id} and reminder_id not in (select * from last_two_notifications)
 group by 1, 2

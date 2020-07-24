@@ -17,3 +17,14 @@ Much of the templating, user login/session management, and database schema/migra
 A few dependencies have been forked from their public versions to integrate additional functionality (see requirements.txt):
  * [spotipy](https://github.com/z1lc/spotipy) to allow selecting a custom offset to start songs at
  * [genanki](https://github.com/z1lc/genanki) to allow custom creation dates for notes
+
+## Milestones
+ * 2019-08-01 [First commit](https://github.com/z1lc/zdone/commit/9f13a15ef013a073b1d2af17abefa08727f73aac)
+ * 2019-08-07 [zdone.co](https://www.zdone.co) domain purchased
+ * 2019-08-23 [zdone Android app](https://play.google.com/store/apps/details?id=com.cronus.zdone) published
+ * 2019-11-23 [Countdown-based tasks UI](https://github.com/z1lc/zdone/commit/01fac561a8405cd2e19080a41c603843a21332fc)
+ * 2020-01-14 [MVP](https://github.com/z1lc/zdone/commit/abb8b001be6bcabc156cff96a505d1a4d6f94ecd) for Spotify + Anki
+ * 2020-04-14 Spotify + Anki integration [publicly released](https://www.reddit.com/r/Anki/comments/g0zgyc/spotify_anki_learn_to_recognize_songs_by_your/)
+ * 2020-05-16 [MVP](https://github.com/z1lc/zdone/commit/2399fe0a2db63664fd22e413f127adb9629a7f1d) for Reminders
+ * 2020-06-13 [MVP](https://github.com/z1lc/zdone/commit/278d2f7e5a4611c3547affcaaa428f4cc7df9a12) for Tasks v2
+ * 2020-07-16 [MVP](https://github.com/z1lc/zdone/commit/1a728255fd34a1d1e47c8ee822219be0c3538eee) for Movies & TV
