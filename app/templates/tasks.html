@@ -25,7 +25,7 @@
       fade('#countdownExample .name', task.name);
       fade('#countdownExample .note', task.note);
     } else {
-      fade('#countdownExample .name', "All done!<br>Check <a href='https://trello.com/b/Kq6NQ2LP/backlogs'>Backlogs</a> for ideas.");
+      fade('#countdownExample .name', "All done!");
       fade('#countdownExample .note', "");
       $("div.button").hide();
     }
@@ -38,17 +38,17 @@
         tasks = data["tasks_to_do"];
         serverTimeZone = data["time_zone"]
         deviceTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        $('div.reminder').html(`<b>${data["latest_reminder"]["title"]}</b><br>${data["latest_reminder"]["message"]}`);
+        $('div.reminder').fadeIn(1000);
 
         if (serverTimeZone !== deviceTimeZone) {
-          $('#countdownExample .name').html("Time zone mismatch!")
-          $('#countdownExample .note').html(
+          fade('#countdownExample .name', "Time zone mismatch!");
+          fade('#countdownExample .note',
             `Your device's time zone is set to '${deviceTimeZone}' but the server setting is '${serverTimeZone}'.<br>` +
             `Please update the server time zone to avoid inaccurate data.`);
-          $('div.button2').css('display', 'block');
+          $('div.button2').fadeIn(500);
         } else {
-          $('div.reminder').html(`<b>${data["latest_reminder"]["title"]}</b><br>${data["latest_reminder"]["message"]}`);
           $('div.button').fadeIn(500);
-          $('div.reminder').fadeIn(1000);
           nextTask();
         }
       }
@@ -68,18 +68,14 @@
       event.preventDefault();
     });
     $("button#nocare").click(function (event) {
-      $('div.button2').css('display', 'none');
-      $('div.button').css('display', 'block');
+      $('div.button2').hide();
+      $('div.button').fadeIn(500);
       nextTask();
       event.preventDefault();
     });
   });
 </script>
 <style>
-    .subtask {
-        margin: 10px;
-    }
-
     #countdownExample {
         margin: 0 auto;
         text-align: center;
@@ -110,6 +106,7 @@
     }
 
     .bottomContainer {
+        width: 100%;
         position: fixed;
         bottom: 5px;
     }
@@ -133,13 +130,13 @@
         <div class="note"></div>
     </div>
     <div class="bottomContainer">
+        <div class="button2">
+            <button id="nocare">I don't care</button>
+        </div>
         <div class="button">
             <button id="complete">Complete</button><br>
             <button id="later">Later</button>
             <button id="defer">Defer 3 Days</button>
-        </div>
-        <div class="button2">
-            <button id="nocare">I don't care</button>
         </div>
         <div class="reminder"></div>
     </div>
