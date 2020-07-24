@@ -1,12 +1,12 @@
-function completeItem(service, id, subtaskId, durationSeconds = 0) {
-  updateItem(service, id, subtaskId, "complete", durationSeconds);
+function completeItem(service, id) {
+  updateItem(service, id, "complete");
 }
 
-function deferItem(service, id, subtaskId, durationSeconds = 0) {
-  updateItem(service, id, subtaskId, "defer", durationSeconds);
+function deferItem(service, id) {
+  updateItem(service, id, "defer");
 }
 
-function updateItem(service, id, subtaskId, updateAction, durationSeconds) {
+function updateItem(service, id, updateAction) {
   if (service === "zdone" || service === "trello") {
     $
       .ajax({
@@ -14,9 +14,7 @@ function updateItem(service, id, subtaskId, updateAction, durationSeconds) {
         data: JSON.stringify({
           "service": service,
           "id": id,
-          "subtask_id": subtaskId,
           "update": updateAction,
-          "duration_seconds": durationSeconds
         }),
         type: "POST",
         url: "update_task"

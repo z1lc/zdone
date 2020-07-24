@@ -90,10 +90,8 @@ def update_task():
     update = req["update"]
     service = req["service"]
     task_id = req["id"]
-    subtask_id = req["subtask_id"] if "subtask_id" in req else None
-    duration_seconds = req["duration_seconds"] if "duration_seconds" in req else None
 
-    return do_update_task(update, service, task_id, subtask_id, duration_seconds)
+    return do_update_task(update, service, task_id, current_user)
 
 
 @app.context_processor
