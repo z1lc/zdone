@@ -1,28 +1,16 @@
-import os
-
-import psycopg2
-
-
-def get_con():
-    return psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require')
+from app import db
+from app.models.base import kv
 
 
 def get(key: str) -> str:
-    conn = get_con()
-    cur = conn.cursor()
-    cur.execute(f"SELECT v FROM kv WHERE k='{key}'")
-    res = cur.fetchone()
-    if res:
-        res = res[0]
-    cur.close()
-    conn.close()
-    return res
+    maybe_kv = kv.query.filter_by(k=key).one_or_none()
+    return maybe_kv.v if maybe_kv else None
 
 
 def put(key: str, value: str) -> None:
-    conn = get_con()
-    cur = conn.cursor()
-    cur.execute(f"INSERT INTO kv(k, v) VALUES ({key}, {value}) ON CONFLICT (k) DO UPDATE SET v = {value}")
-    conn.commit()
-    cur.close()
-    conn.close()
+    maybe_kv = kv.query.filter_by(k=key).one_or_none()
+    if maybe_kv:
+        maybe_kv.v = value
+    else:
+        db.session.add(kv(k=key, v=value))
+    db.session.commit()
