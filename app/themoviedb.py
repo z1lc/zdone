@@ -30,7 +30,7 @@ def get_stuff():
             [(True, ftv) for ftv in acct.favorite_tv()['results']] +
             [(False, wtv) for wtv in acct.watchlist_tv()['results']]):
         video_id = f"zdone:video:tmdb:{tv['id']}"
-        get_or_add_video(video_id, VideoType.TV, tv, watched)
+        get_or_add_tv(video_id, tv, watched)
         result += f"{tv['name']} ({tv['first_air_date'][:4]})<br>"
 
     for watched, movie in (
@@ -38,7 +38,7 @@ def get_stuff():
             [(True, ftv) for ftv in acct.favorite_movies()['results']] +
             [(False, wtv) for wtv in acct.watchlist_movies()['results']]):
         video_id = f"zdone:video:tmdb:{movie['id']}"
-        get_or_add_video(video_id, VideoType.MOVIE, movie, watched)
+        get_or_add_movie(video_id, movie, watched)
         result += f"{movie['original_title']} ({movie['release_date'][:4]})<br>"
 
     return result
@@ -149,6 +149,7 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
             name=title,
             description=clean_description(description, title, "[film]"),
             release_date=tmdb_api_movie_or_tv_response['release_date'],
+            last_air_date=None,
             youtube_trailer_key=get_or_add_first_youtube_trailer(movie_detail.videos()),
             poster_image_url=image,
             film_or_tv='film',
@@ -162,6 +163,7 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
             description=clean_description(tmdb_api_movie_or_tv_response['overview'],
                                           tmdb_api_movie_or_tv_response['name'], "[TV show]"),
             release_date=tmdb_api_movie_or_tv_response['first_air_date'],
+            last_air_date=tmdb_api_movie_or_tv_response['last_air_date'],
             youtube_trailer_key=get_or_add_first_youtube_trailer(tv_details.videos()),
             poster_image_url=get_full_tmdb_image_url(tmdb_api_movie_or_tv_response['poster_path']),
             film_or_tv='TV show',
@@ -171,6 +173,13 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
     db.session.commit()
     hydrate_credits(video_id, m_credits)
     return maybe_video
+
+
+def backfill_null():
+    for tv in Video.query.filter_by(film_or_tv='TV show').all():
+        tv_details = tmdbsimple.TV(to_tmdb_id(tv.id)).info()
+        tv.in_production = tv_details['in_production']
+        db.session.commit()
 
 
 def get_full_tmdb_image_url(path):

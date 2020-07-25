@@ -230,6 +230,11 @@ order by 4 desc"""
         video_model = get_video_model(user)
         for video in Video.query.all():
             trailer_key = youtube_overrides.get(video.id, video.youtube_trailer_key) or ''
+            release = str(video.release_date.year)
+            if video.in_production:
+                release += f" - Present"
+            elif video.last_air_date:
+                release += f" - {str(video.last_air_date.year)}"
             track_as_note = VideoNote(
                 model=video_model,
                 tags=tags,
@@ -238,7 +243,7 @@ order by 4 desc"""
                     video.film_or_tv,
                     f"<i>{video.name}</i>",
                     video.description,
-                    str(video.release_date.year),
+                    release,
                     trailer_key,
                     str(youtube_durations.get(trailer_key, '')),
                     f"<img src='{video.poster_image_url}'>",
