@@ -248,9 +248,13 @@ def index():
         return redirect(url_for('spotify'))
 
 
-@app.route("/reminders/", methods=['GET', 'POST'])
+@app.route("/reminders/", defaults={'reminder_id': None}, methods=['GET', 'POST'])
+@app.route("/reminders/<reminder_id>", methods=['GET'])
 @login_required
-def reminders():
+def reminders(reminder_id):
+    if reminder_id:
+        reminder = Reminder.query.filter_by(user_id=current_user.id, id=reminder_id).one_or_none()
+        return render_template("single_reminder.html", reminder=reminder)
     form = ReminderForm()
     if form.validate_on_submit():
         reminder = Reminder(

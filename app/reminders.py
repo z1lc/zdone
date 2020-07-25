@@ -29,14 +29,17 @@ def send_and_log_notification(user: User, reminder_id: int, should_log: bool = T
     if reminder.user_id != user.id:
         raise ValueError(f'User {user.username} does not own reminder with id {reminder.id}.')
     client = Client(user.pushover_user_key, api_token=kv.get('PUSHOVER_API_TOKEN'))
-    client.send_message(
-        title=reminder.title,
-        message=reminder.message,
-        priority=-1,
-        html=1,
-        # url_title='Tap to re-learn habit',
-        # url="https://zdone.co/reset/" + str(reminder_id)
-    )
+    args = {
+        'title': reminder.title,
+        'message': reminder.message,
+        'priority': -1,
+        'html': 1,
+    }
+    if len(reminder.message) > 1000:
+        args['message'] = reminder.message[:1000] + "..."
+        args['url_title'] = "Read more..."
+        args['url'] = f"https://zdone.co/reminders/{reminder.id}"
+    client.send_message(**args)
     log(f'Sent notification {reminder.title}: {reminder.message}'
         f' to clients for user {user.username}.')
     if should_log:

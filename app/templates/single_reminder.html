@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block within_head %}
+    <title>reminders</title>
+    <style>
+        body {
+            max-width: 1500px;
+            margin: auto;
+            padding: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {{ reminder.title }}<br>{{ reminder.message|safe }}
+{% endblock %}
