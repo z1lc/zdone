@@ -3,16 +3,16 @@
 {% block within_head %}
     <title>reminders</title>
     <link rel="stylesheet" href="//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
-    <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            var table = $('#reminders_table').DataTable({
-                "lengthChange": false,
-                "language": {
-                    "info": "Showing _START_ to _END_ of _TOTAL_ reminders"
-                }   
-            });
-        });
+    <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        var table = $('#reminders_table').DataTable({
+          "lengthChange": false,
+          "language": {
+            "info": "Showing _START_ to _END_ of _TOTAL_ reminders"
+          }
+        });
+      });
     </script>
     <style>
         body {
@@ -39,11 +39,11 @@
         {{ form.hidden_tag() }}
         <p>
             {{ form.title.label }}<br>
-            {{ form.title(size=79) }}<br>
+            {{ form.title }}<br>
         </p>
         <p>
             {{ form.message.label }}<br>
-            {{ form.message(cols="80", rows="5") }}<br>
+            {{ form.message(rows="5") }}<br>
         </p>
         <p>{{ form.submit() }}</p>
     </form>
@@ -53,23 +53,23 @@
                 {{ message }}
             {% endfor %}
             <br>
-            {% endif %}
-        {% endwith %}   
+        {% endif %}
+    {% endwith %}
     <br>
     <table id="reminders_table">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Message</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for reminder in reminders %}
-            <tr class="{% if reminder.active %}active{% else %}inactive{% endif %}">
-                <td class="dt-body-left">{{ reminder.title }}</td>
-                <td class="dt-body-left">{{ reminder.message|safe }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>       
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Message</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for reminder in reminders %}
+            <tr class="{% if reminder.active %}active{% else %}inactive{% endif %}">
+                <td class="dt-body-left">{{ reminder.title }}</td>
+                <td class="dt-body-left">{{ reminder.message|safe }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}
