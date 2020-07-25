@@ -12,7 +12,7 @@ flask-talisman==0.7.0
 flask_login==0.5.0
 flask_migrate==2.5.3
 flask_wtf==0.14.3
-sentry-sdk[flask]==0.16.1
+sentry-sdk[flask]==0.16.2
 newrelic==5.14.1.144
 mock==4.0.2
 py-trello==0.16.0
