@@ -9,6 +9,7 @@ class Reminder(BaseModel):
     id: int = db.Column(db.Integer, primary_key=True)
     user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     title: str = db.Column(db.Text)
+    # pushover's limit for the message is 1024 characters https://pushover.net/api
     message: str = db.Column(db.Text)
     active: bool = db.Column(db.Boolean, server_default='true', nullable=False)
     inactive_explanation: str = db.Column(db.Text)
