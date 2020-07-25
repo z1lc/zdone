@@ -42,7 +42,7 @@ def do_update_task(update: str,
             api_key=current_user.trello_api_key,
             api_secret=current_user.trello_api_access_token
         )
-        completed_list_id = [board for board in client.list_boards() if board.name == 'Completed via zdone'][0].id
+        completed_list_id = [l for l in [board for board in client.list_boards() if board.name == 'Backlogs'][0].list_lists() if l.name == "Completed via zdone"][0].id
         client.get_card(task_id).change_list(completed_list_id)
         return success()
     else:
