@@ -11,7 +11,6 @@ from app.models.videos import Video, VideoPerson, VideoCredit, YouTubeVideo
 # https://developers.themoviedb.org/3/configuration/get-api-configuration
 BASE_URL = 'https://image.tmdb.org/t/p/'
 POSTER_SIZE = 'w500'
-yt = Api(api_key=kv.get('YOUTUBE_API_KEY'))
 
 
 class VideoType(Enum):
@@ -68,7 +67,7 @@ def get_or_add_first_youtube_trailer(videos) -> Optional[str]:
 def get_or_add_youtube_video(key: str) -> Optional[YouTubeVideo]:
     maybe_video = YouTubeVideo.query.filter_by(key=key).one_or_none()
     if not maybe_video:
-        video_data = yt.get_video_by_id(video_id=key)
+        video_data = Api(api_key=kv.get('YOUTUBE_API_KEY')).get_video_by_id(video_id=key)
         # we won't get back metadata from YouTube if the video was deleted, set to private, etc.
         if video_data.items:
             pt_string = video_data.items[0].contentDetails.duration
