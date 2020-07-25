@@ -3,19 +3,18 @@
 {% block within_head %}
     <title>reminders</title>
     <link rel="stylesheet" href="//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
-        <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
-        <script>
-            $(document).ready(function () {
-                var table = $('#reminders_table').DataTable({
-                    "searching": false,
-                    "lengthChange": false,
-                    "language": {
-                        "info": "Showing _START_ to _END_ of _TOTAL_ reminders"
-                    }   
-                });
-            });
-        </script>
-        <style>
+    <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var table = $('#reminders_table').DataTable({
+                "lengthChange": false,
+                "language": {
+                    "info": "Showing _START_ to _END_ of _TOTAL_ reminders"
+                }   
+            });
+        });
+    </script>
+    <style>
         body {
             max-width: 1500px;
             margin: auto;
