@@ -1,6 +1,7 @@
 import uuid
 
-from app.anki import get_track_model, get_artist_model, AnkiCard, clean_track_name, clean_album_name
+from app.anki import get_track_model, get_artist_model, AnkiCard, clean_track_name, clean_album_name, \
+    get_minified_js_for_youtube_video
 from app.models.base import User
 
 rsanek_user = User(id=1,
@@ -88,3 +89,7 @@ def test_clean_album_name():
     assert "I Walk the Line" == clean_album_name("I Walk the Line (Stereo Version)")
     assert "Lady Soul" == clean_album_name("Lady Soul (With Bonus Selections)")
     assert "Hypnotica" == clean_album_name("Hypnotica (Benny Benassi Presents The Biz)")
+
+
+def test_get_minified_js_for_youtube_video():
+    assert "{{YouTube Trailer Duration}}" in get_minified_js_for_youtube_video()

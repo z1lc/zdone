@@ -312,7 +312,7 @@ def get_video_model(user: User) -> Model:
             {'name': 'Description'},
             {'name': 'Year Released'},
             {'name': 'YouTube Trailer Key'},
-            {'name': 'YouTube Trailer Duration (seconds)'},
+            {'name': 'YouTube Trailer Duration'},
             {'name': 'Poster Image'},
             # TODO: add extra fields before public release
         ],
@@ -453,7 +453,7 @@ def get_minified_js_for_youtube_video() -> str:
     player = new YT.Player('player', {
       width: '100%',
       videoId: '{{YouTube Trailer Key}}',
-      playerVars: { 'autoplay': 1, 'playsinline': 1, 'start': getRandomInt(10, {{YouTube Trailer Duration (seconds)}} - 20) },
+      playerVars: { 'autoplay': 1, 'playsinline': 1, 'start': getRandomInt(10, {{YouTube Trailer Duration}} - 20) },
       events: {
         'onReady': onPlayerReady
       }
