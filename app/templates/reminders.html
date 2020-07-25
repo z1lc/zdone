@@ -2,18 +2,27 @@
 
 {% block within_head %}
     <title>reminders</title>
-    <style>
+    <link rel="stylesheet" href="//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
+        <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                var table = $('#reminders_table').DataTable({
+                    "searching": false,
+                    "lengthChange": false,
+                    "language": {
+                        "info": "Showing _START_ to _END_ of _TOTAL_ reminders"
+                    }   
+                });
+            });
+        </script>
+        <style>
         body {
             max-width: 1500px;
             margin: auto;
             padding: 20px;
         }
 
-        li {
-            margin: 0 0 10px 0;
-        }
-
-        li.inactive {
+        tr.inactive {
             color: gray;
             font-style: italic;
         }
@@ -48,11 +57,20 @@
             {% endif %}
         {% endwith %}   
     <br>
-    <ul>
-        {% for reminder in reminders %}
-            <li class="{% if reminder.active %}active{% else %}inactive{% endif %}">
-                {{ reminder.title }}<br>{{ reminder.message|safe }}
-            </li>
-        {% endfor %}
-    </ul>
+    <table id="reminders_table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reminder in reminders %}
+            <tr class="{% if reminder.active %}active{% else %}inactive{% endif %}">
+                <td class="dt-body-left">{{ reminder.title }}</td>
+                <td class="dt-body-left">{{ reminder.message|safe }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>       
 {% endblock %}
