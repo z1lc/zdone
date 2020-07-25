@@ -191,7 +191,7 @@ order by 4 desc"""
             top_played_albums_for_artist = {clean_album_name(row[2]): row[3].year for row in top_played_albums if
                                             row[0] == managed_artist.spotify_artist_uri}
             albums = create_html_unordered_list(
-                [f'<i>{name}</i> ({year})' for name, year in top_played_albums_for_artist.items()])
+                [f'<i>{name}</i> ({year})' for name, year in top_played_albums_for_artist.items()], max_length=10)
 
             genres = ''
             similar_artists = ''
@@ -269,7 +269,7 @@ def clean_album_name(name: str) -> str:
     return name
 
 
-# we want to make sure you have actually listened to the artist for a bit, so let's say minimum 3 songs
+# we want to make sure you have actually listened to the artist for a bit, so let's say minimum 3 songs/albums
 def create_html_unordered_list(input_list: List, min_length: int = 3, max_length: int = 5) -> str:
     if len(input_list) < min_length:
         return ''
