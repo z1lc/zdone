@@ -1,6 +1,5 @@
 import datetime
 import json
-import pickle
 from typing import List, Tuple, Optional
 
 import pytz
@@ -42,7 +41,9 @@ def do_update_task(update: str,
             api_key=current_user.trello_api_key,
             api_secret=current_user.trello_api_access_token
         )
-        completed_list_id = [l for l in [board for board in client.list_boards() if board.name == 'Backlogs'][0].list_lists() if l.name == "Completed via zdone"][0].id
+        completed_list_id = \
+        [l for l in [board for board in client.list_boards() if board.name == 'Backlogs'][0].list_lists() if
+         l.name == "Completed via zdone"][0].id
         client.get_card(task_id).change_list(completed_list_id)
         return success()
     else:
@@ -71,20 +72,20 @@ def ensure_trello_setup_idempotent(user: User) -> str:
         if not maybe_backlogs_board:
             return "Did not find a board called 'Backlogs'.<br>"
         else:
-            maybe_backlogs_board = maybe_backlogs_board[0]
-            to_return += f"Board with name 'Backlogs' found with id {maybe_backlogs_board.id}<br>"
+            backlogs_board = maybe_backlogs_board[0]
+            to_return += f"Board with name 'Backlogs' found with id {backlogs_board.id}<br>"
 
             if not user.trello_member_id:
-                to_return += f"Trello member ID not set. Setting to {maybe_backlogs_board.owner_members()[0].id}...<br>"
-                user.trello_member_id = maybe_backlogs_board.owner_members()[0].id
+                to_return += f"Trello member ID not set. Setting to {backlogs_board.owner_members()[0].id}...<br>"
+                user.trello_member_id = backlogs_board.owner_members()[0].id
                 db.session.commit()
-                to_return += f"Trello member ID successfully set to {maybe_backlogs_board.owner_members()[0].id}.<br>"
+                to_return += f"Trello member ID successfully set to {backlogs_board.owner_members()[0].id}.<br>"
             else:
-                to_return += f"Trello member ID is set to {maybe_backlogs_board.owner_members()[0].id}.<br>"
+                to_return += f"Trello member ID is set to {backlogs_board.owner_members()[0].id}.<br>"
 
             has_zdone_hook = False
             for hook in client.list_hooks(token=user.trello_api_access_token):
-                if hook.callback_url == "https://www.zdone.co/trello_webhook" and hook.id_model == maybe_backlogs_board.id:
+                if hook.callback_url == "https://www.zdone.co/trello_webhook" and hook.id_model == backlogs_board.id:
                     has_zdone_hook = True
                     to_return += f"Found zdone webook with id {hook.id}.<br>"
 
@@ -92,7 +93,7 @@ def ensure_trello_setup_idempotent(user: User) -> str:
                 to_return += "Creating zdone webhook...<br>"
                 hook = client.create_hook(
                     callback_url="https://www.zdone.co/trello_webhook",
-                    id_model=maybe_backlogs_board.id
+                    id_model=backlogs_board.id
                 )
                 to_return += f"Successfully created zdone webhook with id {hook.id}.<br>"
 
