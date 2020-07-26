@@ -238,7 +238,7 @@ def api_play_song_v2(api_key, track_uri, callback_function_name):
 @app.route("/index")
 @login_required
 def index():
-    if current_user.username in ["rsanek", "will"]:
+    if current_user.trello_api_access_token:
         return render_template('tasks.html',
                                navigation=get_navigation(current_user, "Tasks"),
                                api_key=current_user.api_key)

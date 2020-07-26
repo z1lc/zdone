@@ -26,6 +26,7 @@ class User(UserMixin, BaseModel):
     api_key: str = db.Column(db.String(128), unique=True, nullable=False)
 
     trello_api_key: str = db.Column(db.String(128))
+    # User needs to visit URL and send back access token:
     # https://trello.com/1/authorize?expiration=never&name=zdone&scope=read,write&response_type=token&key=API_KEY
     trello_api_access_token: str = db.Column(db.String(128))
     cached_trello_data: str = db.Column(db.Text, nullable=True)
