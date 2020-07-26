@@ -347,6 +347,9 @@ def api():
         return r, 200
 
 
+# POST https://api.trello.com/1/tokens/ACCESS_TOKEN/webhooks/?key=API_KEY with x-www-form-urlencoded:
+# callbackURL: https://www.zdone.co/trello_webhook
+# idModel: BACKLOGS_BOARD_ID
 @app.route('/trello_webhook', methods=['POST', 'HEAD'])
 def trello_webhook():
     req = request.get_json()
