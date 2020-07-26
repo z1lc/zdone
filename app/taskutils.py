@@ -1,7 +1,7 @@
 import datetime
 import json
 import pickle
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import pytz
 from flask import Response
@@ -49,14 +49,60 @@ def do_update_task(update: str,
         return failure(f"unexpected service type '{service}'")
 
 
-def get_open_trello_lists(user: User) -> List[trellolist.List]:
+def get_trello_client(user: User) -> Optional[TrelloClient]:
     if user.trello_api_key and user.trello_api_access_token:
         client = TrelloClient(
             api_key=user.trello_api_key,
             api_secret=user.trello_api_access_token
         )
-        backlog_board = [board for board in client.list_boards() if board.name == 'Backlogs'][0]
+        return client
 
+    return None
+
+
+def ensure_trello_setup_idempotent(user: User) -> str:
+    to_return = ""
+    client = get_trello_client(user)
+    if not client:
+        return "API key and/or access token not set.<br>"
+    else:
+        to_return += "API key & access token correctly set.<br>"
+        maybe_backlogs_board = [board for board in client.list_boards() if board.name == 'Backlogs']
+        if not maybe_backlogs_board:
+            return "Did not find a board called 'Backlogs'.<br>"
+        else:
+            maybe_backlogs_board = maybe_backlogs_board[0]
+            to_return += f"Board with name 'Backlogs' found with id {maybe_backlogs_board.id}<br>"
+
+            if not user.trello_member_id:
+                to_return += f"Trello member ID not set. Setting to {maybe_backlogs_board.owner_members()[0].id}...<br>"
+                user.trello_member_id = maybe_backlogs_board.owner_members()[0].id
+                db.session.commit()
+                to_return += f"Trello member ID successfully set to {maybe_backlogs_board.owner_members()[0].id}.<br>"
+            else:
+                to_return += f"Trello member ID is set to {maybe_backlogs_board.owner_members()[0].id}.<br>"
+
+            has_zdone_hook = False
+            for hook in client.list_hooks(token=user.trello_api_access_token):
+                if hook.callback_url == "https://www.zdone.co/trello_webhook" and hook.id_model == maybe_backlogs_board.id:
+                    has_zdone_hook = True
+                    to_return += f"Found zdone webook with id {hook.id}.<br>"
+
+            if not has_zdone_hook:
+                to_return += "Creating zdone webhook...<br>"
+                hook = client.create_hook(
+                    callback_url="https://www.zdone.co/trello_webhook",
+                    id_model=maybe_backlogs_board.id
+                )
+                to_return += f"Successfully created zdone webhook with id {hook.id}.<br>"
+
+    return to_return
+
+
+def get_open_trello_lists(user: User) -> List[trellolist.List]:
+    client = get_trello_client(user)
+    if client:
+        backlog_board = [board for board in client.list_boards() if board.name == 'Backlogs'][0]
         return backlog_board.list_lists('open')
     return []
 

@@ -1,5 +1,6 @@
 import datetime
 import itertools
+import json
 import os
 import uuid
 
@@ -8,7 +9,7 @@ from flask import render_template, request, make_response, redirect, send_file
 from flask import url_for, flash
 from flask_login import current_user, login_user, logout_user
 from flask_login import login_required
-from sentry_sdk import last_event_id, capture_exception
+from sentry_sdk import last_event_id, capture_exception, configure_scope
 from werkzeug.urls import url_parse
 
 from app.models.base import User
@@ -21,7 +22,7 @@ from .models.tasks import Reminder, Task
 from .reminders import get_reminders, get_most_recent_reminder
 from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, follow_unfollow_artists, \
     get_random_song_family, get_tracks, get_top_recommendations, get_artists_images, populate_null
-from .taskutils import do_update_task, get_updated_trello_cards
+from .taskutils import do_update_task, get_updated_trello_cards, ensure_trello_setup_idempotent
 from .themoviedb import get_stuff
 from .util import today_datetime, failure, success, api_key_failure, jsonp, validate_api_key, get_navigation, \
     htmlize_note
@@ -254,7 +255,8 @@ def index():
 def reminders(reminder_id):
     if reminder_id:
         reminder = Reminder.query.filter_by(user_id=current_user.id, id=reminder_id).one_or_none()
-        return render_template("single_reminder.html", title=reminder.title, message=reminder.message.replace("\n", "<br>"))
+        return render_template("single_reminder.html", title=reminder.title,
+                               message=reminder.message.replace("\n", "<br>"))
     form = ReminderForm()
     if form.validate_on_submit():
         reminder = Reminder(
@@ -274,6 +276,7 @@ def reminders(reminder_id):
 
 
 @app.route('/video')
+@login_required
 def movies():
     return render_template("video.html",
                            navigation=get_navigation(current_user, "Video"),
@@ -283,6 +286,12 @@ def movies():
 @app.route('/artist_photos')
 def artist_photos():
     return get_artists_images()
+
+
+@app.route('/trello_setup')
+@login_required
+def trello_setup():
+    return ensure_trello_setup_idempotent(current_user)
 
 
 """****************************************************** API ******************************************************"""
@@ -353,6 +362,16 @@ def api():
 @app.route('/trello_webhook', methods=['POST', 'HEAD'])
 def trello_webhook():
     req = request.get_json()
-    if req and req.get("model", {}).get("name") == "Backlogs":
-        get_updated_trello_cards(User.query.filter_by(username="rsanek").one(), force_refresh=True)
+    if req:
+        maybe_member = req.get("action", {}).get("idMemberCreator", None)
+        user = User.query.filter_by(trello_member_id=maybe_member).one_or_none()
+        if user:
+            get_updated_trello_cards(user, force_refresh=True)
+        else:
+            with configure_scope() as scope:
+                scope.set_tag("request", json.dumps(req))
+                capture_exception(
+                    ValueError(f"Received Trello webhook without a mapping to member {maybe_member} in the database."))
+    else:
+        capture_exception(ValueError(f"Received Trello webhook without a json payload."))
     return success()
