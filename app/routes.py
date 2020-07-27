@@ -312,16 +312,17 @@ def api():
         for task in tasks:
             after_defer = task.defer_until is None or user_local_date >= task.defer_until
             due = task.calculate_skew(user_local_date) >= 1
-            average_daily_load += 1 / task.ideal_interval
-            if after_defer and due:
-                ret_tasks.append({
-                    "id": task.id,
-                    "service": "zdone",
-                    "name": task.title,
-                    "note": task.description,
-                    "subtask_id": None,
-                    "length_minutes": None,
-                })
+            if after_defer:
+                average_daily_load += 1 / task.ideal_interval
+                if due:
+                    ret_tasks.append({
+                        "id": task.id,
+                        "service": "zdone",
+                        "name": task.title,
+                        "note": task.description,
+                        "subtask_id": None,
+                        "length_minutes": None,
+                    })
 
         if average_daily_load >= 3.0:
             ret_tasks.insert(0, {
