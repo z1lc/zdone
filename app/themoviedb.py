@@ -156,14 +156,15 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
         )
     else:
         tv_details = tmdbsimple.TV(tmdb_api_movie_or_tv_response['id'])
+        tv_info = tv_details.info()
         m_credits = tmdbsimple.TV(tmdb_api_movie_or_tv_response['id']).credits()
         maybe_video = Video(
             id=video_id,
             name=tmdb_api_movie_or_tv_response['name'],
             description=clean_description(tmdb_api_movie_or_tv_response['overview'],
                                           tmdb_api_movie_or_tv_response['name'], "[TV show]"),
-            release_date=tmdb_api_movie_or_tv_response['first_air_date'],
-            last_air_date=tmdb_api_movie_or_tv_response['last_air_date'],
+            release_date=tv_info['first_air_date'],
+            last_air_date=tv_info['last_air_date'],
             youtube_trailer_key=get_or_add_first_youtube_trailer(tv_details.videos()),
             poster_image_url=get_full_tmdb_image_url(tmdb_api_movie_or_tv_response['poster_path']),
             film_or_tv='TV show',
