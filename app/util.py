@@ -1,19 +1,17 @@
 import datetime
+import re
 from typing import Dict, Any, Optional, Tuple, Union
 
 import pytz
 from flask import jsonify, Response
-from urlextract import URLExtract
 
 from app.models.base import User
 
 JsonDict = Dict[str, Any]
 
-extractor = URLExtract()
-
 
 def htmlize_note(raw_note) -> str:
-    for url in set(extractor.find_urls(raw_note)):
+    for url in set(re.findall(r'(https?://[^\s]+)', raw_note)):
         raw_note = raw_note.replace(url, "<a href=\"{url}\" target=\"_blank\">{url}</a>".format(url=url))
     return raw_note.replace("\n", "<br>")
 
