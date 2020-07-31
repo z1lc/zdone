@@ -234,7 +234,8 @@ order by 4 desc"""
             if video.in_production:
                 release += f" - Present"
             elif video.last_air_date:
-                release += f" - {str(video.last_air_date.year)}"
+                if video.release_date.year != video.last_air_date.year:
+                    release += f" - {str(video.last_air_date.year)}"
             track_as_note = VideoNote(
                 model=video_model,
                 tags=tags,
