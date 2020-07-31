@@ -66,6 +66,11 @@ def test_clean_track_name():
     assert "Antidote" == clean_track_name("Antidote - Extended")
     assert "Satisfaction" == clean_track_name("Satisfaction (Isak Original Extended) - Benny Benassi Presents The Biz")
 
+    assert "Much Better Off" == clean_track_name("Much Better Off - Album Version / Stereo")
+    assert "Baby, Baby Don't Cry" == clean_track_name("Baby, Baby Don't Cry - Stereo")
+    assert "On My Own" == clean_track_name("On My Own - 2019 remaster")
+    assert "No Woman, No Cry" == clean_track_name("No Woman, No Cry - Live At The Lyceum, London/1975")
+
 
 def test_clean_album_name():
     assert "So" == clean_album_name("So (25th Anniversary Deluxe Edition)")
@@ -89,6 +94,8 @@ def test_clean_album_name():
     assert "I Walk the Line" == clean_album_name("I Walk the Line (Stereo Version)")
     assert "Lady Soul" == clean_album_name("Lady Soul (With Bonus Selections)")
     assert "Hypnotica" == clean_album_name("Hypnotica (Benny Benassi Presents The Biz)")
+    assert "For Lack of a Better Name" == clean_album_name("For Lack of a Better Name (The Extended Mixes)")
+    assert "Random Album Title" == clean_album_name("Random Album Title (Unmixed Extended Versions)")
 
 
 def test_get_minified_js_for_youtube_video():

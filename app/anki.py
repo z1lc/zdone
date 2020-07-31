@@ -268,6 +268,7 @@ def clean_album_name(name: str) -> str:
         " \\(Deluxe / Remastered 2015\\)$",
         " \\(With Bonus Selections\\)$",
         " \\(Benny Benassi Presents The Biz\\)",
+        " \\((Unmixed|The) Extended (Mixes|Versions)\\)",
     ]
     for regex in REGEXES:
         name = re.sub(regex, "", name)
@@ -283,8 +284,8 @@ def create_html_unordered_list(input_list: List, min_length: int = 3, max_length
 
 def clean_track_name(name: str) -> str:
     REGEXES: List[str] = [
-        " - (\\d{4} )?Remaster(ed)?( \\d{4})?$",
-        " - (Stereo|Original) Mix$",
+        " - (\\d{4} )?(r|R)emaster(ed)?( \\d{4})?$",
+        " - (Stereo|Original)( Mix)?$",
         " - Bonus Track$",
         " - Radio Edit$",
         " (\\(|\\[)(feat\\.|with).*?(\\)|\\])",
@@ -300,6 +301,8 @@ def clean_track_name(name: str) -> str:
         " - Featured in [A-z ]+",
         " - Avicii By Avicii",
         " \\(Isak Original Extended\\) - Benny Benassi Presents The Biz",
+        " - Album Version / Stereo",
+        " - Live At The Lyceum, London/1975",
     ]
     for regex in REGEXES:
         name = re.sub(regex, "", name)
