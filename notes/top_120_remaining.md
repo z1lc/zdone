@@ -1,13 +1,15 @@
 # Best-selling artists
 Sourced from Wikipedia's [List of best-selling music artists](https://en.wikipedia.org/wiki/List_of_best-selling_music_artists), using `$('table.sortable tbody th').text()`
+### 250m+
 * ~~The Beatles~~
 * ~~Elvis Presley~~
 * ~~Michael Jackson~~
 * Elton John
 * Madonna
-* Led Zeppelin
+* ~~Led Zeppelin~~
 * ~~Rihanna~~
 * ~~Pink Floyd~~
+### 200m+
 * ~~Eminem~~
 * ~~Taylor Swift~~
 * Mariah Carey
@@ -15,8 +17,9 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * Queen
 * Whitney Houston
 * Celine Dion
-* AC/DC
+* ~~AC/DC~~
 * The Rolling Stones
+### 120m+
 * Garth Brooks
 * ~~Drake~~
 * ~~Ed Sheeran~~
@@ -42,6 +45,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * ~~Fleetwood Mac~~
 * Rod Stewart
 * Bee Gees
+### 100m+
 * Nicki Minaj
 * Beyoncé
 * ~~Coldplay~~
@@ -77,6 +81,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * ~~The Beach Boys~~
 * The Who
 * Barry White
+### 80m+
 * Shania Twain
 * Pink
 * The Carpenters
@@ -95,6 +100,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * Meat Loaf
 * Tom Petty
 * Johnny Hallyday
+### 75m+
 * ~~Tim McGraw~~
 * Journey
 * Usher
@@ -107,7 +113,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * Kenny G
 * Nirvana
 * ~~Enya~~
-* Green Day
+* ~~Green Day~~
 * Bryan Adams
 * Alabama
 * Bob Seger
@@ -118,7 +124,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * Kiss
 * ~~Aretha Franklin~~
 
-##CZ Todo
+## CZ Todo
 * Chinaski
 * Lucie Bílá
 * Karel Gott
