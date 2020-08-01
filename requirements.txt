@@ -20,7 +20,7 @@ pylast==3.3.0
 jsmin==2.2.2
 tmdbsimple==2.6.0
 email_validator==1.1.1
-pytest==6.0.0
+pytest==6.0.1
 mypy==0.782
 Jinja2==2.11.2
 python-pushover==0.4
