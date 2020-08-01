@@ -10,13 +10,15 @@ from jsmin import jsmin
 from app import db
 from app.models.base import User
 from app.models.spotify import LegacySpotifyTrackNoteGuidMapping, SpotifyArtist
-from app.models.videos import Video, YouTubeVideoOverride, YouTubeVideo
+from app.models.videos import Video, YouTubeVideoOverride, YouTubeVideo, VideoPerson, VideoCredit
 from app.spotify import get_tracks, get_followed_managed_spotify_artists_for_user
 from app.util import JsonDict
 
 SPOTIFY_TRACK_MODEL_ID: int = 1586000000000
 SPOTIFY_ARTIST_MODEL_ID: int = 1587000000000
 VIDEO_MODEL_ID: int = 1588000000000
+VIDEO_PERSON_MODEL_ID: int = 1589000000000
+
 SPOTIFY_TRACK_DECK_ID: int = 1586000000000
 
 """
@@ -84,12 +86,17 @@ class AnkiCard(Enum):
     DESCRIPTION_TO_NAME = (23, 'video')
     NAME_TO_DESCRIPTION = (24, 'video')
 
-    def __init__(self, unique_number, directory):
+    # Video Person model
+    VP_IMAGE_TO_NAME = (25, 'video_person', 'Image>Name')
+    VP_NAME_TO_IMAGE = (26, 'video_person', 'Name>Image')
+
+    def __init__(self, unique_number, directory, name_override=None):
         self.unique_number = unique_number
         self.directory = directory
+        self.name_override = name_override
 
     def get_template_name(self) -> str:
-        return self.name \
+        return self.name_override if self.name_override else self.name \
             .replace('_', ' ') \
             .title() \
             .replace('To', '>') \
@@ -117,6 +124,12 @@ class SpotifyArtistNote(genanki.Note):
 
 
 class VideoNote(genanki.Note):
+    @property
+    def guid(self):
+        return genanki.guid_for(self.fields[0])
+
+
+class VideoPersonNote(genanki.Note):
     @property
     def guid(self):
         return genanki.guid_for(self.fields[0])
@@ -225,17 +238,21 @@ order by 4 desc"""
 
     # videos not released yet
     if user.id <= 1:
+        video_map = {}
         youtube_overrides = {ytvo.video_id: ytvo.youtube_trailer_key for ytvo in YouTubeVideoOverride.query.all()}
         youtube_durations = {ytv.key: ytv.duration_seconds for ytv in YouTubeVideo.query.all()}
         video_model = get_video_model(user)
         for video in Video.query.all():
             trailer_key = youtube_overrides.get(video.id, video.youtube_trailer_key) or ''
+
             release = str(video.release_date.year)
             if video.in_production:
                 release += f" - Present"
             elif video.last_air_date:
                 if video.release_date.year != video.last_air_date.year:
                     release += f" - {str(video.last_air_date.year)}"
+            video_map[video.id] = f"<i>{video.name}</i> ({release})"
+
             track_as_note = VideoNote(
                 model=video_model,
                 tags=tags,
@@ -250,6 +267,42 @@ order by 4 desc"""
                     f"<img src='{video.poster_image_url}'>",
                 ])
             deck.add_note(track_as_note)
+
+        top_people_sql = """
+select vp.id
+from video_credits
+     join video_persons vp on video_credits.person_id = vp.id
+where character not like '%%uncredited%%'
+and "order" <= 10
+group by 1
+having count(*) >= 4"""
+        top_people = [row[0] for row in list(db.engine.execute(top_people_sql))]
+
+        known_for_map = {
+            "Acting": "actor",
+            "Writing": "writer",
+            "Directing": "director",
+            "Production": "producer",
+        }
+
+        for video_person in [vp for vp in VideoPerson.query.all() if vp.id in top_people]:
+            credits = []
+            for credit in VideoCredit.query.filter_by(person_id=video_person.id).all():
+                if "uncredited" not in credit.character:
+                    credits.append(f"{credit.character} in {video_map[credit.video_id]}")
+
+            video_person_model = get_video_person_model(user)
+            person_as_note = VideoPersonNote(
+                model=video_person_model,
+                tags=tags,
+                fields=[
+                    video_person.id,
+                    video_person.name,
+                    known_for_map.get(video_person.known_for, "crew member"),
+                    create_html_unordered_list(credits, should_sort=True),
+                    f"<img src='{video_person.image_url}'>",
+                ])
+            deck.add_note(person_as_note)
 
     genanki.Package(deck).write_to_file(filename)
 
@@ -277,10 +330,13 @@ def clean_album_name(name: str) -> str:
 
 
 # we want to make sure you have actually listened to the artist for a bit, so let's say minimum 3 songs/albums
-def create_html_unordered_list(input_list: List, min_length: int = 3, max_length: int = 5) -> str:
+def create_html_unordered_list(input_list: List, min_length: int = 3, max_length: int = 5,
+                               should_sort: bool = False) -> str:
     if len(input_list) < min_length:
-        return ''
-    return '<ul><li>' + '</li><li>'.join(input_list[:max_length]) + '</li></ul>'
+        return ""
+    if should_sort:
+        input_list.sort(key=lambda credit: -int(re.findall("\d{4}", credit)[-1]))
+    return f"<ul><li>{'</li><li>'.join(input_list[:max_length])}</li></ul>"
 
 
 def clean_track_name(name: str) -> str:
@@ -332,6 +388,27 @@ def get_video_model(user: User) -> Model:
             get_template(AnkiCard.VIDEO_TO_NAME, user),
             get_template(AnkiCard.DESCRIPTION_TO_NAME, user),
             get_template(AnkiCard.NAME_TO_DESCRIPTION, user),
+            # TODO: add extra templates before public release
+        ]
+    )
+
+
+def get_video_person_model(user: User) -> Model:
+    return genanki.Model(
+        VIDEO_PERSON_MODEL_ID,
+        'Video Person',
+        fields=[
+            {'name': 'zdone Person ID'},
+            {'name': 'Name'},
+            {'name': 'Known For'},
+            {'name': 'Credits'},
+            {'name': 'Image'},
+            # TODO: add extra fields before public release
+        ],
+        css=(get_rs_anki_css() if user.uses_rsAnki_javascript else get_default_css()) + get_youtube_css(),
+        templates=[
+            get_template(AnkiCard.VP_IMAGE_TO_NAME, user),
+            get_template(AnkiCard.VP_NAME_TO_IMAGE, user),
             # TODO: add extra templates before public release
         ]
     )

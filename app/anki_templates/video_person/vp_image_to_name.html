@@ -1,0 +1,12 @@
+<div id="textPart">
+    {% if is_front %}
+        What {{ '{{Known For}}' }}?
+    {% else %}
+        <span class="rsAnswer rsAnkiBold">{{ '{{Name}}' }}</span>
+    {% endif %}
+</div>
+
+<div id="imagePart">{{ '{{Image}}' }}</div>
+
+
+{{ script_include|safe }}
