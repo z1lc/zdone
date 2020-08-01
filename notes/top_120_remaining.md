@@ -15,7 +15,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * Mariah Carey
 * Eagles
 * Queen
-* Whitney Houston
+* ~~Whitney Houston~~
 * Celine Dion
 * ~~AC/DC~~
 * The Rolling Stones
