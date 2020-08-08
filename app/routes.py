@@ -280,7 +280,7 @@ def reminders(reminder_id):
 def movies():
     return render_template("video.html",
                            navigation=get_navigation(current_user, "Video"),
-                           stuff=get_stuff())
+                           stuff=get_stuff(current_user))
 
 
 @app.route('/artist_photos')

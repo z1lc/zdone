@@ -19,8 +19,7 @@ def htmlize_note(raw_note) -> str:
 def get_navigation(user: User, current_page: str) -> str:
     pages = list()
     pages.append('<a href="/spotify" target="_self">Music</a>' if current_page != "Music" else "Music")
-    # TODO: replace with user.tmdb_session_key when release
-    if user.id == 1:
+    if user.tmdb_session_id:
         pages.append('<a href="/video" target="_self">Video</a>' if current_page != "Video" else "Video")
     if user.pushover_user_key:
         pages.append(

@@ -6,6 +6,7 @@ import tmdbsimple
 from pyyoutube import Api
 
 from app import kv, db
+from app.models.base import User
 from app.models.videos import Video, VideoPerson, VideoCredit, YouTubeVideo
 
 # https://developers.themoviedb.org/3/configuration/get-api-configuration
@@ -18,25 +19,44 @@ class VideoType(Enum):
     TV = 2
 
 
-def get_stuff():
+def _get_full_paginated(function):
+    results = list()
+    page_number = 1
+    total_pages = 10
+    while not results or page_number <= total_pages:
+        total_pages, this_page_result = _get_page_results(function, page_number)
+        results.extend(this_page_result)
+        page_number += 1
+    return results
+
+
+def _get_page_results(function, page: int):
+    ret = function(page=page)
+    return ret['total_pages'], ret['results']
+
+
+def get_stuff(user: User):
     tmdbsimple.API_KEY = kv.get('TMDB_API_KEY')
-    acct = tmdbsimple.Account(session_id=kv.get('TMDB_SESSION_ID'))
+    # to get session id, GET https://api.themoviedb.org/3/authentication/token/new?api_key=API_KEY
+    # then use request_token to forward person to https://www.themoviedb.org/authenticate/REQUEST_TOKEN?redirect_to=http://callback.com
+    # then POST to /authentication/session/new with same request_token
+    acct = tmdbsimple.Account(session_id=user.tmdb_session_id)
     acct.info()  # wild that you have to call this to avoid exceptions...
 
     result = ''
 
     for watched, tv in (
-            [(True, rtv) for rtv in acct.rated_tv()['results']] +
-            [(True, ftv) for ftv in acct.favorite_tv()['results']] +
-            [(False, wtv) for wtv in acct.watchlist_tv()['results']]):
+            [(True, rtv) for rtv in _get_full_paginated(acct.rated_tv)] +
+            [(True, ftv) for ftv in _get_full_paginated(acct.favorite_tv)] +
+            [(False, wtv) for wtv in _get_full_paginated(acct.watchlist_tv)]):
         video_id = f"zdone:video:tmdb:{tv['id']}"
         get_or_add_tv(video_id, tv, watched)
         result += f"{tv['name']} ({tv['first_air_date'][:4]})<br>"
 
     for watched, movie in (
-            [(True, rtv) for rtv in acct.rated_movies()['results']] +
-            [(True, ftv) for ftv in acct.favorite_movies()['results']] +
-            [(False, wtv) for wtv in acct.watchlist_movies()['results']]):
+            [(True, rtv) for rtv in _get_full_paginated(acct.rated_movies)] +
+            [(True, ftv) for ftv in _get_full_paginated(acct.favorite_movies)] +
+            [(False, wtv) for wtv in _get_full_paginated(acct.watchlist_movies)]):
         video_id = f"zdone:video:tmdb:{movie['id']}"
         get_or_add_movie(video_id, movie, watched)
         result += f"{movie['original_title']} ({movie['release_date'][:4]})<br>"
