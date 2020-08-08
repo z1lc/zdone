@@ -360,6 +360,8 @@ def clean_track_name(name: str) -> str:
         " \\(Isak Original Extended\\) - Benny Benassi Presents The Biz",
         " - Album Version / Stereo",
         " - Live At The Lyceum, London/1975",
+        " - Edit",
+        " - Live at Folsom State Prison, Folsom, CA - January 1968",
     ]
     for regex in REGEXES:
         name = re.sub(regex, "", name)

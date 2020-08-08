@@ -71,6 +71,10 @@ def test_clean_track_name():
     assert "On My Own" == clean_track_name("On My Own - 2019 remaster")
     assert "No Woman, No Cry" == clean_track_name("No Woman, No Cry - Live At The Lyceum, London/1975")
 
+    assert "Epiphany" == clean_track_name("Epiphany - Edit")
+    assert "Folsom Prison Blues" == clean_track_name(
+        "Folsom Prison Blues - Live at Folsom State Prison, Folsom, CA - January 1968")
+
 
 def test_clean_album_name():
     assert "So" == clean_album_name("So (25th Anniversary Deluxe Edition)")
