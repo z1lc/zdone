@@ -18,7 +18,7 @@ py-trello==0.17.1
 ebisu==2.0.0
 pylast==3.3.0
 jsmin==2.2.2
-tmdbsimple==2.6.1
+tmdbsimple==2.6.4
 email_validator==1.1.1
 pytest==6.0.1
 mypy==0.782
