@@ -7,6 +7,7 @@
     <script>
       $(document).ready(function () {
         $('#managed_artists_table').dataTable({
+          "order": [[ 2, "desc" ]],
           "lengthChange": false,
           "language": {
             "info": "Showing _START_ to _END_ of _TOTAL_ managed artists"
