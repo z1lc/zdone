@@ -4,8 +4,10 @@ from typing import Optional
 import isodate
 import tmdbsimple
 from pyyoutube import Api
+from sentry_sdk import capture_exception
 
 from app import kv, db
+from app.log import log
 from app.models.base import User
 from app.models.videos import Video, VideoPerson, VideoCredit, YouTubeVideo
 
@@ -49,17 +51,29 @@ def get_stuff(user: User):
             [(True, rtv) for rtv in _get_full_paginated(acct.rated_tv)] +
             [(True, ftv) for ftv in _get_full_paginated(acct.favorite_tv)] +
             [(False, wtv) for wtv in _get_full_paginated(acct.watchlist_tv)]):
-        video_id = f"zdone:video:tmdb:{tv['id']}"
-        get_or_add_tv(video_id, tv, watched)
-        result += f"{tv['name']} ({tv['first_air_date'][:4]})<br>"
+        try:
+            video_id = f"zdone:video:tmdb:{tv['id']}"
+            get_or_add_tv(video_id, tv, watched)
+            name_and_year = f"{tv['name']} ({tv['first_air_date'][:4]})"
+            log(f"Successfully added {name_and_year}")
+            result += f"{name_and_year}<br>"
+        except Exception as e:
+            log(f"Received exception when trying to add TV show https://www.themoviedb.org/tv/{tv['id']}")
+            capture_exception(e)
 
     for watched, movie in (
             [(True, rtv) for rtv in _get_full_paginated(acct.rated_movies)] +
             [(True, ftv) for ftv in _get_full_paginated(acct.favorite_movies)] +
             [(False, wtv) for wtv in _get_full_paginated(acct.watchlist_movies)]):
-        video_id = f"zdone:video:tmdb:{movie['id']}"
-        get_or_add_movie(video_id, movie, watched)
-        result += f"{movie['original_title']} ({movie['release_date'][:4]})<br>"
+        try:
+            video_id = f"zdone:video:tmdb:{movie['id']}"
+            get_or_add_movie(video_id, movie, watched)
+            name_and_year = f"{movie['original_title']} ({movie.get('release_date', '9999')[:4]})"
+            log(f"Successfully added {name_and_year}")
+            result += f"{name_and_year}<br>"
+        except Exception as e:
+            log(f"Received exception when trying to add movie https://www.themoviedb.org/movie/{movie['id']}")
+            capture_exception(e)
 
     return result
 
@@ -168,7 +182,7 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
             id=video_id,
             name=title,
             description=clean_description(description, title, "[film]"),
-            release_date=tmdb_api_movie_or_tv_response['release_date'],
+            release_date=tmdb_api_movie_or_tv_response.get('release_date', None),
             last_air_date=None,
             youtube_trailer_key=get_or_add_first_youtube_trailer(movie_detail.videos()),
             poster_image_url=image,
