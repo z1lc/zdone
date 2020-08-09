@@ -7,7 +7,8 @@ from app import db
 from app.log import log
 from app.models.base import User
 from app.models.spotify import SpotifyArtist, ManagedSpotifyArtist
-from app.spotify import get_spotify, get_top_tracks, update_last_fm_scrobble_counts, update_spotify_anki_playlist
+from app.spotify import get_spotify, get_top_tracks, update_last_fm_scrobble_counts, update_spotify_anki_playlist, \
+    add_or_get_album
 
 MAX_RETRIES_PER_ARTIST = 2
 
@@ -43,6 +44,8 @@ if __name__ == '__main__':
             try_count += 1
             try:
                 dropped, top_tracks = get_top_tracks(sp, artist, allow_refresh=True)
+                for album in sp.artist_albums(artist.uri, limit=50)['items']:
+                    add_or_get_album(sp, album['uri'])
                 log(f'[{round(i / len(artists) * 100)}%] '
                     f'Updated mappings for artist {artist.name}, dropping {dropped} & adding {len(top_tracks)}.')
                 break
