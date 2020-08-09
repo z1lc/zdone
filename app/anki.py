@@ -245,13 +245,16 @@ order by 4 desc"""
         for video in Video.query.all():
             trailer_key = youtube_overrides.get(video.id, video.youtube_trailer_key) or ''
 
-            release = str(video.release_date.year)
-            if video.in_production:
-                release += f" - Present"
-            elif video.last_air_date:
-                if video.release_date.year != video.last_air_date.year:
-                    release += f" - {str(video.last_air_date.year)}"
-            video_map[video.id] = f"<i>{video.name}</i> ({release})"
+            if video.release_date:
+                release = str(video.release_date.year)
+                if video.in_production:
+                    release += f" - Present"
+                elif video.last_air_date:
+                    if video.last_air_date and video.release_date.year != video.last_air_date.year:
+                        release += f" - {str(video.last_air_date.year)}"
+                video_map[video.id] = f"<i>{video.name}</i> ({release})"
+            else:
+                video_map[video.id] = f"<i>{video.name}</i>"
 
             track_as_note = VideoNote(
                 model=video_model,
@@ -335,8 +338,17 @@ def create_html_unordered_list(input_list: List, min_length: int = 3, max_length
     if len(input_list) < min_length:
         return ""
     if should_sort:
-        input_list.sort(key=lambda credit: -int(re.findall("\d{4}", credit)[-1]))
+        input_list.sort(key=lambda credit: _sort_credit(credit))
     return f"<ul><li>{'</li><li>'.join(input_list[:max_length])}</li></ul>"
+
+
+def _sort_credit(credit):
+    maybe_year = re.findall("\d{4}", credit)
+    if maybe_year:
+        return -int(maybe_year[-1])
+    else:
+        # if we didn't find a date, it's probably because this hasn't been released yet
+        return -9999
 
 
 def clean_track_name(name: str) -> str:
