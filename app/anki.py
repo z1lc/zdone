@@ -28,24 +28,20 @@ Things to keep in mind when adding new models / templates:
  * you can change the qfmt and afmt of a template, as long as the template name stays the same
  * you cannot change the names or total count of templates in a model
  * you cannot change the names or total count of fields in a model
+See https://anki.tenderapp.com/kb/problems/some-updates-were-ignored-because-note-type-has-changed for details.
 
 A general, long-term approach to avoiding compatibility problems:
- * Create many more fields than you're going to need at the beginning, naming them something unique.
-   You're going to re-purpose these empty fields later for new fields that you'll want to add.
- * Create many more templates than you need, again naming them something unique. This is again so that you can re-
-   purpose later, though you need to make sure cards are not generated in advance for these empty placeholder templates.
-   What you can do to make sure this is the case is by making the qfmt and afmt dependent on an unused field, and then 
-   later editing that qfmt and afmt to whatever you want. You need to create a field that you never intend to use, 
-   perhaps as the last field in the model, in order to assure the conditional card generation works over time.
+ * Create many more fields and templates than you're going to need at the beginning, naming them something unique.
+   You're going to re-purpose these empty fields & templates later for new things that you'll want to add.
  * When you want to add a new field and/or template, ensure you DO NOT CHANGE THE NAME, ORDERING, OR TOTAL COUNT.
    If you do, you will cause a permanent backwards incompatibility. Use the unique field names you created in the
-   beginning in the unique template names (also created in v1 of the model). This sucks, since your field isn't going 
-   to make sense to people looking at the note type, but it is the way it must be if we want to assure compatibility
-   over time.
+   beginning in the unique template names (also created in v1 of the model). This sucks, since your field and template
+   names aren't going to make sense to people reading them in the browser / card type editor, but it is the way it must 
+   be if we want to assure compatibility over the long term.
 
 Docs above based on local testing by messing with template & field names, using forked genanki version at 
 https://github.com/z1lc/genanki. See https://gist.github.com/z1lc/544a971164bf6179655a869e1f3c3980 for one of the
-versions of the code (edited it multiple times & tried importing to test functionality)
+versions of the code (edited it multiple times & tried importing to test functionality).
 """
 
 env: Environment = Environment(
