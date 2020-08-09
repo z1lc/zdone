@@ -14,7 +14,7 @@ from werkzeug.urls import url_parse
 
 from app.models.base import User
 from . import app, db, kv
-from .anki import generate_track_apkg
+from app.card_generation.anki import generate_full_apkg
 from .forms import LoginForm, RegistrationForm, ReminderForm
 from .log import log
 from .models.spotify import ManagedSpotifyArtist, SpotifyArtist
@@ -210,7 +210,7 @@ def spotify_download_apkg():
     log(f"endpoint hit {today_datetime()}")
     filename: str = os.path.join(app.instance_path, f'songs-{current_user.username}.apkg')
     os.makedirs(app.instance_path, exist_ok=True)
-    generate_track_apkg(current_user, filename)
+    generate_full_apkg(current_user, filename)
     log(f"before sendfile {today_datetime()}")
     return send_file(filename, as_attachment=True, add_etags=False, cache_timeout=0)
 

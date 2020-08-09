@@ -1,7 +1,7 @@
 import uuid
 
-from app.anki import get_track_model, get_artist_model, AnkiCard, clean_track_name, clean_album_name, \
-    get_minified_js_for_youtube_video
+from app.card_generation.spotify import get_track_model, get_artist_model, clean_track_name, clean_album_name
+from app.card_generation.util import AnkiCard, get_minified_js_for_youtube_video
 from app.models.base import User
 
 rsanek_user = User(id=1,
