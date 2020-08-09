@@ -1,0 +1,15 @@
+<div id="textPart">
+    {% if is_front %}
+        What {{ '{{Known For}}' }}?<br>
+        {{ '{{Credits}}' }}
+    {% else %}
+        {{ '{{Credits}}' }}
+        <hr>
+        <span class="rsAnswer rsAnkiBold">{{ '{{Name}}' }}</span>
+    {% endif %}
+</div>
+
+<div id="imagePart">{% if not is_front %}{{ '{{Image}}' }}{% endif %}</div>
+
+
+{{ script_include|safe }}

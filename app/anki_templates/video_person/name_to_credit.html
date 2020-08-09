@@ -1,0 +1,14 @@
+<div id="textPart">
+    {% if is_front %}
+        Name a movie or TV show {{ '{{Name}}' }} was in.
+    {% else %}
+        {{ '{{Name}}' }}
+        <hr>
+        <span class="rsAnswerMulti">{{ '{{Credits}}' }}</span>
+    {% endif %}
+</div>
+
+<div id="imagePart">{% if not is_front %}{{ '{{Image}}' }}{% endif %}</div>
+
+
+{{ script_include|safe }}

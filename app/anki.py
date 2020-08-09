@@ -1,5 +1,6 @@
 import re
 from enum import Enum
+from time import time
 from typing import Dict, List, Optional
 
 import genanki
@@ -11,7 +12,7 @@ from app import db
 from app.models.base import User
 from app.models.spotify import LegacySpotifyTrackNoteGuidMapping, SpotifyArtist
 from app.models.videos import Video, YouTubeVideoOverride, YouTubeVideo, VideoPerson, VideoCredit, ManagedVideo
-from app.spotify import get_tracks, get_followed_managed_spotify_artists_for_user
+from app.spotify import get_followed_managed_spotify_artists_for_user, get_tracks
 from app.util import JsonDict
 
 SPOTIFY_TRACK_MODEL_ID: int = 1586000000000
@@ -52,6 +53,7 @@ env: Environment = Environment(
     autoescape=select_autoescape(['html', 'xml']),
     undefined=StrictUndefined
 )
+saved_time = None
 
 
 # DO NOT CHANGE THESE ENUM NAMES or you will cause backwards incompatibility: the names are used as template names
@@ -89,6 +91,8 @@ class AnkiCard(Enum):
     # Video Person model
     VP_IMAGE_TO_NAME = (25, 'video_person', 'Image>Name')
     VP_NAME_TO_IMAGE = (26, 'video_person', 'Name>Image')
+    CREDITS_TO_NAME = (27, 'video_person')
+    NAME_TO_CREDIT = (28, 'video_person')
 
     def __init__(self, unique_number, directory, name_override=None):
         self.unique_number = unique_number
@@ -104,7 +108,47 @@ class AnkiCard(Enum):
             .replace(' ', '')
 
 
-class SpotifyTrackNote(genanki.Note):
+def get_card_id() -> int:
+    global saved_time
+    if not saved_time:
+        saved_time = int(time()) * 1000
+    else:
+        saved_time += 1
+
+    return saved_time
+
+
+class zdNote(genanki.Note):
+    @property
+    def guid(self):
+        return genanki.guid_for(self.fields[0])
+
+    # copied over exactly except for where noted
+    def write_to_db(self, cursor, now_ts, deck_id, note_idx):
+        now_ts_milliseconds = now_ts * 1000
+        note_id = now_ts_milliseconds + note_idx
+        cursor.execute('INSERT INTO notes VALUES(?,?,?,?,?,?,?,?,?,?,?);', (
+            note_id,  # id
+            self.guid,  # guid
+            self.model.model_id,  # mid
+            now_ts,  # mod
+            -1,  # usn
+            self._format_tags(),  # TODO tags
+            self._format_fields(),  # flds
+            self.sort_field,  # sfld
+            0,  # csum, can be ignored
+            0,  # flags
+            '',  # data
+        ))
+
+        for card_idx, card in enumerate(self.cards):
+            # this is the only change; there were weird issues with duplicate card_ids getting generated so I just
+            # replaced it with a basic counter here.
+            card_id = get_card_id()
+            card.write_to_db(cursor, now_ts, deck_id, note_id, card_id)
+
+
+class SpotifyTrackNote(zdNote):
     # this more-extended version of guid methods is necessary to provide the legacy guid behavior
     @property
     def guid(self):
@@ -115,24 +159,6 @@ class SpotifyTrackNote(genanki.Note):
     @guid.setter
     def guid(self, val):
         self._guid = val
-
-
-class SpotifyArtistNote(genanki.Note):
-    @property
-    def guid(self):
-        return genanki.guid_for(self.fields[0])
-
-
-class VideoNote(genanki.Note):
-    @property
-    def guid(self):
-        return genanki.guid_for(self.fields[0])
-
-
-class VideoPersonNote(genanki.Note):
-    @property
-    def guid(self):
-        return genanki.guid_for(self.fields[0])
 
 
 def generate_track_apkg(user: User, filename: str) -> None:
@@ -211,7 +237,7 @@ order by 4 desc"""
             years_active = ''
 
             if img_src:
-                artist_as_note = SpotifyArtistNote(
+                artist_as_note = zdNote(
                     model=artist_model,
                     tags=tags,
                     fields=[
@@ -261,7 +287,7 @@ order by 4 desc"""
             else:
                 video_id_to_html_formatted_name_and_year[video.id] = f"<i>{video.name}</i>"
 
-            track_as_note = VideoNote(
+            video_as_note = zdNote(
                 model=video_model,
                 tags=tags,
                 fields=[
@@ -275,13 +301,15 @@ order by 4 desc"""
                     str(youtube_durations.get(trailer_key, '')),
                     f"<img src='{video.poster_image_url}'>",
                 ])
-            deck.add_note(track_as_note)
+            deck.add_note(video_as_note)
 
         top_people_sql = """
 select vp.id
 from video_credits
      join video_persons vp on video_credits.person_id = vp.id
+     join managed_videos mv on video_credits.video_id = mv.video_id
 where character not like '%%uncredited%%'
+and mv.watched
 and "order" <= 10
 group by 1
 having count(*) >= 4"""
@@ -301,7 +329,7 @@ having count(*) >= 4"""
                     credits.append(f"{credit.character} in {video_id_to_html_formatted_name_and_year[credit.video_id]}")
 
             video_person_model = get_video_person_model(user)
-            person_as_note = VideoPersonNote(
+            person_as_note = zdNote(
                 model=video_person_model,
                 tags=tags,
                 fields=[
@@ -430,6 +458,8 @@ def get_video_person_model(user: User) -> Model:
         templates=[
             get_template(AnkiCard.VP_IMAGE_TO_NAME, user),
             get_template(AnkiCard.VP_NAME_TO_IMAGE, user),
+            get_template(AnkiCard.CREDITS_TO_NAME, user),
+            get_template(AnkiCard.NAME_TO_CREDIT, user),
             # TODO: add extra templates before public release
         ]
     )
