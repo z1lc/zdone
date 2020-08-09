@@ -9,9 +9,11 @@ from sentry_sdk import capture_exception
 from app import kv, db
 from app.log import log
 from app.models.base import User
-from app.models.videos import Video, VideoPerson, VideoCredit, YouTubeVideo
+from app.models.videos import Video, VideoPerson, VideoCredit, YouTubeVideo, ManagedVideo
 
 # https://developers.themoviedb.org/3/configuration/get-api-configuration
+from app.util import today
+
 BASE_URL = 'https://image.tmdb.org/t/p/'
 POSTER_SIZE = 'w500'
 
@@ -53,7 +55,7 @@ def get_stuff(user: User):
             [(False, wtv) for wtv in _get_full_paginated(acct.watchlist_tv)]):
         try:
             video_id = f"zdone:video:tmdb:{tv['id']}"
-            get_or_add_tv(video_id, tv, watched)
+            get_or_add_tv(video_id, tv, user, watched)
             name_and_year = f"{tv['name']} ({tv['first_air_date'][:4]})"
             log(f"Successfully added {name_and_year}")
             result += f"{name_and_year}<br>"
@@ -67,7 +69,7 @@ def get_stuff(user: User):
             [(False, wtv) for wtv in _get_full_paginated(acct.watchlist_movies)]):
         try:
             video_id = f"zdone:video:tmdb:{movie['id']}"
-            get_or_add_movie(video_id, movie, watched)
+            get_or_add_movie(video_id, movie, user, watched)
             name_and_year = f"{movie['original_title']} ({movie.get('release_date', '9999')[:4]})"
             log(f"Successfully added {name_and_year}")
             result += f"{name_and_year}<br>"
@@ -156,57 +158,72 @@ def to_tmdb_id(zdone_id: str) -> int:
     return int(zdone_id.split(":")[3])
 
 
-def get_or_add_movie(movie_id: str, tmdb_api_movie_or_tv_response, watched: bool) -> Video:
-    return get_or_add_video(movie_id, VideoType.MOVIE, tmdb_api_movie_or_tv_response, watched)
+def get_or_add_movie(movie_id: str, tmdb_api_movie_or_tv_response, user: User, watched: bool) -> Video:
+    return get_or_add_video(movie_id, VideoType.MOVIE, tmdb_api_movie_or_tv_response, user, watched)
 
 
-def get_or_add_tv(tv_id: str, tmdb_api_movie_or_tv_response, watched: bool) -> Video:
-    return get_or_add_video(tv_id, VideoType.TV, tmdb_api_movie_or_tv_response, watched)
+def get_or_add_tv(tv_id: str, tmdb_api_movie_or_tv_response, user: User, watched: bool) -> Video:
+    return get_or_add_video(tv_id, VideoType.TV, tmdb_api_movie_or_tv_response, user, watched)
 
 
-def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_response, watched: bool) -> Video:
+def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_response, user: User, watched: bool) -> Video:
     maybe_video = Video.query.filter_by(id=video_id).one_or_none()
-    if maybe_video:
-        return maybe_video
+    if not maybe_video:
+        if type == VideoType.MOVIE:
+            m_id = tmdb_api_movie_or_tv_response['id']
+            title = tmdb_api_movie_or_tv_response['original_title']
+            description = tmdb_api_movie_or_tv_response['overview']
+            image = get_full_tmdb_image_url(tmdb_api_movie_or_tv_response['poster_path'])
 
-    if type == VideoType.MOVIE:
-        m_id = tmdb_api_movie_or_tv_response['id']
-        title = tmdb_api_movie_or_tv_response['original_title']
-        description = tmdb_api_movie_or_tv_response['overview']
-        image = get_full_tmdb_image_url(tmdb_api_movie_or_tv_response['poster_path'])
+            movie_detail = tmdbsimple.Movies(m_id)
 
-        movie_detail = tmdbsimple.Movies(m_id)
+            m_credits = tmdbsimple.Movies(m_id).credits()
+            maybe_video = Video(
+                id=video_id,
+                name=title,
+                description=clean_description(description, title, "[film]"),
+                release_date=tmdb_api_movie_or_tv_response.get('release_date', None),
+                last_air_date=None,
+                youtube_trailer_key=get_or_add_first_youtube_trailer(movie_detail.videos()),
+                poster_image_url=image,
+                film_or_tv='film',
+            )
+        else:
+            tv_details = tmdbsimple.TV(tmdb_api_movie_or_tv_response['id'])
+            tv_info = tv_details.info()
+            m_credits = tmdbsimple.TV(tmdb_api_movie_or_tv_response['id']).credits()
+            maybe_video = Video(
+                id=video_id,
+                name=tmdb_api_movie_or_tv_response['name'],
+                description=clean_description(tmdb_api_movie_or_tv_response['overview'],
+                                              tmdb_api_movie_or_tv_response['name'], "[TV show]"),
+                release_date=tv_info['first_air_date'],
+                last_air_date=tv_info['last_air_date'],
+                youtube_trailer_key=get_or_add_first_youtube_trailer(tv_details.videos()),
+                poster_image_url=get_full_tmdb_image_url(tmdb_api_movie_or_tv_response['poster_path']),
+                film_or_tv='TV show',
+            )
 
-        m_credits = tmdbsimple.Movies(m_id).credits()
-        maybe_video = Video(
-            id=video_id,
-            name=title,
-            description=clean_description(description, title, "[film]"),
-            release_date=tmdb_api_movie_or_tv_response.get('release_date', None),
-            last_air_date=None,
-            youtube_trailer_key=get_or_add_first_youtube_trailer(movie_detail.videos()),
-            poster_image_url=image,
-            film_or_tv='film',
+        db.session.add(maybe_video)
+        db.session.commit()
+        hydrate_credits(video_id, m_credits)
+
+    maybe_managed_video = ManagedVideo.query.filter_by(user_id=user.id, video_id=video_id).one_or_none()
+    if not maybe_managed_video:
+        maybe_managed_video = ManagedVideo(
+            user_id=user.id,
+            video_id=video_id,
+            date_added=today(),
+            watched=watched,
         )
+
+        db.session.add(maybe_managed_video)
+        db.session.commit()
     else:
-        tv_details = tmdbsimple.TV(tmdb_api_movie_or_tv_response['id'])
-        tv_info = tv_details.info()
-        m_credits = tmdbsimple.TV(tmdb_api_movie_or_tv_response['id']).credits()
-        maybe_video = Video(
-            id=video_id,
-            name=tmdb_api_movie_or_tv_response['name'],
-            description=clean_description(tmdb_api_movie_or_tv_response['overview'],
-                                          tmdb_api_movie_or_tv_response['name'], "[TV show]"),
-            release_date=tv_info['first_air_date'],
-            last_air_date=tv_info['last_air_date'],
-            youtube_trailer_key=get_or_add_first_youtube_trailer(tv_details.videos()),
-            poster_image_url=get_full_tmdb_image_url(tmdb_api_movie_or_tv_response['poster_path']),
-            film_or_tv='TV show',
-        )
+        if maybe_managed_video.watched != watched:
+            maybe_managed_video.watched = watched
+            db.session.commit()
 
-    db.session.add(maybe_video)
-    db.session.commit()
-    hydrate_credits(video_id, m_credits)
     return maybe_video
 
 

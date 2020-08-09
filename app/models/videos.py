@@ -1,5 +1,7 @@
 import datetime
 
+from sqlalchemy import func, UniqueConstraint
+
 from app import db
 from app.models.base import BaseModel
 
@@ -16,6 +18,16 @@ class Video(BaseModel):
     youtube_trailer_key: str = db.Column(db.Text, db.ForeignKey('youtube_videos.key'))
     poster_image_url: str = db.Column(db.Text)
     film_or_tv: str = db.Column(db.Text, nullable=False, server_default='film')
+
+
+class ManagedVideo(BaseModel):
+    __tablename__ = "managed_videos"
+    id: int = db.Column(db.Integer, primary_key=True)
+    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    video_id: str = db.Column(db.Text, db.ForeignKey('videos.id'), nullable=False)
+    date_added: datetime.date = db.Column(db.Date, nullable=False, server_default=func.current_date())
+    watched: bool = db.Column(db.Boolean, server_default='false', nullable=False)
+    __table_args__ = (UniqueConstraint('user_id', 'video_id', name='_user_id_and_video_id'),)
 
 
 class YouTubeVideo(BaseModel):

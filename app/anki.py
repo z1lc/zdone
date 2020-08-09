@@ -10,7 +10,7 @@ from jsmin import jsmin
 from app import db
 from app.models.base import User
 from app.models.spotify import LegacySpotifyTrackNoteGuidMapping, SpotifyArtist
-from app.models.videos import Video, YouTubeVideoOverride, YouTubeVideo, VideoPerson, VideoCredit
+from app.models.videos import Video, YouTubeVideoOverride, YouTubeVideo, VideoPerson, VideoCredit, ManagedVideo
 from app.spotify import get_tracks, get_followed_managed_spotify_artists_for_user
 from app.util import JsonDict
 
@@ -238,13 +238,18 @@ order by 4 desc"""
 
     # videos not released yet
     if user.id <= 1:
-        video_map = {}
+        video_id_to_html_formatted_name_and_year = {}
         youtube_overrides = {ytvo.video_id: ytvo.youtube_trailer_key for ytvo in YouTubeVideoOverride.query.all()}
         youtube_durations = {ytv.key: ytv.duration_seconds for ytv in YouTubeVideo.query.all()}
         video_model = get_video_model(user)
-        for video in Video.query.all():
+        managed_video_pair = db.session.query(ManagedVideo, Video) \
+            .join(ManagedVideo) \
+            .filter_by(user_id=user.id) \
+            .all()
+        for managed_video, video in managed_video_pair:
             trailer_key = youtube_overrides.get(video.id, video.youtube_trailer_key) or ''
 
+            release = ''
             if video.release_date:
                 release = str(video.release_date.year)
                 if video.in_production:
@@ -252,9 +257,9 @@ order by 4 desc"""
                 elif video.last_air_date:
                     if video.last_air_date and video.release_date.year != video.last_air_date.year:
                         release += f" - {str(video.last_air_date.year)}"
-                video_map[video.id] = f"<i>{video.name}</i> ({release})"
+                video_id_to_html_formatted_name_and_year[video.id] = f"<i>{video.name}</i> ({release})"
             else:
-                video_map[video.id] = f"<i>{video.name}</i>"
+                video_id_to_html_formatted_name_and_year[video.id] = f"<i>{video.name}</i>"
 
             track_as_note = VideoNote(
                 model=video_model,
@@ -265,6 +270,7 @@ order by 4 desc"""
                     f"<i>{video.name}</i>",
                     video.description,
                     release,
+                    'yes' if managed_video.watched else '',
                     trailer_key,
                     str(youtube_durations.get(trailer_key, '')),
                     f"<img src='{video.poster_image_url}'>",
@@ -292,7 +298,7 @@ having count(*) >= 4"""
             credits = []
             for credit in VideoCredit.query.filter_by(person_id=video_person.id).all():
                 if "uncredited" not in credit.character:
-                    credits.append(f"{credit.character} in {video_map[credit.video_id]}")
+                    credits.append(f"{credit.character} in {video_id_to_html_formatted_name_and_year[credit.video_id]}")
 
             video_person_model = get_video_person_model(user)
             person_as_note = VideoPersonNote(
@@ -390,6 +396,7 @@ def get_video_model(user: User) -> Model:
             {'name': 'Name'},
             {'name': 'Description'},
             {'name': 'Year Released'},
+            {'name': 'Watched?'},
             {'name': 'YouTube Trailer Key'},
             {'name': 'YouTube Trailer Duration'},
             {'name': 'Poster Image'},
