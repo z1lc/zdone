@@ -29,19 +29,19 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * Barbra Streisand
 * Phil Collins
 * Aerosmith
-* ABBA
+* ~~ABBA~~
 * ~~Frank Sinatra~~
 * ~~Katy Perry~~
 * ~~Kanye West~~
 * Chris Brown
 * Bruce Springsteen
 * ~~Bruno Mars~~
-* Jay-Z
+* ~~Jay-Z~~
 * Metallica
 * ~~Lady Gaga~~
 * Maroon 5
 * ~~Adele~~
-* Lil Wayne
+* ~~Lil Wayne~~
 * ~~Fleetwood Mac~~
 * Rod Stewart
 * Bee Gees
