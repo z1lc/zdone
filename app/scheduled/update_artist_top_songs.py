@@ -14,6 +14,7 @@ MAX_RETRIES_PER_ARTIST = 2
 
 # This code is scheduled to run once daily by the Heroku Scheduler. This helps avoid work that would previously be done
 # on apkg download within the request, which was very slow.
+# heroku run python app/scheduled/update_artist_top_songs.py -a zdone
 if __name__ == '__main__':
     refresh_start_time = time.time()
     all_users = User.query.all()
