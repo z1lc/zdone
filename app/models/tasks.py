@@ -51,7 +51,8 @@ class Task(BaseModel):
 class TaskLog(BaseModel):
     __tablename__ = "task_logs"
     id: int = db.Column(db.Integer, primary_key=True)
-    task_id: int = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
+    task_id: int = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=True)
+    task_name: str = db.Column(db.Text, nullable=True)
     at: datetime.datetime = db.Column(db.DateTime, nullable=False)  # ALWAYS UTC
     # in what time zone were we when we saved the above UTC timestamp?
     at_time_zone: str = db.Column(db.String(128), nullable=False)

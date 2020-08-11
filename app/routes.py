@@ -88,8 +88,9 @@ def update_task():
     update = req["update"]
     service = req["service"]
     task_id = req["id"]
+    task_raw_name = req["raw_name"]
 
-    return do_update_task(update, service, task_id, current_user)
+    return do_update_task(update, service, task_id, task_raw_name, current_user)
 
 
 @app.context_processor
@@ -318,6 +319,7 @@ def api():
                     ret_tasks.append({
                         "id": task.id,
                         "service": "zdone",
+                        "raw_name": task.title,
                         "name": task.title,
                         "note": task.description,
                         "subtask_id": None,
@@ -328,6 +330,7 @@ def api():
             ret_tasks.insert(0, {
                 "id": None,
                 "service": "zdone",
+                "raw_name": "Reconfigure tasks",
                 "name": "Reconfigure tasks",
                 "note": f"Average daily task load is {round(average_daily_load, 2)}, which is ≥3. Remove tasks or "
                         f"schedule them less frequently to avoid feeling overwhelmed.",

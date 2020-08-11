@@ -17,6 +17,7 @@ from app.util import failure, success
 def do_update_task(update: str,
                    service: str,
                    task_id: str,
+                   task_raw_name: str,
                    user: User = current_user) -> Tuple[Response, int]:
     if task_id is None:
         return failure(f"must pass a valid task_id")
@@ -37,14 +38,23 @@ def do_update_task(update: str,
         db.session.commit()
         return success()
     elif service == "trello":
-        client = TrelloClient(
-            api_key=current_user.trello_api_key,
-            api_secret=current_user.trello_api_access_token
-        )
-        completed_list_id = \
-        [l for l in [board for board in client.list_boards() if board.name == 'Backlogs'][0].list_lists() if
-         l.name == "Completed via zdone"][0].id
-        client.get_card(task_id).change_list(completed_list_id)
+        if update == "complete":
+            client = TrelloClient(
+                api_key=current_user.trello_api_key,
+                api_secret=current_user.trello_api_access_token
+            )
+            completed_list_id = \
+            [l for l in [board for board in client.list_boards() if board.name == 'Backlogs'][0].list_lists() if
+             l.name == "Completed via zdone"][0].id
+            client.get_card(task_id).change_list(completed_list_id)
+            db.session.add(TaskLog(
+                task_id=None,
+                task_name=task_raw_name,
+                at=datetime.datetime.utcnow(),
+                at_time_zone=user.current_time_zone,
+                action=update
+            ))
+            db.session.commit()
         return success()
     else:
         return failure(f"unexpected service type '{service}'")
@@ -116,6 +126,7 @@ def get_updated_trello_cards(user: User, force_refresh: bool = False):
                 item = {
                     "id": tcard.id,
                     "service": "trello",
+                    "raw_name": f"{tcard.name}",
                     "name": f"<a href='{tcard.url}'>{tlist.name}</a>: {tcard.name}",
                     "note": tcard.description.replace('\n', '<br>'),
                     "list_name": tlist.name,
