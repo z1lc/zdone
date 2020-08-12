@@ -21,14 +21,15 @@ def do_update_task(update: str,
                    user: User = current_user) -> Tuple[Response, int]:
     if task_id is None:
         return failure(f"must pass a valid task_id")
+    task = Task.query.filter_by(id=int(task_id)).one()
+    log = TaskLog(
+        task_id=task.id,
+        user_id=user.id,
+        at=datetime.datetime.utcnow(),
+        at_time_zone=user.current_time_zone,
+        action=update
+    )
     if service == "zdone":
-        task = Task.query.filter_by(id=int(task_id)).one()
-        log = TaskLog(
-            task_id=task.id,
-            at=datetime.datetime.utcnow(),
-            at_time_zone=user.current_time_zone,
-            action=update
-        )
         db.session.add(log)
         if update == "complete":
             task.last_completion = datetime.datetime.now(pytz.timezone(user.current_time_zone))
@@ -47,13 +48,8 @@ def do_update_task(update: str,
             [l for l in [board for board in client.list_boards() if board.name == 'Backlogs'][0].list_lists() if
              l.name == "Completed via zdone"][0].id
             client.get_card(task_id).change_list(completed_list_id)
-            db.session.add(TaskLog(
-                task_id=None,
-                task_name=task_raw_name,
-                at=datetime.datetime.utcnow(),
-                at_time_zone=user.current_time_zone,
-                action=update
-            ))
+            log.task_name = task_raw_name
+            db.session.add(log)
             db.session.commit()
         return success()
     else:

@@ -6,11 +6,33 @@ from pushover import Client
 from app import kv, db
 from app.log import log
 from app.models.base import User
-from app.models.tasks import Reminder, ReminderNotification
+from app.models.tasks import Reminder, ReminderNotification, TaskLog, Task
+from app.util import today
 
 
 def get_reminders(user: User) -> List[Reminder]:
     return Reminder.query.filter_by(user_id=user.id).all()
+
+
+def get_task_completions_from_this_week(user: User) -> List[Task]:
+    log_task_pair = db.session.query(TaskLog, Task) \
+        .outerjoin(Task) \
+        .filter(TaskLog.user_id == user.id) \
+        .filter(TaskLog.action == "complete") \
+        .filter(TaskLog.at >= today() - datetime.timedelta(days=7)) \
+        .order_by(TaskLog.at.desc()) \
+        .all()
+    return [tlog.task_name or task.title for tlog, task in log_task_pair]
+
+
+def get_reminders_from_this_week(user: User) -> List[Reminder]:
+    notification_reminder_pair = db.session.query(ReminderNotification, Reminder) \
+        .join(ReminderNotification) \
+        .filter(Reminder.user_id == user.id) \
+        .filter(ReminderNotification.sent_at >= today() - datetime.timedelta(days=7)) \
+        .order_by(ReminderNotification.sent_at.desc()) \
+        .all()
+    return [r for _, r in notification_reminder_pair]
 
 
 def get_most_recent_reminder(user: User) -> Optional[Reminder]:
