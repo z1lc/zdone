@@ -12,7 +12,7 @@ if __name__ == '__main__':
     while current_item < max_item:
         item = json.loads(requests.get(
             f"https://hacker-news.firebaseio.com/v0/item/{current_item}.json?print=pretty").text)
-        if item['type'] == "story" and "deleted" not in item:
+        if item and item['type'] == "story" and "deleted" not in item:
             db.session.add(HnStory(
                 id=item['id'],
                 comments=item.get('descendants', 0),
