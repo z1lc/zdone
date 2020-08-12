@@ -14,7 +14,7 @@ if __name__ == '__main__':
     log(f"Current max is #{max_item}, which is {total_to_do} ahead of current item #{current_item}.")
     while current_item < max_item:
         if current_item % 10 == 0:
-            log(f"On item #{current_item}; {round((((max_item - current_item) / total_to_do) - 1) * 100)}% done.")
+            log(f"On item #{current_item}; {-round((((max_item - current_item) / total_to_do) - 1) * 100)}% done.")
         item = json.loads(requests.get(
             f"https://hacker-news.firebaseio.com/v0/item/{current_item}.json?print=pretty").text)
         if item and item['type'] == "story" and "deleted" not in item:
