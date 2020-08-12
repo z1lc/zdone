@@ -20,8 +20,7 @@ def get_task_completions_from_this_week(user: User) -> List[Task]:
         .filter(TaskLog.user_id == user.id) \
         .filter(TaskLog.action == "complete") \
         .filter(TaskLog.at >= today() - datetime.timedelta(days=7)) \
-        .order_by(TaskLog.at.desc()) \
-        .all()
+        .order_by(TaskLog.at.desc()).all()  # type: ignore
     return [tlog.task_name or task.title for tlog, task in log_task_pair]
 
 
@@ -30,8 +29,7 @@ def get_reminders_from_this_week(user: User) -> List[Reminder]:
         .join(ReminderNotification) \
         .filter(Reminder.user_id == user.id) \
         .filter(ReminderNotification.sent_at >= today() - datetime.timedelta(days=7)) \
-        .order_by(ReminderNotification.sent_at.desc()) \
-        .all()
+        .order_by(ReminderNotification.sent_at.desc()).all()  # type: ignore
     return [r for _, r in notification_reminder_pair]
 
 
