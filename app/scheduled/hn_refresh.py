@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 
@@ -7,7 +7,38 @@ from app import kv, db
 from app.log import log
 from app.models.hn import HnStory
 
+
+def get_item(id):
+    response = json.loads(requests.get(
+        f"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty").text)
+    if response and response['type'] == "story" and "deleted" not in response:
+        return response
+    return None
+
+
 if __name__ == '__main__':
+    # refresh stories every day until they are archived by HN, which is 2 weeks after they are posted
+    log("Beginning story refresh...")
+    stories = HnStory.query \
+        .filter(HnStory.last_refreshed_at < datetime.utcnow() - timedelta(days=1)) \
+        .filter(HnStory.posted_at > datetime.utcnow() - timedelta(days=15)) \
+        .all()
+    log(f"Will refresh {len(stories)} stories.")
+    for i, story in enumerate(stories):
+        if i % 10 == 0:
+            log(f"On item #{i}; {round(i * 100 / len(stories))}% done.")
+        item = get_item(story.id)
+        if item:
+            story.last_refreshed_at = datetime.utcnow()
+            story.score = item['score']
+            story.comments = item.get('descendants', 0)
+        else:
+            # item was probably deleted, because of spam or whatever
+            db.session.delete(story)
+        db.session.commit()
+    log("Completed story refresh.")
+
+    log("Beginning new story update...")
     current_item = int(kv.get('HN_ITEM_OFFSET'))
     max_item = int(requests.get('https://hacker-news.firebaseio.com/v0/maxitem.json').text)
     total_to_do = max_item - current_item
@@ -15,9 +46,8 @@ if __name__ == '__main__':
     while current_item < max_item:
         if current_item % 10 == 0:
             log(f"On item #{current_item}; {-round((((max_item - current_item) / total_to_do) - 1) * 100)}% done.")
-        item = json.loads(requests.get(
-            f"https://hacker-news.firebaseio.com/v0/item/{current_item}.json?print=pretty").text)
-        if item and item['type'] == "story" and "deleted" not in item:
+        item = get_item(current_item)
+        if item:
             db.session.add(HnStory(
                 id=item['id'],
                 comments=item.get('descendants', 0),
@@ -25,7 +55,9 @@ if __name__ == '__main__':
                 title=item['title'],
                 url=item.get('url', f"https://news.ycombinator.com/item?id={item['id']}"),
                 posted_at=datetime.fromtimestamp(item['time']),
+                last_refreshed_at=datetime.utcnow(),
             ))
             db.session.commit()
         current_item += 1
         kv.put('HN_ITEM_OFFSET', str(current_item))
+    log("Completed new story update.")
