@@ -4,6 +4,7 @@ import json
 import os
 import uuid
 
+import flask
 import pytz
 from flask import render_template, request, make_response, redirect, send_file
 from flask import url_for, flash
@@ -12,11 +13,13 @@ from flask_login import login_required
 from sentry_sdk import last_event_id, capture_exception, configure_scope
 from werkzeug.urls import url_parse
 
+from app.card_generation.anki import generate_full_apkg
 from app.models.base import User
 from . import app, db, kv
-from app.card_generation.anki import generate_full_apkg
 from .forms import LoginForm, RegistrationForm, ReminderForm
+from .hn import get_unread_stories
 from .log import log
+from .models.hn import HnReadLog
 from .models.spotify import ManagedSpotifyArtist, SpotifyArtist
 from .models.tasks import Reminder, Task
 from .reminders import get_reminders, get_most_recent_reminder
@@ -274,6 +277,20 @@ def reminders(reminder_id):
                            navigation=get_navigation(current_user, "Reminders"),
                            reminders=get_reminders(current_user),
                            form=form)
+
+
+@app.route('/hn', defaults={'item_id': None}, methods=['GET'])
+@app.route("/hn/<item_id>", methods=['POST'])
+@login_required
+def hn(item_id):
+    if flask.request.method == 'POST' and item_id:
+        db.session.add(HnReadLog(user_id=current_user.id, hn_story_id=item_id))
+        db.session.commit()
+        return success()
+    else:
+        return render_template("hn.html",
+                               navigation=get_navigation(current_user, "HN"),
+                               hn_items=get_unread_stories(current_user))
 
 
 @app.route('/video')

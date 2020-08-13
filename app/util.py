@@ -26,6 +26,8 @@ def get_navigation(user: User, current_page: str) -> str:
             '<a href="/reminders" target="_self">Reminders</a>' if current_page != "Reminders" else "Reminders")
     if user.trello_api_key and user.trello_api_access_token:
         pages.append('<a href="/" target="_self">Tasks</a>' if current_page != "Tasks" else "Tasks")
+    if user.username in ['rsanek', 'vsanek', 'will']:
+        pages.append('<a href="/hn" target="_self">HN</a>' if current_page != "HN" else "HN")
     return " | ".join(pages)
 
 

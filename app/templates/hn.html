@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block within_head %}
+    <title>HN</title>
+    <link rel="stylesheet" href="//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
+    <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <script>
+      var table;
+      $(document).ready(function () {
+        table = $('#hn_items_table').DataTable({
+          "lengthChange": false,
+          "searching": false,
+          "ordering": false,
+          "order": [[1, "desc"]],
+          "language": {
+            "info": "Showing _START_ to _END_ of _TOTAL_ stories"
+          }
+        });
+      });
+
+      function clickLink(id, url) {
+        window.open("https://news.ycombinator.com/item?id=" + id);
+        window.open(url);
+        table.row($('tr#' + id)).remove().draw();
+        $.ajax({type: "POST", url: "/hn/" + id});
+      }
+    </script>
+    <style>
+      body {
+        max-width: 1500px;
+        margin: auto;
+        padding: 20px;
+      }
+
+      a {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {{ navigation|safe }}
+    <table id="hn_items_table">
+        <thead>
+        <tr>
+            <th>Comments</th>
+            <th>Votes</th>
+            <th>Story</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in hn_items %}
+            <tr id="{{ item.id }}">
+                <td class="dt-body-right">{{ item.comments }}</td>
+                <td class="dt-body-right">{{ item.score }}</td>
+                <td class="dt-body-left"><a onclick="clickLink({{ item.id }}, '{{ item.url }}')"
+                                            target="_blank">{{ item.title }}</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
