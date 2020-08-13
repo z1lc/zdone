@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timedelta
 
 import requests
+from sqlalchemy import or_, and_
 
 from app import kv, db
 from app.log import log
@@ -19,10 +20,17 @@ def get_item(id):
 if __name__ == '__main__':
     # refresh stories every day until they are archived by HN, which is 2 weeks after they are posted
     log("Beginning story refresh...")
-    stories = HnStory.query \
-        .filter(HnStory.last_refreshed_at < datetime.utcnow() - timedelta(days=1)) \
-        .filter(HnStory.posted_at > datetime.utcnow() - timedelta(days=15)) \
-        .all()
+    now = datetime.utcnow()
+    # avoid ever refreshing more than hourly (but use 30 minutes here just to be safe in case we have a long run)
+    stories = HnStory.query.filter(HnStory.last_refreshed_at < now - timedelta(minutes=30)).filter(or_(
+        # hourly within first 3 hours
+        HnStory.posted_at >= now - timedelta(hours=3),
+        # daily within first week
+        and_(HnStory.posted_at >= (now - timedelta(days=7)), HnStory.last_refreshed_at <= (now - timedelta(days=1))),
+        # then, one final time before getting archived
+        and_(HnStory.posted_at < (now - timedelta(days=14)),
+             HnStory.last_refreshed_at < (HnStory.posted_at + timedelta(days=14))),
+    )).all()
     log(f"Will refresh {len(stories)} stories.")
     for i, story in enumerate(stories):
         if i % 10 == 0:
