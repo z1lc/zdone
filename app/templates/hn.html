@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
     <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
     <script>
-      var table;
+      let table;
       $(document).ready(function () {
         table = $('#hn_items_table').DataTable({
           "lengthChange": false,
@@ -44,16 +44,14 @@
     <table id="hn_items_table">
         <thead>
         <tr>
-            <th>Comments</th>
-            <th>Votes</th>
+            <th>Posted</th>
             <th>Story</th>
         </tr>
         </thead>
         <tbody>
         {% for item in hn_items %}
             <tr id="{{ item.id }}">
-                <td class="dt-body-right">{{ item.comments }}</td>
-                <td class="dt-body-right">{{ item.score }}</td>
+                <td class="dt-body-right">{{ item.posted_at }}</td>
                 <td class="dt-body-left"><a onclick="clickLink({{ item.id }}, '{{ item.url }}')"
                                             target="_blank">{{ item.title }}</a></td>
             </tr>
