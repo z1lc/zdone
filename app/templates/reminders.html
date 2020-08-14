@@ -15,7 +15,7 @@
       });
       function clearIf(text) {
         let textarea = $('textarea#message')
-        if (textarea.text() === text) {
+        if (textarea.text().replaceAll('\n', '') === text) {
           textarea.text('');
         }
       }
@@ -49,7 +49,7 @@
         </p>
         <p>
             {{ form.message.label }}<br>
-            {{ form.message(rows="5", onclick="clearIf('" + reminder_default + "')") }}<br>
+            {{ form.message(rows="5", onfocus="clearIf('" + reminder_default + "')") }}<br>
         </p>
         <p>{{ form.submit() }}</p>
     </form>

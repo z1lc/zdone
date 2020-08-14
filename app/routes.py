@@ -277,7 +277,7 @@ def reminders(reminder_id):
                            navigation=get_navigation(current_user, "Reminders"),
                            reminders=get_reminders(current_user),
                            form=form,
-                           reminder_default=REMINDER_DEFAULT)
+                           reminder_default=REMINDER_DEFAULT.replace('\n', ''))
 
 
 @app.route('/hn', defaults={'item_id': None}, methods=['GET'])
