@@ -94,6 +94,22 @@ order by 4 desc"""
         albums = create_html_unordered_list(
             [f'<i>{name}</i> ({year})' for name, year in top_played_albums_for_artist.items()], max_length=10)
 
+        top_collaborators = list()
+        if user.id == 1:
+            top_collaborators_sql = f"""
+with plays_by_artist as (select *
+                         from spotify_plays sp
+                                  join spotify_tracks s on sp.spotify_track_uri = s.uri
+                         where spotify_artist_uri = '{managed_artist.spotify_artist_uri}')
+select sa.name
+from plays_by_artist pba
+         join spotify_features sf on sf.spotify_track_uri = pba.spotify_track_uri
+         join spotify_artists sa on sf.spotify_artist_uri = sa.uri
+where sa.uri != '{managed_artist.spotify_artist_uri}'
+group by 1
+order by count(*) desc"""
+            top_collaborators = [row[0] for row in list(db.engine.execute(top_collaborators_sql))]
+
         genres = ''
         similar_artists = ''
         years_active = ''
@@ -111,7 +127,7 @@ order by 4 desc"""
                     genres,
                     similar_artists,
                     years_active,
-                    '',
+                    create_html_unordered_list(top_collaborators, max_length=10),
                     '',
                     '',
                     '',
@@ -165,7 +181,7 @@ def get_artist_model(user: User) -> Model:
             {'name': 'Genres'},
             {'name': 'Similar Artists'},
             {'name': 'Years Active'},
-            {'name': 'Extra Field 1'},  # Reserved for future use
+            {'name': 'Extra Field 1'},  # Collaborators / featured artists
             {'name': 'Extra Field 2'},  # Reserved for future use
             {'name': 'Extra Field 3'},  # Reserved for future use
             {'name': 'Extra Field 4'},  # Reserved for future use

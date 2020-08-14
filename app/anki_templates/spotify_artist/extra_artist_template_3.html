@@ -1,0 +1,15 @@
+{{ '{{#Extra Field 1}}' }}
+<div id="textPart">
+    {% if is_front %}
+        Name an artist <span class="rsAnkiBold">{{ '{{Name}}' }}</span> has collaborated with.
+    {% else %}
+        <span class="rsAnkiBold">{{ '{{Name}}' }}</span><br>
+        <span class="rsAnswerMulti">{{ '{{Extra Field 1}}' }}</span>
+    {% endif %}
+</div>
+
+<div id="imagePart">{{ '{{Image}}' }}</div>
+
+
+{{ script_include|safe }}
+{{ '{{/Extra Field 1}}' }}
