@@ -18,7 +18,8 @@ from sqlalchemy.exc import IntegrityError
 from app import kv, db
 from app.log import log
 from app.models.base import User
-from app.models.spotify import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay, TopTrack, SpotifyAlbum
+from app.models.spotify import ManagedSpotifyArtist, SpotifyArtist, SpotifyTrack, SpotifyPlay, TopTrack, SpotifyAlbum, \
+    SpotifyFeature
 from app.util import today_datetime, today, JsonDict
 
 # Scopes that are currently requested for public users -- only request things that are necessary
@@ -170,10 +171,10 @@ def add_or_get_album(sp, spotify_album_uri: str):
 
 # Unused right now, but nice to keep around if/when I need to do various backfills
 def populate_null(user: User) -> None:
-    top_played_tracks_sql = f"""select distinct spotify_album_uri
+    sql = f"""select distinct uri
 from spotify_tracks
-where spotify_album_uri not in (select uri from spotify_albums)"""
-    unpopulated = [a[0] for a in list(db.engine.execute(top_played_tracks_sql))]
+where uri not in (select spotify_track_uri from spotify_features)"""
+    unpopulated = [a[0] for a in list(db.engine.execute(sql))]
     sp = get_spotify("", user)
 
     batchsize = 20
@@ -181,22 +182,11 @@ where spotify_album_uri not in (select uri from spotify_albums)"""
         batch = unpopulated[i:i + batchsize]
         if i % 1000 == 0:
             sp = get_spotify("", user)
-        albums = sp.albums(batch)
-        for j, item in enumerate(batch):
-            sp_album = albums['albums'][j]
-            add_or_get_artist(sp, sp_album['artists'][0]['uri'])
-            album = SpotifyAlbum(
-                uri=item,
-                name=sp_album['name'],
-                spotify_artist_uri=sp_album['artists'][0]['uri'],
-                album_type=sp_album['album_type'],
-                released_at=parser.parse(sp_album['release_date']).date(),
-                spotify_image_url=sp_album['images'][0]['url'] if sp_album['images'] else None
-            )
-            db.session.add(album)
-        log(f"Wrote 20 more artists. Total this run is {round(i / len(unpopulated) * 1000) / 10}%, "
+        tracks = sp.tracks(batch)['tracks']
+        for j, track in enumerate(tracks):
+            create_features_from_artists(sp, track)
+        log(f"Processed 20 more tracks. Total this run is {round(i / len(unpopulated) * 1000) / 10}%, "
             f"{i} / {len(unpopulated)}")
-        db.session.commit()
 
 
 def add_or_get_artist(sp, spotify_artist_uri: str):
@@ -256,15 +246,43 @@ def bulk_add_tracks(sp, track_uris: List[str]) -> None:
         add_or_get_track(sp, track_uri)
 
 
+def add_or_get_feature(track_uri: str, artist_uri: str, ordinal: int) -> SpotifyFeature:
+    feature = SpotifyFeature.query \
+        .filter_by(spotify_track_uri=track_uri, spotify_artist_uri=artist_uri, ordinal=ordinal) \
+        .one_or_none()
+    if not feature:
+        feature = SpotifyFeature(
+            spotify_track_uri=track_uri,
+            spotify_artist_uri=artist_uri,
+            ordinal=ordinal,
+        )
+        db.session.add(feature)
+        db.session.commit()
+    return feature
+
+
+def create_features_from_artists(sp, sp_track) -> List[SpotifyFeature]:
+    to_ret = list()
+    for i, artist in enumerate(sp_track['artists']):
+        spotify_artist = add_or_get_artist(sp, artist['uri'])
+        to_ret.append(add_or_get_feature(sp_track['uri'], spotify_artist.uri, i))
+    return to_ret
+
+
 def add_or_get_track(sp, track_uri: str) -> SpotifyTrack:
     track = SpotifyTrack.query.filter_by(uri=track_uri).one_or_none()
     if not track:
         sp_track = sp.track(track_uri)
-        spotify_artist = add_or_get_artist(sp, sp_track['artists'][0]['uri'])
+        primary_artist_uri = create_features_from_artists(sp, sp_track)[0].spotify_artist_uri
+        for i, artist in enumerate(sp_track['artists']):
+            spotify_artist = add_or_get_artist(sp, artist['uri'])
+            add_or_get_feature(track_uri, spotify_artist.uri, i)
+            if i == 0:
+                primary_artist = spotify_artist
         spotify_album = add_or_get_album(sp, sp_track['album']['uri'])
         track = SpotifyTrack(uri=track_uri,
                              name=sp_track['name'],
-                             spotify_artist_uri=spotify_artist.uri,
+                             spotify_artist_uri=primary_artist_uri,
                              spotify_album_uri=spotify_album.uri,
                              duration_milliseconds=sp_track['duration_ms'])
         db.session.add(track)

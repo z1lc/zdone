@@ -57,6 +57,18 @@ class SpotifyTrack(BaseModel):
     duration_milliseconds: int = db.Column(db.Integer, nullable=False)
 
 
+class SpotifyFeature(BaseModel):
+    __tablename__ = "spotify_features"
+    id: int = db.Column(db.Integer, primary_key=True)
+    spotify_track_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=False)
+    spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
+    ordinal: int = db.Column(db.Integer, nullable=False)
+    __table_args__ = (
+        UniqueConstraint('spotify_track_uri', 'spotify_artist_uri'),
+        UniqueConstraint('spotify_track_uri', 'ordinal'),
+    )
+
+
 class SpotifyPlay(BaseModel):
     __tablename__ = "spotify_plays"
     id: int = db.Column(db.Integer, primary_key=True)
