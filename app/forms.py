@@ -1,11 +1,12 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
-from wtforms.widgets import TextArea
 
 from app.models.base import User
 
 MINIMUM_PASSWORD_LENGTH = 10
+REMINDER_DEFAULT = "Implementation intentions are an effective way to change behavior:\n\n" \
+                   "In situation X, I will do behavior Y to achieve subgoal Z."
 
 
 class LoginForm(FlaskForm):
@@ -40,7 +41,8 @@ class RegistrationForm(FlaskForm):
         if len(password.data) < MINIMUM_PASSWORD_LENGTH:
             raise ValidationError(f'Please pick a password that is at least {MINIMUM_PASSWORD_LENGTH} characters long.')
 
+
 class ReminderForm(FlaskForm):
     title = StringField('Title:', validators=[DataRequired()])
-    message = StringField('Message:', validators=[DataRequired()], widget=TextArea())
+    message = TextAreaField('Message:', validators=[DataRequired()], default=REMINDER_DEFAULT)
     submit = SubmitField('Add reminder')

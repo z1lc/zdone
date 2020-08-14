@@ -16,7 +16,7 @@ from werkzeug.urls import url_parse
 from app.card_generation.anki import generate_full_apkg
 from app.models.base import User
 from . import app, db, kv
-from .forms import LoginForm, RegistrationForm, ReminderForm
+from .forms import LoginForm, RegistrationForm, ReminderForm, REMINDER_DEFAULT
 from .hn import get_unread_stories
 from .log import log
 from .models.hn import HnReadLog
@@ -276,7 +276,8 @@ def reminders(reminder_id):
     return render_template("reminders.html",
                            navigation=get_navigation(current_user, "Reminders"),
                            reminders=get_reminders(current_user),
-                           form=form)
+                           form=form,
+                           reminder_default=REMINDER_DEFAULT)
 
 
 @app.route('/hn', defaults={'item_id': None}, methods=['GET'])
