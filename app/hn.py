@@ -9,5 +9,5 @@ def get_unread_stories(user: User) -> List[HnStory]:
     return [story for story, log in db.session.query(HnStory, HnReadLog)
         .outerjoin(HnReadLog)
         .filter(HnStory.score >= 100)
-        .order_by(HnStory.score.desc())
+        .order_by(HnStory.score.desc())  # type: ignore
         .all() if log is None]
