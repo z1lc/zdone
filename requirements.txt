@@ -27,7 +27,8 @@ python-pushover==0.4
 python-youtube==0.6.0
 isodate==0.6.0
 marshmallow==3.7.1
-sendgrid===6.4.5
+sendgrid==6.4.5
+humanize==2.6.0
 
 git+git://github.com/z1lc/spotipy.git#egg=spotipy
 git+git://github.com/z1lc/genanki.git#egg=genanki
