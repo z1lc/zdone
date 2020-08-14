@@ -23,8 +23,8 @@ if __name__ == '__main__':
     now = datetime.utcnow()
     # avoid ever refreshing more than hourly (but use 30 minutes here just to be safe in case we have a long run)
     stories = HnStory.query.filter(HnStory.last_refreshed_at < now - timedelta(minutes=30)).filter(or_(
-        # hourly within first 3 hours
-        HnStory.posted_at >= now - timedelta(hours=3),
+        # hourly within first 12 hours
+        HnStory.posted_at >= now - timedelta(hours=12),
         # daily within first week
         and_(HnStory.posted_at >= (now - timedelta(days=7)), HnStory.last_refreshed_at <= (now - timedelta(days=1))),
         # then, one final time before getting archived
