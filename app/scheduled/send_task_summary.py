@@ -16,7 +16,6 @@ env: Environment = Environment(
     autoescape=select_autoescape(['html', 'xml']),
     undefined=StrictUndefined
 )
-sg = sendgrid.SendGridAPIClient(api_key=kv.get('SENDGRID_API_KEY'))
 from_email = sendgrid.Email("notifications@zdone.co", "zdone Notifications")
 subject = "Weekly zdone Summary"
 
@@ -44,6 +43,7 @@ def send_email(user: User):
 
 
 if __name__ == '__main__':
+    sg = sendgrid.SendGridAPIClient(api_key=kv.get('SENDGRID_API_KEY'))
     for user in User.query.filter(User.pushover_user_key.isnot(None)).all():  # type: ignore
         if datetime.datetime.now(pytz.timezone(user.current_time_zone)).weekday() != 5:
             log(f"Will not send to {user.username} because it is not Saturday "
