@@ -40,6 +40,9 @@ def do_update_task(update: str,
         return success()
     elif service == "trello":
         if update == "complete":
+            # clear out cache so we force a refresh in case we don't receive the webhook from Trello
+            user.cached_trello_data = None
+            db.session.commit()
             client = TrelloClient(
                 api_key=current_user.trello_api_key,
                 api_secret=current_user.trello_api_access_token
