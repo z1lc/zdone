@@ -37,9 +37,11 @@ if __name__ == '__main__':
             log(f"On item #{i}; {round(i * 100 / len(stories))}% done.")
         item = get_item(story.id)
         if item:
-            story.last_refreshed_at = datetime.utcnow()
-            story.score = item['score']
             story.comments = item.get('descendants', 0)
+            story.score = item['score']
+            story.title = item['title']
+            story.url = item.get('url', f"https://news.ycombinator.com/item?id={item['id']}")
+            story.last_refreshed_at = datetime.utcnow()
         else:
             # item was probably deleted, because of spam or whatever
             db.session.delete(story)
