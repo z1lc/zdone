@@ -1,12 +1,12 @@
 function completeItem(service, id, raw_name) {
-  updateItem(service, id, raw_name, "complete");
+  updateItem(service, id, null, raw_name, "complete");
 }
 
-function deferItem(service, id, raw_name) {
-  updateItem(service, id, raw_name, "defer");
+function deferItem(service, id, days, raw_name) {
+  updateItem(service, id, days, raw_name, "defer");
 }
 
-function updateItem(service, id, raw_name, updateAction) {
+function updateItem(service, id, days, raw_name, updateAction) {
   if (service === "zdone" || service === "trello") {
     $
       .ajax({
@@ -14,6 +14,7 @@ function updateItem(service, id, raw_name, updateAction) {
         data: JSON.stringify({
           "service": service,
           "id": id,
+          "days": days,
           "raw_name": raw_name,
           "update": updateAction,
         }),

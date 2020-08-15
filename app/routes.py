@@ -91,9 +91,10 @@ def update_task():
     update = req["update"]
     service = req["service"]
     task_id = req["id"]
+    days = req["days"]
     task_raw_name = req["raw_name"]
 
-    return do_update_task(update, service, task_id, task_raw_name, current_user)
+    return do_update_task(update, service, task_id, days, task_raw_name, current_user)
 
 
 @app.context_processor

@@ -58,8 +58,9 @@
       nextTask();
       event.preventDefault();
     });
-    $("button#defer").click(function (event) {
-      deferItem(task.service, task.id, task.raw_name);
+    $("button.defer").click(function (event) {
+      const days = parseInt($(this).attr("data-days"));
+      deferItem(task.service, task.id, days, task.raw_name);
       nextTask();
       event.preventDefault();
     });
@@ -86,7 +87,12 @@
     }
 
     div.button, div.button2 {
-        display: none;
+      display: none;
+      font-size: 25px;
+    }
+
+    button#complete {
+      font-size: 40px;
     }
 
     body {
@@ -115,7 +121,7 @@
         font-size: 15px;
     }
 
-    button#later, button#defer {
+    button#later, button.defer {
         font-size: 20px;
     }
 </style>
@@ -136,7 +142,10 @@
         <div class="button">
             <button id="complete">Complete</button><br>
             <button id="later">Later</button>
-            <button id="defer">Defer 3 Days</button>
+            <button class="defer" data-days="1">Defer 1 Days</button>
+            <button class="defer" data-days="3">Defer 3 Days</button><br>
+            <button class="defer" data-days="7">Defer 7 Days</button>
+            <button class="defer" data-days="30">Defer 30 Days</button>
         </div>
         <div class="reminder"></div>
     </div>

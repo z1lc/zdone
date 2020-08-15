@@ -17,6 +17,7 @@ from app.util import failure, success
 def do_update_task(update: str,
                    service: str,
                    task_id: str,
+                   days: Optional[int],
                    task_raw_name: str,
                    user: User = current_user) -> Tuple[Response, int]:
     if task_id is None:
@@ -36,8 +37,11 @@ def do_update_task(update: str,
         if update == "complete":
             task.last_completion = datetime.datetime.now(pytz.timezone(user.current_time_zone))
         elif update == "defer":
-            task.defer_until = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date() \
-                               + datetime.timedelta(days=3)
+            if days is None:
+                return failure(f"Need to pass number of days to defer by.")
+            else:
+                task.defer_until = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date() \
+                                   + datetime.timedelta(days=days)
         db.session.commit()
         return success()
     elif service == "trello":
