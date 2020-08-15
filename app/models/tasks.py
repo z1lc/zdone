@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 
 from app import db
 from app.models.base import BaseModel
@@ -28,12 +29,12 @@ class Task(BaseModel):
     id: int = db.Column(db.Integer, primary_key=True)
     user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     title: str = db.Column(db.Text, nullable=False)
-    description: str = db.Column(db.Text, nullable=True)
+    description: Optional[str] = db.Column(db.Text, nullable=True)
     ideal_interval: int = db.Column(db.Integer, nullable=False)
     # the local date of last completion, for ease of skew calculation
     last_completion: datetime.date = db.Column(db.Date, nullable=False)
     # local date for when this task can be re-enabled again
-    defer_until: datetime.date = db.Column(db.Date, nullable=True)
+    defer_until: Optional[datetime.date] = db.Column(db.Date, nullable=True)
 
     def calculate_skew(self, user_local_date: datetime.date) -> float:
         """
@@ -51,9 +52,9 @@ class Task(BaseModel):
 class TaskLog(BaseModel):
     __tablename__ = "task_logs"
     id: int = db.Column(db.Integer, primary_key=True)
-    task_id: int = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=True)
+    task_id: Optional[int] = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=True)
     user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    task_name: str = db.Column(db.Text, nullable=True)
+    task_name: Optional[str] = db.Column(db.Text, nullable=True)
     at: datetime.datetime = db.Column(db.DateTime, nullable=False)  # ALWAYS UTC
     # in what time zone were we when we saved the above UTC timestamp?
     at_time_zone: str = db.Column(db.String(128), nullable=False)

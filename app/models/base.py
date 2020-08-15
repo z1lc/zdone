@@ -1,3 +1,5 @@
+from typing import Optional
+
 from flask_login import UserMixin
 # see https://github.com/dropbox/sqlalchemy-stubs/issues/76#issuecomment-595839159
 from flask_sqlalchemy.model import DefaultMeta
@@ -19,7 +21,7 @@ class User(UserMixin, BaseModel):
     email: str = db.Column(db.String(128), index=True, unique=True)
     password_hash: str = db.Column(db.String(128))
     # one of https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-    current_time_zone: str = db.Column(db.String(128), nullable=True)
+    current_time_zone: Optional[str] = db.Column(db.String(128), nullable=True)
 
     maximum_minutes_per_day: int = db.Column(db.Integer, nullable=False, server_default='120')
 
@@ -31,12 +33,12 @@ class User(UserMixin, BaseModel):
     trello_api_access_token: str = db.Column(db.String(128))
     # needed for figuring out who a webhook belongs to
     trello_member_id: str = db.Column(db.Text, unique=True)
-    cached_trello_data: str = db.Column(db.Text, nullable=True)
+    cached_trello_data: Optional[str] = db.Column(db.Text, nullable=True)
 
     spotify_token_json: str = db.Column(db.String(1024))
-    spotify_playlist_uri: str = db.Column(db.String(128), unique=True, nullable=True)
-    last_spotify_track: str = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=True)
-    last_random_play_offset: int = db.Column(db.Integer, nullable=True)
+    spotify_playlist_uri: Optional[str] = db.Column(db.String(128), unique=True, nullable=True)
+    last_spotify_track: Optional[str] = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=True)
+    last_random_play_offset: Optional[int] = db.Column(db.Integer, nullable=True)
 
     last_fm_username: str = db.Column(db.String(128), unique=True)
     last_fm_last_refresh_time = db.Column(db.DateTime)

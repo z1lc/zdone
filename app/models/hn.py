@@ -12,7 +12,7 @@ class HnStory(BaseModel):
     title: str = db.Column(db.Text, nullable=False)
     url: str = db.Column(db.Text, nullable=False)
     posted_at: datetime.datetime = db.Column(db.DateTime, nullable=False)
-    last_refreshed_at: datetime.datetime = db.Column(db.DateTime, nullable=True)
+    last_refreshed_at: datetime.datetime = db.Column(db.DateTime, nullable=False)
 
 
 class HnReadLog(BaseModel):

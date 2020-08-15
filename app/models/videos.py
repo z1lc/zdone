@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 
 from sqlalchemy import func, UniqueConstraint
 
@@ -40,7 +41,7 @@ class YouTubeVideo(BaseModel):
 class YouTubeVideoOverride(BaseModel):
     __tablename__ = "youtube_video_overrides"
     video_id: int = db.Column(db.Text, db.ForeignKey('videos.id'), primary_key=True)
-    youtube_trailer_key: str = db.Column(db.Text, db.ForeignKey('youtube_videos.key'), nullable=True)
+    youtube_trailer_key: Optional[str] = db.Column(db.Text, db.ForeignKey('youtube_videos.key'), nullable=True)
 
 
 class VideoPerson(BaseModel):

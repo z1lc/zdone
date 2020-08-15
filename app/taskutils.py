@@ -21,6 +21,8 @@ def do_update_task(update: str,
                    user: User = current_user) -> Tuple[Response, int]:
     if task_id is None:
         return failure(f"must pass a valid task_id")
+    if user.current_time_zone is None:
+        return failure(f"User {user.username} does not have a time zone setting.")
     log = TaskLog(
         user_id=user.id,
         at=datetime.datetime.utcnow(),
