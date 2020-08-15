@@ -1,6 +1,8 @@
 import datetime
+import statistics
 from typing import List, Optional
 
+import pytz
 from pushover import Client
 
 from app import kv, db
@@ -22,6 +24,17 @@ def get_task_completions_from_this_week(user: User) -> List[Task]:
         .filter(TaskLog.at >= today() - datetime.timedelta(days=7)) \
         .order_by(TaskLog.at.desc()).all()  # type: ignore
     return [tlog.task_name or task.title for tlog, task in log_task_pair]
+
+
+def get_current_median_skew(user: User) -> Optional[float]:
+    if not user.current_time_zone:
+        return None
+    user_local_date = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date()
+    tasks = Task.query.filter_by(user_id=int(user.id)).all()
+    if not tasks:
+        return None
+    skews = [task.calculate_skew(user_local_date, ignore_deferral=True) for task in tasks]
+    return round(statistics.median(skews) * 100)
 
 
 def get_reminders_from_this_week(user: User) -> List[Reminder]:

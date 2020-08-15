@@ -36,15 +36,20 @@ class Task(BaseModel):
     # local date for when this task can be re-enabled again
     defer_until: Optional[datetime.date] = db.Column(db.Date, nullable=True)
 
-    def calculate_skew(self, user_local_date: datetime.date) -> float:
+    def is_after_delay(self, user_local_date: datetime.date) -> bool:
+        return self.defer_until is None or user_local_date >= self.defer_until
+
+    def calculate_skew(self, user_local_date: datetime.date, ignore_deferral: bool = False) -> float:
         """
         Calculate the overdueness of the task. A value greater than or equal to 1 signifies this task is due.
-        Tasks that are currently deferred have a skew of 0.
+        Tasks that are currently deferred have a skew of 0 unless ignore_deferral is passed.
 
         :param user_local_date: the local date of the user in their current time zone
+        :param ignore_deferral: deferred tasks by default have a skew of 0.
+                                if passed as true, the true deferral will be calculated
         :return: the skew of the task, as a decimal
         """
-        if self.defer_until and user_local_date < self.defer_until:
+        if not ignore_deferral and self.defer_until and user_local_date < self.defer_until:
             return 0.0
         return (user_local_date - self.last_completion).days / self.ideal_interval
 

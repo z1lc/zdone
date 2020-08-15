@@ -1,0 +1,39 @@
+<h1>zdone Summary</h1>
+Your weekly summary of activity on <a href="https://www.zdone.co/">zdone</a>.
+{% if distinct_listens > 0 %}
+    <h2><a href="https://www.zdone.co/spotify/">Music</a></h2>
+    You listened to {{ distinct_listens }} unique songs this week. {{ new_listens }} of those were brand new! Here's who you're vibing with:
+    <ul>
+        {% for artist in artists %}
+            <li>{{ artist.name }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% if tasks %}
+    <h2><a href="https://www.zdone.co/">Tasks</a></h2>
+        {% if skew %}Your median skew is currently
+            <span style="font-weight: bold; color: {% if skew <= 100 %}green{% else %}darkorange{% endif %}">{{ skew }}%</span>.
+        {% endif %}
+    <ul>
+        {% for task in tasks %}
+            <li>{{ task|safe }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% if reminders %}
+    <h2><a href="https://www.zdone.co/reminders/">Reminders</a></h2>
+    <ul>
+        {% for reminder in reminders %}
+            <li><a href="https://www.zdone.co/reminders/{{ reminder.id }}">{{ reminder.title }}</a></li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% if articles %}
+    <h2><a href="https://www.zdone.co/hn/">HN Stories</a></h2>
+    You read {{ num_articles }} stories from Hacker News this week.
+    <ul>
+        {% for hns in articles %}
+            <li><a href="{{ hns.url }}">{{ hns.title }}</a></li>
+        {% endfor %}
+    </ul>
+{% endif %}

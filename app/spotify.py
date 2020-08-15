@@ -13,6 +13,7 @@ import spotipy
 from dateutil import parser
 from flask import redirect
 from spotipy import oauth2
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
 from app import kv, db
@@ -554,3 +555,36 @@ and not ((good_image and spotify_image_url is not null) or image_override_name i
         name = artist['name']
         to_ret += f"{name}<br><img src='{src}'><br>"
     return to_ret
+
+
+def get_distinct_songs_this_week(user: User) -> int:
+    return db.session.query(SpotifyPlay) \
+        .join(SpotifyTrack) \
+        .filter(SpotifyPlay.user_id == user.id) \
+        .filter(SpotifyPlay.created_at >= today() - datetime.timedelta(days=7)) \
+        .distinct(SpotifyTrack.uri) \
+        .count()
+
+
+def get_new_this_week(user: User) -> List[SpotifyArtist]:
+    return db.session.query(SpotifyArtist.name, func.count(SpotifyArtist.name)) \
+        .join(SpotifyTrack, SpotifyArtist.uri == SpotifyTrack.spotify_artist_uri) \
+        .join(SpotifyPlay, SpotifyTrack.uri == SpotifyPlay.spotify_track_uri) \
+        .filter(SpotifyPlay.user_id == user.id) \
+        .filter(SpotifyPlay.created_at >= today() - datetime.timedelta(days=7)) \
+        .group_by(SpotifyArtist.name) \
+        .order_by(func.count(SpotifyArtist.name).desc()) \
+        .all()
+
+
+
+def get_new_songs_this_week(user: User) -> int:
+    sql = f"""
+with mins as (select spotify_track_uri, min(created_at) as min_created
+              from spotify_plays
+              where user_id = {user.id}
+              group by 1)
+select *
+from mins
+where min_created >= current_date - interval '7 days'"""
+    return len(list(db.engine.execute(sql)))

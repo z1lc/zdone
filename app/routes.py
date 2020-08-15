@@ -255,7 +255,7 @@ def index():
 
 
 @app.route("/reminders/", defaults={'reminder_id': None}, methods=['GET', 'POST'])
-@app.route("/reminders/<reminder_id>", methods=['GET'])
+@app.route("/reminders/<reminder_id>/", methods=['GET'])
 @login_required
 def reminders(reminder_id):
     if reminder_id:
@@ -281,8 +281,8 @@ def reminders(reminder_id):
                            reminder_default=REMINDER_DEFAULT.replace('\n', ''))
 
 
-@app.route('/hn', defaults={'item_id': None}, methods=['GET'])
-@app.route("/hn/<item_id>", methods=['POST'])
+@app.route('/hn/', defaults={'item_id': None}, methods=['GET'])
+@app.route("/hn/<item_id>/", methods=['POST'])
 @login_required
 def hn(item_id):
     if flask.request.method == 'POST' and item_id:
@@ -330,9 +330,8 @@ def api():
         average_daily_load = 0
 
         for task in tasks:
-            after_defer = task.defer_until is None or user_local_date >= task.defer_until
             due = task.calculate_skew(user_local_date) >= 1
-            if after_defer:
+            if task.is_after_delay(user_local_date):
                 average_daily_load += 1 / task.ideal_interval
                 if due:
                     ret_tasks.append({
