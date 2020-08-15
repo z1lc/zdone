@@ -541,8 +541,6 @@ where uri not in (select * from my_artists)"""
     return [(row[0], row[1].split("spotify:artist:")[1]) for row in db.engine.execute(prepared_sql)]
 
 
-# TODO: create Spotify playlist(s) for songs from managed artists you haven't yet listened to (as a way to promote
-#  knowing an artist's full catalogue)
 def get_artists_images() -> str:
     sp = get_spotify("", User.query.filter_by(username="rsanek").one())
     to_ret = ""

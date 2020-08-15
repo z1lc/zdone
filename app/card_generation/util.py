@@ -97,7 +97,7 @@ class zdNote(genanki.Note):
             self.model.model_id,  # mid
             now_ts,  # mod
             -1,  # usn
-            self._format_tags(),  # TODO tags
+            self._format_tags(),  # tags
             self._format_fields(),  # flds
             self.sort_field,  # sfld
             0,  # csum, can be ignored

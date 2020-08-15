@@ -154,8 +154,6 @@ def spotify():
     to_return = [(artist.name, artist.get_bare_uri(), managed_artist.last_fm_scrobbles, managed_artist.date_added,
                   managed_artist.num_top_tracks, artists_dict.get(artist.uri, 0)) for
                  managed_artist, artist in managed_artists]
-    # TODO: add suggested artists to follow, perhaps based on artists you already listen to
-    #  or have multiple liked songs from
     recommendations = get_top_recommendations(current_user)[:3]
     return render_template('spotify.html',
                            navigation=get_navigation(current_user, "Music"),
