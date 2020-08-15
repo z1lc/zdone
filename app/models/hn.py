@@ -20,3 +20,4 @@ class HnReadLog(BaseModel):
     id: int = db.Column(db.Integer, primary_key=True)
     user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     hn_story_id: int = db.Column(db.Integer, db.ForeignKey('hn_stories.id'), nullable=False)
+    at: datetime.datetime = db.Column(db.DateTime, nullable=False)
