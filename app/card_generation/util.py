@@ -53,7 +53,7 @@ class AnkiCard(Enum):
     VP_IMAGE_TO_NAME = (25, 'video_person', 'Image>Name')
     VP_NAME_TO_IMAGE = (26, 'video_person', 'Name>Image')
     CREDITS_TO_NAME = (27, 'video_person')
-    NAME_TO_CREDIT = (28, 'video_person')
+    NAME_TO_VIDEO_LIST = (28, 'video_person')
 
     def __init__(self, unique_number, directory, name_override=None):
         self.unique_number = unique_number

@@ -1,9 +1,10 @@
+{{ '{{#Selected Credits}}' }}
 <div id="textPart">
     {% if is_front %}
         What {{ '{{Known For}}' }}?<br>
-        {{ '{{Credits}}' }}
+        {{ '{{Selected Credits}}' }}
     {% else %}
-        {{ '{{Credits}}' }}
+        {{ '{{Selected Credits}}' }}
         <hr>
         <span class="rsAnswer rsAnkiBold">{{ '{{Name}}' }}</span>
     {% endif %}
@@ -13,3 +14,4 @@
 
 
 {{ script_include|safe }}
+{{ '{{/Selected Credits}}' }}

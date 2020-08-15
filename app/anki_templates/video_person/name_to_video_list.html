@@ -1,10 +1,11 @@
+{{ '{{#Video List}}' }}
 <div id="textPart">
     {% if is_front %}
         Name a movie or TV show {{ '{{Name}}' }} was in.
     {% else %}
         {{ '{{Name}}' }}
         <hr>
-        <span class="rsAnswerMulti">{{ '{{Credits}}' }}</span>
+        <span class="rsAnswerMulti">{{ '{{Video List}}' }}</span>
     {% endif %}
 </div>
 
@@ -12,3 +13,4 @@
 
 
 {{ script_include|safe }}
+{{ '{{/Video List}}' }}

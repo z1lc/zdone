@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 import genanki
 from genanki import Model, Deck
@@ -14,7 +14,7 @@ VIDEO_PERSON_MODEL_ID: int = 1589000000000
 
 
 def generate_videos(user: User, deck: Deck, tags: List[str]):
-    video_id_to_html_formatted_name_and_year = {}
+    video_id_to_html_formatted_name_and_year: Dict[str, str] = {}
     youtube_overrides = {ytvo.video_id: ytvo.youtube_trailer_key for ytvo in YouTubeVideoOverride.query.all()}
     youtube_durations = {ytv.key: ytv.duration_seconds for ytv in YouTubeVideo.query.all()}
     video_model = get_video_model(user)
@@ -73,10 +73,12 @@ having count(*) >= 4"""
     }
 
     for video_person in [vp for vp in VideoPerson.query.all() if vp.id in top_people]:
-        credits = []
+        credits_with_role = []
+        credits_without_role = []
         for credit in VideoCredit.query.filter_by(person_id=video_person.id).all():
             if "uncredited" not in credit.character:
-                credits.append(f"{credit.character} in {video_id_to_html_formatted_name_and_year[credit.video_id]}")
+                credits_with_role.append(f"{credit.character} in {video_id_to_html_formatted_name_and_year[credit.video_id]}")
+                credits_without_role.append(video_id_to_html_formatted_name_and_year[credit.video_id])
 
         video_person_model = get_video_person_model(user)
         person_as_note = zdNote(
@@ -86,7 +88,8 @@ having count(*) >= 4"""
                 video_person.id,
                 video_person.name,
                 known_for_map.get(video_person.known_for, "crew member"),
-                create_html_unordered_list(credits, should_sort=True),
+                create_html_unordered_list(credits_with_role, should_sort=True),
+                create_html_unordered_list(credits_without_role, max_length=99, should_sort=True),
                 f"<img src='{video_person.image_url}'>",
             ])
         deck.add_note(person_as_note)
@@ -128,7 +131,8 @@ def get_video_person_model(user: User) -> Model:
             {'name': 'zdone Person ID'},
             {'name': 'Name'},
             {'name': 'Known For'},
-            {'name': 'Credits'},
+            {'name': 'Selected Credits'},
+            {'name': 'Video List'},
             {'name': 'Image'},
             # TODO: add extra fields before public release
         ],
@@ -137,7 +141,7 @@ def get_video_person_model(user: User) -> Model:
             get_template(AnkiCard.VP_IMAGE_TO_NAME, user),
             get_template(AnkiCard.VP_NAME_TO_IMAGE, user),
             get_template(AnkiCard.CREDITS_TO_NAME, user),
-            get_template(AnkiCard.NAME_TO_CREDIT, user),
+            get_template(AnkiCard.NAME_TO_VIDEO_LIST, user),
             # TODO: add extra templates before public release
         ]
     )
