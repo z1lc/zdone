@@ -11,7 +11,6 @@
           "lengthChange": false,
           "searching": false,
           "ordering": false,
-          "order": [[1, "desc"]],
           "language": {
             "info": "Showing _START_ to _END_ of _TOTAL_ stories"
           }
@@ -44,14 +43,12 @@
     <table id="hn_items_table">
         <thead>
         <tr>
-            <th>Posted</th>
             <th>Story</th>
         </tr>
         </thead>
         <tbody>
         {% for item in hn_items %}
             <tr id="{{ item.id }}">
-                <td class="dt-body-right">{{ item.posted_at }}</td>
                 <td class="dt-body-left"><a onclick="clickLink({{ item.id }}, '{{ item.url }}')"
                                             target="_blank">{{ item.title }}</a></td>
             </tr>

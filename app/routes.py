@@ -286,7 +286,7 @@ def reminders(reminder_id):
 @login_required
 def hn(item_id):
     if flask.request.method == 'POST' and item_id:
-        db.session.add(HnReadLog(user_id=current_user.id, hn_story_id=item_id, at=datetime.utcnow()))
+        db.session.add(HnReadLog(user_id=current_user.id, hn_story_id=item_id, at=datetime.datetime.utcnow()))
         db.session.commit()
         return success()
     else:
