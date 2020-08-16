@@ -30,7 +30,6 @@ class SpotifyTrackNote(zdNote):
 
 
 def generate_tracks(user: User, deck: Deck, tags: List[str]):
-    track_model: Model = get_track_model(user)
     legacy_mappings: Dict[str, str] = {lm.spotify_track_uri: lm.anki_guid for lm in
                                        LegacySpotifyTrackNoteGuidMapping.query.filter_by(user_id=user.id).all()}
     for track in get_tracks(user):
@@ -38,7 +37,7 @@ def generate_tracks(user: User, deck: Deck, tags: List[str]):
         for inner_artist in track['artists']:
             inner_artists.append(inner_artist['name'])
         track_as_note = SpotifyTrackNote(
-            model=track_model,
+            model=get_track_model(user),
             tags=tags,
             fields=[
                 track['uri'],
@@ -53,7 +52,6 @@ def generate_tracks(user: User, deck: Deck, tags: List[str]):
 
 
 def generate_artists(user: User, deck: Deck, tags: List[str]):
-    artist_model: Model = get_artist_model(user)
     top_played_tracks_sql = f"""
 select spotify_artist_uri, spotify_track_uri, st.name, count(*) from spotify_tracks st
 join spotify_artists sa on st.spotify_artist_uri = sa.uri
@@ -116,7 +114,7 @@ order by count(*) desc"""
 
         if img_src:
             artist_as_note = zdNote(
-                model=artist_model,
+                model=get_artist_model(user),
                 tags=tags,
                 fields=[
                     artist.uri,

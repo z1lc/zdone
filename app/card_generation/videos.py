@@ -17,7 +17,6 @@ def generate_videos(user: User, deck: Deck, tags: List[str]):
     video_id_to_html_formatted_name_and_year: Dict[str, str] = {}
     youtube_overrides = {ytvo.video_id: ytvo.youtube_trailer_key for ytvo in YouTubeVideoOverride.query.all()}
     youtube_durations = {ytv.key: ytv.duration_seconds for ytv in YouTubeVideo.query.all()}
-    video_model = get_video_model(user)
     managed_video_pair = db.session.query(ManagedVideo, Video) \
         .join(ManagedVideo) \
         .filter_by(user_id=user.id) \
@@ -38,7 +37,7 @@ def generate_videos(user: User, deck: Deck, tags: List[str]):
             video_id_to_html_formatted_name_and_year[video.id] = f"<i>{video.name}</i>"
 
         video_as_note = zdNote(
-            model=video_model,
+            model=get_video_model(user),
             tags=tags,
             fields=[
                 video.id,
@@ -80,9 +79,8 @@ having count(*) >= 4"""
                 credits_with_role.append(f"{credit.character} in {video_id_to_html_formatted_name_and_year[credit.video_id]}")
                 credits_without_role.append(video_id_to_html_formatted_name_and_year[credit.video_id])
 
-        video_person_model = get_video_person_model(user)
         person_as_note = zdNote(
-            model=video_person_model,
+            model=get_video_person_model(user),
             tags=tags,
             fields=[
                 video_person.id,
