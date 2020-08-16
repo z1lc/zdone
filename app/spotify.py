@@ -274,19 +274,14 @@ def add_or_get_track(sp, track_uri: str) -> SpotifyTrack:
     track = SpotifyTrack.query.filter_by(uri=track_uri).one_or_none()
     if not track:
         sp_track = sp.track(track_uri)
-        primary_artist_uri = create_features_from_artists(sp, sp_track)[0].spotify_artist_uri
-        for i, artist in enumerate(sp_track['artists']):
-            spotify_artist = add_or_get_artist(sp, artist['uri'])
-            add_or_get_feature(track_uri, spotify_artist.uri, i)
-            if i == 0:
-                primary_artist = spotify_artist
         spotify_album = add_or_get_album(sp, sp_track['album']['uri'])
         track = SpotifyTrack(uri=track_uri,
                              name=sp_track['name'],
-                             spotify_artist_uri=primary_artist_uri,
+                             spotify_artist_uri=sp_track['artists'][0]['uri'],
                              spotify_album_uri=spotify_album.uri,
                              duration_milliseconds=sp_track['duration_ms'])
         db.session.add(track)
+        create_features_from_artists(sp, sp_track)
         try:
             db.session.commit()
         except IntegrityError:
