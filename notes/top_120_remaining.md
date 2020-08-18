@@ -24,7 +24,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * ~~Drake~~
 * ~~Ed Sheeran~~
 * ~~Justin Bieber~~
-* Billy Joel
+* ~~Billy Joel~~
 * ~~U2~~
 * Barbra Streisand
 * Phil Collins

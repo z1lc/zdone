@@ -11,8 +11,7 @@ see [Whimsical](https://whimsical.com/WKr5BEqNM9EgYW9nE76vvc) for ideas
  * Genres
  * Similar artists
    * only other artists you also follow? or those are at least prioritized vs. listing others?
- * Collaborating artists (artists that have been featured on each others' tracks)
-   * potentially easier to recall?
+ * ~~Collaborating artists (artists that have been featured on each others' tracks)~~
  * Years active
    * based on album release dates?
  * ~~Image (sourced from Spotify / provided backup image if one from Spotify sucks)~~
@@ -25,7 +24,7 @@ see [Whimsical](https://whimsical.com/WKr5BEqNM9EgYW9nE76vvc) for ideas
  * ~~name+image>albums~~
  * ~~albums>name+image~~
  * name+image>genres
- * name+image>similar/collaborating artists
+ * ~~name+image>similar/collaborating artists~~
    * similar artists that you also track bolded/green?
  * name+image>years active
    * could get annoying with years?
@@ -84,17 +83,18 @@ Potential services:
 
 ### Actor
 #### Fields
- * Name
+ * ~~Name~~
  * Birthday
- * Photo
- * Films they've been in (that you've seen + top ~2 from 'well known'? include role?)
+ * ~~Photo~~
+ * ~~Films they've been in~~
+   * that you've seen + top ~2 from 'well known'? include role?)
  * Co-stars (maybe? to promote more linkages between people)
 
 #### Cards
- * Photo>Name
- * Name>Photo
- * Name>Films
- * Films>Name
+ * ~~Photo>Name~~
+ * ~~Name>Photo~~
+ * ~~Name>Films~~
+ * ~~Films>Name~~
  * Name>Co-star
 
 ## Art
