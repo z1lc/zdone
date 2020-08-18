@@ -5,7 +5,9 @@ from genanki import Deck
 
 from app.card_generation.spotify import generate_tracks, generate_artists
 from app.card_generation.videos import generate_videos
+from app.log import log
 from app.models.base import User
+from app.util import today_datetime
 
 SPOTIFY_TRACK_DECK_ID: int = 1586000000000
 
@@ -38,14 +40,18 @@ def generate_full_apkg(user: User, filename: str) -> None:
         'Spotify Tracks')
     tags: List[str] = [] if user.default_spotify_anki_tag is None else [user.default_spotify_anki_tag]
 
+    log(f"Generating tracks... {today_datetime()}")
     generate_tracks(user, deck, tags)
 
     # artists released internally only so far
     if user.id <= 6:
+        log(f"Generating artists... {today_datetime()}")
         generate_artists(user, deck, tags)
 
     # videos not released yet
     if user.id <= 1:
+        log(f"Generating videos... {today_datetime()}")
         generate_videos(user, deck, tags)
 
+    log(f"Packaging into file... {today_datetime()}")
     genanki.Package(deck).write_to_file(filename)

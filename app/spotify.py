@@ -442,7 +442,6 @@ def get_tracks(user: User) -> List[JsonDict]:
 
     log(f"[skipped] ensuring all tracks are in db {today_datetime()}")
     # bulk_add_tracks(sp, [track['uri'] for track in output])
-    log(f"before output {today_datetime()}")
     return list(output)
 
 
