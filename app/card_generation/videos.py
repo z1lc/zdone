@@ -54,12 +54,11 @@ def generate_videos(user: User, deck: Deck, tags: List[str]):
 
     top_people_sql = """
 select vp.id
-from video_credits
-     join video_persons vp on video_credits.person_id = vp.id
-     join managed_videos mv on video_credits.video_id = mv.video_id
-where character not like '%%uncredited%%'
-and mv.watched
-and "order" <= 10
+from video_credits vc
+         join video_persons vp on vc.person_id = vp.id
+         join managed_videos mv on vc.video_id = mv.video_id
+where ((character is not null and character not like '%%uncredited%%')
+    or job = 'Director') and mv.watched and ("order" is null or "order" <= 10)
 group by 1
 having count(*) >= 4"""
     top_people = [row[0] for row in list(db.engine.execute(top_people_sql))]
@@ -72,12 +71,15 @@ having count(*) >= 4"""
     }
 
     for video_person in [vp for vp in VideoPerson.query.all() if vp.id in top_people]:
-        credits_with_role = []
-        credits_without_role = []
+        credits_with_role = set()
+        credits_without_role = set()
         for credit in VideoCredit.query.filter_by(person_id=video_person.id).all():
-            if "uncredited" not in credit.character:
-                credits_with_role.append(f"{credit.character} in {video_id_to_html_formatted_name_and_year[credit.video_id]}")
-                credits_without_role.append(video_id_to_html_formatted_name_and_year[credit.video_id])
+            if credit.character and "uncredited" not in credit.character:
+                credits_with_role.add(f"{credit.character} in {video_id_to_html_formatted_name_and_year[credit.video_id]}")
+                credits_without_role.add(video_id_to_html_formatted_name_and_year[credit.video_id])
+            elif credit.job:
+                credits_with_role.add(f"{credit.job} of {video_id_to_html_formatted_name_and_year[credit.video_id]}")
+                credits_without_role.add(video_id_to_html_formatted_name_and_year[credit.video_id])
 
         person_as_note = zdNote(
             model=get_video_person_model(user),
@@ -86,8 +88,8 @@ having count(*) >= 4"""
                 video_person.id,
                 video_person.name,
                 known_for_map.get(video_person.known_for, "crew member"),
-                create_html_unordered_list(credits_with_role, should_sort=True),
-                create_html_unordered_list(credits_without_role, max_length=99, should_sort=True),
+                create_html_unordered_list(list(credits_with_role), should_sort=True),
+                create_html_unordered_list(list(credits_without_role), max_length=99, should_sort=True),
                 f"<img src='{video_person.image_url}'>",
             ])
         deck.add_note(person_as_note)
