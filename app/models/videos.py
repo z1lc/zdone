@@ -60,5 +60,6 @@ class VideoCredit(BaseModel):
     id: str = db.Column(db.Text, primary_key=True)
     video_id: int = db.Column(db.Text, db.ForeignKey('videos.id'), nullable=False)
     person_id: int = db.Column(db.Text, db.ForeignKey('video_persons.id'), nullable=False)
-    character: str = db.Column(db.Text)
-    order: int = db.Column(db.Integer)
+    character: Optional[str] = db.Column(db.Text, nullable=True)
+    department: Optional[str] = db.Column(db.Text, nullable=True)
+    order: Optional[int] = db.Column(db.Integer, nullable=True)

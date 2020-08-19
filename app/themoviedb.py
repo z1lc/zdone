@@ -85,7 +85,7 @@ def clean_description(description, video_name, replacement):
 
 
 def hydrate_credits(video_id, credits):
-    for credit in credits['cast']:
+    for credit in credits['cast'] + credits['crew']:
         get_or_add_credit(video_id, credit)
     return
 
@@ -130,8 +130,9 @@ def get_or_add_credit(video_id, credit):
             id=credit_id,
             video_id=video_id,
             person_id=f"zdone:person:tmdb:{credit_detail['person']['id']}",
-            character=credit['character'],
-            order=credit['order'],
+            character=credit.get('character', None),
+            department=credit.get('department', None),
+            order=credit.get('order', None),
         )
         db.session.add(maybe_credit)
         db.session.commit()
@@ -228,10 +229,12 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
 
 
 def backfill_null():
-    for tv in Video.query.filter_by(film_or_tv='TV show').all():
-        tv_details = tmdbsimple.TV(to_tmdb_id(tv.id)).info()
-        tv.in_production = tv_details['in_production']
-        db.session.commit()
+    for video in Video.query.all():
+        if video.film_or_tv == "film":
+            m_credits = tmdbsimple.Movies(to_tmdb_id(video.id)).credits()
+        else:
+            m_credits = tmdbsimple.TV(to_tmdb_id(video.id)).credits()
+        hydrate_credits(video.id, m_credits)
 
 
 def get_full_tmdb_image_url(path):
