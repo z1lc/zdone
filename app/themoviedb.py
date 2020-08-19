@@ -85,7 +85,7 @@ def clean_description(description, video_name, replacement):
 
 
 def hydrate_credits(video_id, credits):
-    for credit in credits['cast'] + credits['crew']:
+    for credit in credits['cast'] + [c for c in credits['crew'] if c['job'] == 'Director']:
         get_or_add_credit(video_id, credit)
     return
 
