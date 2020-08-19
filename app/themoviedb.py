@@ -131,7 +131,7 @@ def get_or_add_credit(video_id, credit):
             video_id=video_id,
             person_id=f"zdone:person:tmdb:{credit_detail['person']['id']}",
             character=credit.get('character', None),
-            department=credit.get('department', None),
+            job=credit.get('job', None),
             order=credit.get('order', None),
         )
         db.session.add(maybe_credit)
