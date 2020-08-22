@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Set
 
 import genanki
 from genanki import Model, Deck
@@ -13,8 +13,18 @@ VIDEO_MODEL_ID: int = 1588000000000
 VIDEO_PERSON_MODEL_ID: int = 1589000000000
 
 
+def get_video_type_ids(type: str) -> Set[str]:
+    sql = f"""
+select id
+from videos
+where film_or_tv='{type}'"""
+    return set([row[0] for row in list(db.engine.execute(sql))])
+
+
 def generate_videos(user: User, deck: Deck, tags: List[str]):
     video_id_to_html_formatted_name_and_year: Dict[str, str] = {}
+    films = get_video_type_ids('film')
+    tvs = get_video_type_ids('TV show')
     youtube_overrides = {ytvo.video_id: ytvo.youtube_trailer_key for ytvo in YouTubeVideoOverride.query.all()}
     youtube_durations = {ytv.key: ytv.duration_seconds for ytv in YouTubeVideo.query.all()}
     managed_video_pair = db.session.query(ManagedVideo, Video) \
@@ -71,13 +81,24 @@ having count(*) >= 4"""
     }
 
     for video_person in [vp for vp in VideoPerson.query.all() if vp.id in top_people]:
+        has_actor_credit = False
+        has_director_credit = False
+        has_film_credit = False
+        has_tv_credit = False
         credits_with_role = set()
         credits_without_role = set()
         for credit in VideoCredit.query.filter_by(person_id=video_person.id).all():
+            if credit.video_id in films:
+                has_film_credit = True
+            elif credit.video_id in tvs:
+                has_tv_credit = True
+
             if credit.character and "uncredited" not in credit.character:
+                has_actor_credit = True
                 credits_with_role.add(f"{credit.character} in {video_id_to_html_formatted_name_and_year[credit.video_id]}")
                 credits_without_role.add(video_id_to_html_formatted_name_and_year[credit.video_id])
             elif credit.job:
+                has_director_credit = True
                 credits_with_role.add(f"{credit.job} of {video_id_to_html_formatted_name_and_year[credit.video_id]}")
                 credits_without_role.add(video_id_to_html_formatted_name_and_year[credit.video_id])
 
@@ -91,6 +112,10 @@ having count(*) >= 4"""
                 create_html_unordered_list(list(credits_with_role), should_sort=True),
                 create_html_unordered_list(list(credits_without_role), max_length=99, should_sort=True),
                 f"<img src='{video_person.image_url}'>",
+                'Yes' if has_actor_credit else '',
+                'Yes' if has_director_credit else '',
+                'Yes' if has_film_credit else '',
+                'Yes' if has_tv_credit else '',
             ])
         deck.add_note(person_as_note)
 
@@ -134,6 +159,10 @@ def get_video_person_model(user: User) -> Model:
             {'name': 'Selected Credits'},
             {'name': 'Video List'},
             {'name': 'Image'},
+            {'name': 'Actor?'},
+            {'name': 'Director?'},
+            {'name': 'Has film credit?'},
+            {'name': 'Has TV credit?'},
             # TODO: add extra fields before public release
         ],
         css=(get_rs_anki_css() if user.uses_rsAnki_javascript else get_default_css()) + get_youtube_css(),

@@ -1,7 +1,10 @@
 {{ '{{#Video List}}' }}
 <div id="textPart">
     {% if is_front %}
-        Name a movie or TV show {{ '{{Name}}' }} starred in or directed.
+        Name a {{ '{{#Has film credit?}}' }}movie{{ '{{/Has film credit?}}' }}
+        {{ '{{#Has film credit?}}' }}{{ '{{#Has TV credit?}}' }} or {{ '{{/Has TV credit?}}' }}{{ '{{/Has film credit?}}' }}
+        {{ '{{#Has TV credit?}}' }}TV show{{ '{{/Has TV credit?}}' }}
+        {{ '{{Name}}' }} {{ '{{#Actor?}}' }}starred in{{ '{{/Actor?}}' }}{{ '{{#Actor?}}' }}{{ '{{#Director?}}' }} or {{ '{{/Director?}}' }}{{ '{{/Actor?}}' }}{{ '{{#Director?}}' }}directed{{ '{{/Director?}}' }}.
     {% else %}
         {{ '{{Name}}' }}
         <hr>
