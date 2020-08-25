@@ -364,6 +364,7 @@ def api():
 
         latest_reminder = get_most_recent_reminder(user)
         r = {
+            "average_daily_load": round(average_daily_load, 2),
             "tasks_to_do": ret_tasks,
             "time_zone": user.current_time_zone,
             "latest_reminder": {
