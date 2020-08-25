@@ -31,6 +31,7 @@ def send_email(user: User):
         content = sendgrid.Content("text/html", env.get_template("weekly_summary.html").render(
             reminders=reminders,
             tasks=tasks,
+            num_tasks=len(tasks),
             skew=get_current_median_skew(user),
             articles=articles,
             num_articles=len(articles),
