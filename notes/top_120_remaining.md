@@ -12,7 +12,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 ### 200m+
 * ~~Eminem~~
 * ~~Taylor Swift~~
-* Mariah Carey
+* ~~Mariah Carey~~
 * Eagles
 * Queen
 * ~~Whitney Houston~~
