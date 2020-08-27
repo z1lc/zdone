@@ -68,9 +68,9 @@ from video_credits vc
          join video_persons vp on vc.person_id = vp.id
          join managed_videos mv on vc.video_id = mv.video_id
 where ((character is not null and character not like '%%uncredited%%')
-    or job = 'Director') and mv.watched and ("order" is null or "order" <= 10)
+    or job = 'Director') and ("order" is null or "order" <= 10)
 group by 1
-having count(*) >= 4"""
+having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
     top_people = [row[0] for row in list(db.engine.execute(top_people_sql))]
 
     known_for_map = {
