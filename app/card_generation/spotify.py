@@ -8,8 +8,8 @@ from app import db
 from app.card_generation.util import create_html_unordered_list, zdNote, get_template, AnkiCard, get_default_css, \
     get_rs_anki_css
 from app.models.base import User
-from app.models.spotify import LegacySpotifyTrackNoteGuidMapping, SpotifyArtist
-from app.spotify import get_followed_managed_spotify_artists_for_user, get_tracks
+from app.models.spotify import LegacySpotifyTrackNoteGuidMapping
+from app.spotify import get_tracks, get_common_artists
 from app.util import JsonDict
 
 SPOTIFY_TRACK_MODEL_ID: int = 1586000000000
@@ -71,9 +71,7 @@ where user_id = {user.id} and album_type='album'
 group by 1, 2, 3, 4
 order by 4 desc"""
     top_played_albums = list(db.engine.execute(top_played_albums_sql))
-    for managed_artist in get_followed_managed_spotify_artists_for_user(user, False):
-        artist: SpotifyArtist = SpotifyArtist.query.filter_by(uri=managed_artist.spotify_artist_uri).one()
-
+    for artist in get_common_artists(user):
         img_src: Optional[str]
         if artist.good_image and artist.spotify_image_url:
             img_src = artist.spotify_image_url
@@ -82,13 +80,12 @@ order by 4 desc"""
         else:
             img_src = None
 
-        top_played_tracks_for_artist = [clean_track_name(row[2]) for row in top_played_tracks if
-                                        row[0] == managed_artist.spotify_artist_uri]
+        top_played_tracks_for_artist = [clean_track_name(row[2]) for row in top_played_tracks if row[0] == artist.uri]
         top_played_tracks_for_artist = list(dict.fromkeys(top_played_tracks_for_artist))
         songs = create_html_unordered_list(top_played_tracks_for_artist)
 
         top_played_albums_for_artist = {clean_album_name(row[2]): row[3].year for row in top_played_albums if
-                                        row[0] == managed_artist.spotify_artist_uri}
+                                        row[0] == artist.uri}
         albums = create_html_unordered_list(
             [f'<i>{name}</i> ({year})' for name, year in top_played_albums_for_artist.items()], max_length=10)
 
@@ -98,7 +95,7 @@ order by 4 desc"""
 with tracks_by_artist_with_plays as (select sp.spotify_track_uri
                                      from spotify_plays sp
                                               join spotify_features sf on sp.spotify_track_uri = sf.spotify_track_uri
-                                     where sf.spotify_artist_uri = '{managed_artist.spotify_artist_uri}' and
+                                     where sf.spotify_artist_uri = '{artist.uri}' and
                                          user_id = {user.id}),
     plays_per_song as (select st.uri, count(*) as plays_for_song
                        from spotify_tracks st
@@ -110,7 +107,8 @@ from spotify_features sf
          join spotify_artists sa on sf.spotify_artist_uri = sa.uri
 group by 1
 order by sum(plays_for_song) desc"""
-            top_collaborators = [row[0] for row in list(db.engine.execute(top_collaborators_sql))][1:]
+            top_collaborators = [row[0] for row in list(db.engine.execute(top_collaborators_sql))]
+            top_collaborators.remove(artist.name)
 
         genres = ''
         similar_artists = ''

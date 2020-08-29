@@ -392,6 +392,20 @@ def get_followed_managed_spotify_artists_for_user(user: User, should_update: boo
     return ManagedSpotifyArtist.query.filter_by(user_id=user.id, following='true').all()
 
 
+def get_common_artists(user: User) -> List[SpotifyArtist]:
+    artists_with_at_least_three_listens_sql = f"""
+select sa.uri
+from spotify_plays sp
+         join spotify_tracks st on sp.spotify_track_uri = st.uri
+         join spotify_features sf on st.uri = sf.spotify_track_uri
+         join spotify_artists sa on sf.spotify_artist_uri = sa.uri
+where sp.user_id = {user.id}
+group by 1
+having count(distinct st.uri) >= 3"""
+    artists = [row[0] for row in list(db.engine.execute(artists_with_at_least_three_listens_sql))]
+    return SpotifyArtist.query.filter(SpotifyArtist.uri.in_(artists)).all()
+
+
 def get_all_liked_tracks(sp):
     liked_tracks = list()
 
@@ -567,7 +581,6 @@ def get_new_this_week(user: User) -> List[SpotifyArtist]:
         .group_by(SpotifyArtist.name) \
         .order_by(func.count(SpotifyArtist.name).desc()) \
         .all()
-
 
 
 def get_new_songs_this_week(user: User) -> int:
