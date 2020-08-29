@@ -1,0 +1,18 @@
+{{ '{{#Actor?}}' }}
+{{ '{{#Co-stars}}' }}
+<div id="textPart">
+    {% if is_front %}
+        Name a co-star of {{ '{{Name}}' }}.
+    {% else %}
+        {{ '{{Name}}' }}, starred with:
+        <hr>
+        <span class="rsAnswerMulti">{{ '{{Co-stars}}' }}</span>
+    {% endif %}
+</div>
+
+<div id="imagePart">{{ '{{Image}}' }}</div>
+
+
+{{ script_include|safe }}
+{{ '{{/Co-stars}}' }}
+{{ '{{/Actor?}}' }}

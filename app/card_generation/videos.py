@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import List, Dict, Set
 
 import genanki
@@ -72,6 +73,7 @@ where ((character is not null and character not like '%%uncredited%%')
 group by 1
 having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
     top_people = [row[0] for row in list(db.engine.execute(top_people_sql))]
+    top_people_string = "'" + "','".join(top_people) + "'"
 
     known_for_map = {
         "Acting": "actor",
@@ -80,7 +82,7 @@ having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
         "Production": "producer",
     }
 
-    for video_person in [vp for vp in VideoPerson.query.all() if vp.id in top_people]:
+    for video_person in VideoPerson.query.filter(VideoPerson.id.in_(top_people)).all():  # type: ignore
         has_actor_credit = False
         has_director_credit = False
         has_film_credit = False
@@ -95,12 +97,31 @@ having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
 
             if credit.character and "uncredited" not in credit.character:
                 has_actor_credit = True
-                credits_with_role.add(f"{credit.character} in {video_id_to_html_formatted_name_and_year[credit.video_id]}")
+                credits_with_role.add(
+                    f"{credit.character} in {video_id_to_html_formatted_name_and_year[credit.video_id]}")
                 credits_without_role.add(video_id_to_html_formatted_name_and_year[credit.video_id])
             elif credit.job:
                 has_director_credit = True
                 credits_with_role.add(f"{credit.job} of {video_id_to_html_formatted_name_and_year[credit.video_id]}")
                 credits_without_role.add(video_id_to_html_formatted_name_and_year[credit.video_id])
+
+        co_stars_sql = f"""
+with credits as (select * from video_credits where person_id = '{video_person.id}')
+select vp.name, v.id
+from video_persons vp
+         join video_credits vc on vp.id = vc.person_id
+         join videos v on vc.video_id = v.id
+         full outer join managed_videos mv on v.id = mv.video_id
+where v.id in (select credits.video_id from credits) and vp.id in ({top_people_string})
+  and vc.person_id != '{video_person.id}'
+group by 1, 2"""
+        co_stars = [(row[0], video_id_to_html_formatted_name_and_year[row[1]]) for row in
+                    list(db.engine.execute(co_stars_sql))]
+        co_stars_grouped_by_star = defaultdict(list)
+        for k, v in co_stars:
+            co_stars_grouped_by_star[k].append(v)
+        co_stars_grouped_by_star_list = [k + ' <span class="mini">' + ", ".join(v) + "</span>" for k, v in
+                                    co_stars_grouped_by_star.items()]
 
         person_as_note = zdNote(
             model=get_video_person_model(user),
@@ -111,6 +132,7 @@ having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
                 known_for_map.get(video_person.known_for, "crew member"),
                 create_html_unordered_list(list(credits_with_role), should_sort=True),
                 create_html_unordered_list(list(credits_without_role), max_length=99, should_sort=True),
+                create_html_unordered_list(co_stars_grouped_by_star_list, max_length=99, should_sort=True),
                 f"<img src='{video_person.image_url}'>",
                 'Yes' if has_actor_credit else '',
                 'Yes' if has_director_credit else '',
@@ -158,6 +180,7 @@ def get_video_person_model(user: User) -> Model:
             {'name': 'Known For'},
             {'name': 'Selected Credits'},
             {'name': 'Video List'},
+            {'name': 'Co-stars'},
             {'name': 'Image'},
             {'name': 'Actor?'},
             {'name': 'Director?'},
@@ -171,6 +194,7 @@ def get_video_person_model(user: User) -> Model:
             get_template(AnkiCard.VP_NAME_TO_IMAGE, user),
             get_template(AnkiCard.CREDITS_TO_NAME, user),
             get_template(AnkiCard.NAME_TO_VIDEO_LIST, user),
+            get_template(AnkiCard.NAME_AND_IMAGE_TO_COSTARS, user),
             # TODO: add extra templates before public release
         ]
     )

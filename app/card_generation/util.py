@@ -54,6 +54,7 @@ class AnkiCard(Enum):
     VP_NAME_TO_IMAGE = (26, 'video_person', 'Name>Image')
     CREDITS_TO_NAME = (27, 'video_person')
     NAME_TO_VIDEO_LIST = (28, 'video_person')
+    NAME_AND_IMAGE_TO_COSTARS = (29, 'video_person')
 
     def __init__(self, unique_number, directory, name_override=None):
         self.unique_number = unique_number
@@ -123,12 +124,15 @@ def create_html_unordered_list(input_list: List, min_length: int = 3, max_length
 
 
 def _sort_credit(credit):
+    if " - Present" in credit:
+        return -9999
     maybe_year = re.findall("\d{4}", credit)
+    maybe_year.sort()
     if maybe_year:
         return -int(maybe_year[-1])
     else:
         # if we didn't find a date, it's probably because this hasn't been released yet
-        return -9999
+        return -9998
 
 
 def get_template(card_type: AnkiCard, user: User) -> JsonDict:
