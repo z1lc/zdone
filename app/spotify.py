@@ -403,7 +403,7 @@ where sp.user_id = {user.id}
 group by 1
 having count(distinct st.uri) >= 3"""
     artists = [row[0] for row in list(db.engine.execute(artists_with_at_least_three_listens_sql))]
-    return SpotifyArtist.query.filter(SpotifyArtist.uri.in_(artists)).all()
+    return SpotifyArtist.query.filter(SpotifyArtist.uri.in_(artists)).all()  # type: ignore
 
 
 def get_all_liked_tracks(sp):
