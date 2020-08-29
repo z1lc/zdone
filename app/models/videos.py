@@ -19,6 +19,8 @@ class Video(BaseModel):
     youtube_trailer_key: str = db.Column(db.Text, db.ForeignKey('youtube_videos.key'))
     poster_image_url: str = db.Column(db.Text)
     film_or_tv: str = db.Column(db.Text, nullable=False, server_default='film')
+    budget: int = db.Column(db.BigInteger)
+    revenue: int = db.Column(db.BigInteger)
 
 
 class ManagedVideo(BaseModel):

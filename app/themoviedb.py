@@ -10,7 +10,6 @@ from app import kv, db
 from app.log import log
 from app.models.base import User
 from app.models.videos import Video, VideoPerson, VideoCredit, YouTubeVideo, ManagedVideo
-
 # https://developers.themoviedb.org/3/configuration/get-api-configuration
 from app.util import today
 
@@ -177,6 +176,9 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
             image = get_full_tmdb_image_url(tmdb_api_movie_or_tv_response['poster_path'])
 
             movie_detail = tmdbsimple.Movies(m_id)
+            info = movie_detail.info()
+            maybe_budget = int(info['budget'])
+            maybe_revenue = int(info['revenue'])
 
             m_credits = tmdbsimple.Movies(m_id).credits()
             maybe_video = Video(
@@ -188,6 +190,8 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
                 youtube_trailer_key=get_or_add_first_youtube_trailer(movie_detail.videos()),
                 poster_image_url=image,
                 film_or_tv='film',
+                budget=maybe_budget if maybe_budget > 0 else None,
+                revenue=maybe_revenue if maybe_revenue > 0 else None,
             )
         else:
             tv_details = tmdbsimple.TV(tmdb_api_movie_or_tv_response['id'])
