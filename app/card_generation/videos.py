@@ -47,6 +47,8 @@ def generate_videos(user: User, deck: Deck, tags: List[str]):
         else:
             video_id_to_html_formatted_name_and_year[video.id] = f"<i>{video.name}</i>"
 
+        directors = VideoPerson.query.join(VideoCredit).filter_by(video_id=video.id, job='Director').all()
+
         video_as_note = zdNote(
             model=get_video_model(user),
             tags=tags,
@@ -56,6 +58,7 @@ def generate_videos(user: User, deck: Deck, tags: List[str]):
                 f"<i>{video.name}</i>",
                 video.description,
                 release,
+                ", ".join([d.name for d in directors]) if video.is_film() else '',
                 'yes' if managed_video.watched else '',
                 trailer_key,
                 str(youtube_durations.get(trailer_key, '')),
@@ -121,7 +124,7 @@ group by 1, 2"""
         for k, v in co_stars:
             co_stars_grouped_by_star[k].append(v)
         co_stars_grouped_by_star_list = [k + ' <span class="mini">' + ", ".join(v) + "</span>" for k, v in
-                                    co_stars_grouped_by_star.items()]
+                                         co_stars_grouped_by_star.items()]
 
         person_as_note = zdNote(
             model=get_video_person_model(user),
@@ -152,6 +155,7 @@ def get_video_model(user: User) -> Model:
             {'name': 'Name'},
             {'name': 'Description'},
             {'name': 'Year Released'},
+            {'name': 'Director'},
             {'name': 'Watched?'},
             {'name': 'YouTube Trailer Key'},
             {'name': 'YouTube Trailer Duration'},

@@ -11,7 +11,7 @@ from app.log import log
 from app.models.base import User
 from app.models.videos import Video, VideoPerson, VideoCredit, YouTubeVideo, ManagedVideo
 # https://developers.themoviedb.org/3/configuration/get-api-configuration
-from app.util import today
+from app.util import today, to_tmdb_id
 
 BASE_URL = 'https://image.tmdb.org/t/p/'
 POSTER_SIZE = 'w500'
@@ -91,6 +91,7 @@ def hydrate_credits(video_id, credits):
 
 def get_or_add_first_youtube_trailer(videos) -> Optional[str]:
     youtube_trailers = [m for m in videos['results'] if m['site'] == 'YouTube']
+    # TODO: select just videos with type 'trailer', or at least order this list to prefer trailers over other video types
     if youtube_trailers:
         key = youtube_trailers[0]['key']
         if get_or_add_youtube_video(key):
@@ -152,10 +153,6 @@ def get_or_add_person(person_id: str) -> VideoPerson:
         db.session.add(maybe_person)
         db.session.commit()
     return maybe_person
-
-
-def to_tmdb_id(zdone_id: str) -> int:
-    return int(zdone_id.split(":")[3])
 
 
 def get_or_add_movie(movie_id: str, tmdb_api_movie_or_tv_response, user: User, watched: bool) -> Video:

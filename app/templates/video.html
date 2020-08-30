@@ -1,17 +1,53 @@
 {% extends "base.html" %}
 {% block within_head %}
     <title>videos</title>
+    <link rel="stylesheet" href="//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
+    <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        $('table#videos').dataTable({
+          "order": [[ 3, "desc" ], [2, "desc"]],
+          "lengthChange": false,
+          "language": {
+            "info": "Showing _START_ to _END_ of _TOTAL_ managed videos"
+          }
+        });
+      });
+    </script>
     <style>
-        body {
-            max-width: 1500px;
-            margin: auto;
-            padding: 20px;
-        }
+      body {
+        max-width: 1500px;
+        margin: auto;
+        padding: 20px;
+      }
     </style>
 {% endblock %}
 
 
 {% block body %}
-{{ navigation|safe }}<br>
-{{ stuff|safe }}
+    {{ navigation|safe }}<br>
+    <h1>Videos</h1>
+    Videos are refreshed from <a href="https://www.themoviedb.org/">TMDb</a> nightly.
+    <table id="videos">
+        <thead>
+        <tr>
+            <th>Video</th>
+            <th>Type</th>
+            <th>Released</th>
+            <th>Added</th>
+            <th>Watched?</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for managed_video, video in managed_video_and_video %}
+            <tr>
+                <td><a href="{{ video.get_url() }}" target="_blank">{{ video.name }}</a></td>
+                <td>{{ video.film_or_tv }}</td>
+                <td>{{ video.release_date }}</td>
+                <td>{{ managed_video.date_added }}</td>
+                <td>{% if managed_video.watched %}✔{% else %}✘{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}

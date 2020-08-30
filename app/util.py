@@ -10,6 +10,10 @@ from app.models.base import User
 JsonDict = Dict[str, Any]
 
 
+def to_tmdb_id(zdone_id: str) -> int:
+    return int(zdone_id.split(":")[3])
+
+
 def htmlize_note(raw_note) -> str:
     for url in set(re.findall(r'(https?://[^\s]+)', raw_note)):
         raw_note = raw_note.replace(url, "<a href=\"{url}\" target=\"_blank\">{url}</a>".format(url=url))

@@ -22,11 +22,11 @@ from .log import log
 from .models.hn import HnReadLog
 from .models.spotify import ManagedSpotifyArtist, SpotifyArtist
 from .models.tasks import Reminder, Task
+from .models.videos import Video, ManagedVideo
 from .reminders import get_reminders, get_most_recent_reminder
 from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, follow_unfollow_artists, \
     get_random_song_family, get_tracks, get_top_recommendations, get_artists_images, populate_null
 from .taskutils import do_update_task, get_updated_trello_cards, ensure_trello_setup_idempotent
-from .themoviedb import get_stuff
 from .util import today_datetime, failure, success, api_key_failure, jsonp, validate_api_key, get_navigation, \
     htmlize_note
 
@@ -296,9 +296,13 @@ def hn(item_id):
 @app.route('/video')
 @login_required
 def movies():
+    managed_video_and_video = db.session.query(ManagedVideo, Video) \
+        .join(ManagedVideo) \
+        .filter_by(user_id=current_user.id) \
+        .all()
     return render_template("video.html",
                            navigation=get_navigation(current_user, "Video"),
-                           stuff=get_stuff(current_user))
+                           managed_video_and_video=managed_video_and_video)
 
 
 @app.route('/artist_photos')

@@ -5,6 +5,7 @@ from sqlalchemy import func, UniqueConstraint
 
 from app import db
 from app.models.base import BaseModel
+from app.util import to_tmdb_id
 
 
 class Video(BaseModel):
@@ -21,6 +22,23 @@ class Video(BaseModel):
     film_or_tv: str = db.Column(db.Text, nullable=False, server_default='film')
     budget: int = db.Column(db.BigInteger)
     revenue: int = db.Column(db.BigInteger)
+
+    def is_film(self) -> bool:
+        return self.film_or_tv == 'film'
+
+    def is_tv(self) -> bool:
+        return self.film_or_tv == 'TV show'
+
+    def get_url(self) -> str:
+        if self.is_tv():
+            return f"https://www.themoviedb.org/tv/{self.get_tmdb_id()}"
+        elif self.is_film():
+            return f"https://www.themoviedb.org/movie/{self.get_tmdb_id()}"
+        else:
+            return ""
+
+    def get_tmdb_id(self) -> int:
+        return to_tmdb_id(self.id)
 
 
 class ManagedVideo(BaseModel):
