@@ -1,4 +1,5 @@
 import re
+from collections import defaultdict
 from typing import Dict, List, Optional
 
 import genanki
@@ -53,7 +54,7 @@ def generate_tracks(user: User, deck: Deck, tags: List[str]):
 
 
 def generate_artists(user: User, deck: Deck, tags: List[str]):
-    log(f"getting top played tracks & albums... {today_datetime()}")
+    log(f"getting top played tracks, albums, & collaborators... {today_datetime()}")
     top_played_tracks_sql = f"""
 select spotify_artist_uri, spotify_track_uri, st.name, count(*) from spotify_tracks st
 join spotify_artists sa on st.spotify_artist_uri = sa.uri
@@ -73,6 +74,26 @@ where user_id = {user.id} and album_type='album'
 group by 1, 2, 3, 4
 order by 4 desc"""
     top_played_albums = list(db.engine.execute(top_played_albums_sql))
+
+    top_collaborators_sql = f"""
+with tracks_by_artist_with_plays as (select sf.spotify_artist_uri, sp.spotify_track_uri
+                                     from spotify_plays sp
+                                              join spotify_features sf on sp.spotify_track_uri = sf.spotify_track_uri
+                                     where user_id = 1),
+    plays_per_song as (select tbawp.spotify_artist_uri, st.uri, count(*) as plays_for_song
+                       from spotify_tracks st
+                                join tracks_by_artist_with_plays tbawp on st.uri = tbawp.spotify_track_uri
+                       group by 1, 2)
+select pps.spotify_artist_uri, sa.name, sum(plays_for_song)
+from spotify_features sf
+         join plays_per_song pps on pps.uri = sf.spotify_track_uri
+         join spotify_artists sa on sf.spotify_artist_uri = sa.uri
+group by 1, 2
+order by 1 asc, 3 desc"""
+    top_collaborators = list(db.engine.execute(top_collaborators_sql))
+    collaborators_grouped_by_artist_uri = defaultdict(list)
+    for artist_uri, collaborator_name, _ in top_collaborators:
+        collaborators_grouped_by_artist_uri[artist_uri].append(collaborator_name)
 
     log(f"getting common artists... {today_datetime()}")
     for artist in get_common_artists(user):
@@ -94,26 +115,10 @@ order by 4 desc"""
             albums = create_html_unordered_list(
                 [f'<i>{name}</i> ({year})' for name, year in top_played_albums_for_artist.items()], max_length=10)
 
-            top_collaborators = list()
+            this_artist_top_collaborators = list()
             if user.id == 1:
-                top_collaborators_sql = f"""
-    with tracks_by_artist_with_plays as (select sp.spotify_track_uri
-                                         from spotify_plays sp
-                                                  join spotify_features sf on sp.spotify_track_uri = sf.spotify_track_uri
-                                         where sf.spotify_artist_uri = '{artist.uri}' and
-                                             user_id = {user.id}),
-        plays_per_song as (select st.uri, count(*) as plays_for_song
-                           from spotify_tracks st
-                                    join tracks_by_artist_with_plays tbawp on st.uri = tbawp.spotify_track_uri
-                           group by 1)
-    select sa.name, sum(plays_for_song)
-    from spotify_features sf
-             join plays_per_song pps on pps.uri = sf.spotify_track_uri
-             join spotify_artists sa on sf.spotify_artist_uri = sa.uri
-    group by 1
-    order by sum(plays_for_song) desc"""
-                top_collaborators = [row[0] for row in list(db.engine.execute(top_collaborators_sql))]
-                top_collaborators.remove(artist.name)
+                this_artist_top_collaborators = collaborators_grouped_by_artist_uri[artist.uri]
+                this_artist_top_collaborators.remove(artist.name)
 
             genres = ''
             similar_artists = ''
@@ -131,7 +136,7 @@ order by 4 desc"""
                     genres,
                     similar_artists,
                     years_active,
-                    create_html_unordered_list(top_collaborators, max_length=10),
+                    create_html_unordered_list(this_artist_top_collaborators, max_length=10),
                     '',
                     '',
                     '',
