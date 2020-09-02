@@ -49,7 +49,8 @@ def generate_videos(user: User, deck: Deck, tags: List[str]):
 
         directors = VideoPerson.query.join(VideoCredit).filter_by(video_id=video.id, job='Director').all()
         top_actors = VideoPerson.query.join(VideoCredit).filter_by(video_id=video.id) \
-            .filter(VideoCredit.order <= 3).all()[:3]  # seems like order is sometimes 0-based and other times 1-based?
+                         .filter(VideoCredit.order <= 3).all()[:3]  # type: ignore
+        # seems like order is sometimes 0-based and other times 1-based?
 
         video_as_note = zdNote(
             model=get_video_model(user),
@@ -124,8 +125,8 @@ group by 1, 2"""
         co_stars = [(row[0], video_id_to_html_formatted_name_and_year[row[1]]) for row in
                     list(db.engine.execute(co_stars_sql))]
         co_stars_grouped_by_star = defaultdict(list)
-        for k, v in co_stars:
-            co_stars_grouped_by_star[k].append(v)
+        for star_name, html_formatted_name_and_year in co_stars:
+            co_stars_grouped_by_star[star_name].append(html_formatted_name_and_year)
         co_stars_grouped_by_star_list = [f'{k} <span class="mini">{", ".join(v)}</span>' for k, v in
                                          co_stars_grouped_by_star.items()]
 
