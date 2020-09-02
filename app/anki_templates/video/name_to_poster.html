@@ -3,7 +3,15 @@
         Visualize the poster for <span class="rsAnkiBold">{{ '{{Name}}' }}</span> ({{ '{{Year Released}}' }})
     {% else %}
         <span class="rsAnkiBold">{{ '{{Name}}' }}</span> ({{ '{{Year Released}}' }})
-        {{ '{{#Director}}' }}<br><ul><li>Directed by {{ '{{Director}}' }}</li></ul>{{ '{{/Director}}' }}
+        <br>
+        <ul class="mini">
+            {{ '{{#Top Actors}}' }}
+            <li>Stars {{ '{{Top Actors}}' }}</li>
+            {{ '{{/Top Actors}}' }}
+            {{ '{{#Director}}' }}
+            <li>Directed by {{ '{{Director}}' }}</li>
+            {{ '{{/Director}}' }}
+        </ul>
     {% endif %}
 </div>
 

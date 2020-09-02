@@ -48,6 +48,8 @@ def generate_videos(user: User, deck: Deck, tags: List[str]):
             video_id_to_html_formatted_name_and_year[video.id] = f"<i>{video.name}</i>"
 
         directors = VideoPerson.query.join(VideoCredit).filter_by(video_id=video.id, job='Director').all()
+        top_actors = VideoPerson.query.join(VideoCredit).filter_by(video_id=video.id) \
+            .filter(VideoCredit.order <= 3).all()[:3]  # seems like order is sometimes 0-based and other times 1-based?
 
         video_as_note = zdNote(
             model=get_video_model(user),
@@ -59,6 +61,7 @@ def generate_videos(user: User, deck: Deck, tags: List[str]):
                 video.description,
                 release,
                 ", ".join([d.name for d in directors]) if video.is_film() else '',
+                ", ".join([a.name for a in top_actors]),
                 'yes' if managed_video.watched else '',
                 trailer_key,
                 str(youtube_durations.get(trailer_key, '')),
@@ -156,6 +159,7 @@ def get_video_model(user: User) -> Model:
             {'name': 'Description'},
             {'name': 'Year Released'},
             {'name': 'Director'},
+            {'name': 'Top Actors'},
             {'name': 'Watched?'},
             {'name': 'YouTube Trailer Key'},
             {'name': 'YouTube Trailer Duration'},
