@@ -123,7 +123,7 @@ group by 1, 2"""
         co_stars_grouped_by_star = defaultdict(list)
         for k, v in co_stars:
             co_stars_grouped_by_star[k].append(v)
-        co_stars_grouped_by_star_list = [k + ' <span class="mini">' + ", ".join(v) + "</span>" for k, v in
+        co_stars_grouped_by_star_list = [f'{k} <span class="mini">{", ".join(v)}</span>' for k, v in
                                          co_stars_grouped_by_star.items()]
 
         person_as_note = zdNote(

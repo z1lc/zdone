@@ -44,7 +44,7 @@ def generate_tracks(user: User, deck: Deck, tags: List[str]):
                 track['name'].replace('"', '\''),
                 ", ".join(inner_artists).replace('"', '\''),
                 track['album']['name'].replace('"', '\''),
-                "<img src='" + track['album']['images'][0]['url'] + "'>"
+                f"<img src='{track['album']['images'][0]['url']}'>"
             ])
         if track['uri'] in legacy_mappings:
             track_as_note.guid = legacy_mappings.get(track['uri'])
