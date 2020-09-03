@@ -48,6 +48,7 @@ def generate_videos(user: User, deck: Deck, tags: List[str]):
             video_id_to_html_formatted_name_and_year[video.id] = f"<i>{video.name}</i>"
 
         directors = VideoPerson.query.join(VideoCredit).filter_by(video_id=video.id, job='Director').all()
+        creators = VideoPerson.query.join(VideoCredit).filter_by(video_id=video.id, job='Creator').all()
         top_actors = VideoPerson.query.join(VideoCredit).filter_by(video_id=video.id) \
                          .filter(VideoCredit.order <= 3).all()[:3]  # type: ignore
         # seems like order is sometimes 0-based and other times 1-based?
@@ -62,6 +63,7 @@ def generate_videos(user: User, deck: Deck, tags: List[str]):
                 video.description,
                 release,
                 ", ".join([d.name for d in directors]) if video.is_film() else '',
+                ", ".join([c.name for c in creators]) if video.is_tv() else '',
                 ", ".join([a.name for a in top_actors]),
                 'yes' if managed_video.watched else '',
                 trailer_key,
@@ -76,7 +78,7 @@ from video_credits vc
          join video_persons vp on vc.person_id = vp.id
          join managed_videos mv on vc.video_id = mv.video_id
 where ((character is not null and character not like '%%uncredited%%')
-    or job = 'Director') and ("order" is null or "order" <= 10)
+    or job = 'Director' or job = 'Creator') and ("order" is null or "order" <= 10)
 group by 1
 having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
     top_people = [row[0] for row in list(db.engine.execute(top_people_sql))]
@@ -160,6 +162,7 @@ def get_video_model(user: User) -> Model:
             {'name': 'Description'},
             {'name': 'Year Released'},
             {'name': 'Director'},
+            {'name': 'Creator'},
             {'name': 'Top Actors'},
             {'name': 'Watched?'},
             {'name': 'YouTube Trailer Key'},
