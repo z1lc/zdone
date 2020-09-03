@@ -63,9 +63,9 @@ def get_stuff(user: User):
             capture_exception(e)
 
     for watched, movie in (
-            [(True, rtv) for rtv in _get_full_paginated(acct.rated_movies)] +
-            [(True, ftv) for ftv in _get_full_paginated(acct.favorite_movies)] +
-            [(False, wtv) for wtv in _get_full_paginated(acct.watchlist_movies)]):
+            [(True, rm) for rm in _get_full_paginated(acct.rated_movies)] +
+            [(True, fm) for fm in _get_full_paginated(acct.favorite_movies)] +
+            [(False, wm) for wm in _get_full_paginated(acct.watchlist_movies)]):
         try:
             video_id = f"zdone:video:tmdb:{movie['id']}"
             get_or_add_movie(video_id, movie, user, watched)
@@ -85,7 +85,7 @@ def clean_description(description, video_name, replacement):
 
 def hydrate_credits(video_id, credits):
     for credit in credits['cast'] + [c for c in credits['crew'] if c['job'] == 'Director']:
-        get_or_add_credit(video_id, credit)
+        get_or_add_credit(video_id, credit.get('order', None), credit['credit_id'])
     return
 
 
@@ -119,20 +119,20 @@ def get_or_add_youtube_video(key: str) -> Optional[YouTubeVideo]:
     return maybe_video
 
 
-def get_or_add_credit(video_id, credit):
-    credit_id = f"zdone:credits:tmdb:{credit['credit_id']}"
+def get_or_add_credit(video_id, order, tmdb_credit_id):
+    credit_id = f"zdone:credits:tmdb:{tmdb_credit_id}"
     maybe_credit = VideoCredit.query.filter_by(id=credit_id).one_or_none()
     if not maybe_credit:
-        credit_detail = tmdbsimple.Credits(credit['credit_id']).info()
+        credit_detail = tmdbsimple.Credits(tmdb_credit_id).info()
         person_id = f"zdone:person:tmdb:{credit_detail['person']['id']}"
         get_or_add_person(person_id)
         maybe_credit = VideoCredit(
             id=credit_id,
             video_id=video_id,
             person_id=f"zdone:person:tmdb:{credit_detail['person']['id']}",
-            character=credit.get('character', None),
-            job=credit.get('job', None),
-            order=credit.get('order', None),
+            character=credit_detail.get('media').get('character', None),
+            job=credit_detail.get('job', None),
+            order=order,
         )
         db.session.add(maybe_credit)
         db.session.commit()
@@ -209,6 +209,9 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
         db.session.add(maybe_video)
         db.session.commit()
         hydrate_credits(video_id, m_credits)
+        if type == VideoType.TV:
+            for i, creator_response in enumerate(tv_info['created_by']):
+                get_or_add_credit(video_id, i, creator_response['credit_id'])
 
     maybe_managed_video = ManagedVideo.query.filter_by(user_id=user.id, video_id=video_id).one_or_none()
     if not maybe_managed_video:
