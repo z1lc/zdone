@@ -8,8 +8,10 @@
       let table;
       $(document).ready(function () {
         table = $('#hn_items_table').DataTable({
-          "lengthChange": false,
-          "searching": false,
+          "pageLength": 1,
+          "lengthChange": true,
+          "lengthMenu": [1, 10, 25, 50, 100],
+          "searching": true,
           "ordering": false,
           "language": {
             "info": "Showing _START_ to _END_ of _TOTAL_ stories"
@@ -39,7 +41,7 @@
 {% endblock %}
 
 {% block body %}
-    {{ navigation|safe }}
+    {{ navigation|safe }}<br><br>
     <table id="hn_items_table">
         <thead>
         <tr>
