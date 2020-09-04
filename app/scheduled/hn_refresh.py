@@ -8,12 +8,22 @@ from app import kv, db
 from app.log import log
 from app.models.hn import HnStory
 
+MAX_ITEM_RETRIES = 3
 
-def get_item(id):
-    response = json.loads(requests.get(
-        f"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty").text)
-    if response and response['type'] == "story" and "deleted" not in response:
-        return response
+
+def get_item(item_id):
+    try_count = 0
+    while try_count < MAX_ITEM_RETRIES:
+        try_count += 1
+        try:
+            response = json.loads(requests.get(
+                f"https://hacker-news.firebaseio.com/v0/item/{item_id}.json?print=pretty").text)
+            if response and response['type'] == "story" and "deleted" not in response:
+                return response
+            else:
+                break
+        except Exception as e:
+            log(f'Received exception {e}. Will re-try item {item_id} {MAX_ITEM_RETRIES - try_count} more times.')
     return None
 
 
