@@ -2,7 +2,7 @@
 Your weekly summary of activity on <a href="https://www.zdone.co/">zdone</a>.
 {% if distinct_listens > 0 %}
     <h2><a href="https://www.zdone.co/spotify/">Music</a></h2>
-    You listened to {{ distinct_listens }} unique songs this week. {{ new_listens }} of those were brand new! Here's who you're vibing with:
+    You listened to {{ distinct_listens }} unique songs. {{ new_listens }} of those were brand new! Here's who you're vibing with:
     <ul>
         {% for artist in artists %}
             <li>{{ artist.name }}</li>
@@ -14,7 +14,7 @@ Your weekly summary of activity on <a href="https://www.zdone.co/">zdone</a>.
         {% if skew %}Your median skew is currently
             <span style="font-weight: bold; color: {% if skew <= 100 %}green{% else %}darkorange{% endif %}">{{ skew }}%</span>.
         {% endif %}
-    You completed {{ num_tasks }} tasks this week:
+    You completed {{ num_tasks }} tasks:
     <ul>
         {% for task in tasks %}
             <li>{{ task|safe }}</li>
@@ -31,7 +31,7 @@ Your weekly summary of activity on <a href="https://www.zdone.co/">zdone</a>.
 {% endif %}
 {% if articles %}
     <h2><a href="https://www.zdone.co/hn/">HN Stories</a></h2>
-    You read {{ num_articles }} stories from Hacker News this week.
+    You read {{ num_articles }} stories from Hacker News.
     <ul>
         {% for hns in articles %}
             <li><a href="{{ hns.url }}">{{ hns.title }}</a></li>
