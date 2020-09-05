@@ -26,8 +26,10 @@ def _get_full_paginated(function):
     results = list()
     page_number = 1
     total_pages = 10
-    while not results or page_number <= total_pages:
+    while page_number <= total_pages:
         total_pages, this_page_result = _get_page_results(function, page_number)
+        if total_pages == 0:
+            break
         results.extend(this_page_result)
         page_number += 1
     return results
