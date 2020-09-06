@@ -93,13 +93,24 @@ def hydrate_credits(video_id, credits):
 
 def get_or_add_first_youtube_trailer(videos) -> Optional[str]:
     youtube_trailers = [m for m in videos['results'] if m['site'] == 'YouTube']
-    # TODO: select just videos with type 'trailer', or at least order this list to prefer trailers over other video types
+    youtube_trailers.sort(key=lambda trailer: _sort_trailer(trailer))
     if youtube_trailers:
         key = youtube_trailers[0]['key']
         if get_or_add_youtube_video(key):
             return key
 
     return None
+
+
+# types: https://developers.themoviedb.org/3/movies/get-movie-videos
+# Trailer, Teaser, Clip, Featurette, Behind the Scenes, Bloopers
+def _sort_trailer(trailer):
+    # Trailers are obviously ideal. Clips are also OK. Teasers should really be avoided.
+    priorities = ['Trailer', 'Clip', 'Featurette', 'Bloopers', 'Behind the Scenes', 'Teaser']
+    try:
+        return priorities.index(trailer['type'])
+    except ValueError:
+        return len(priorities)
 
 
 def get_or_add_youtube_video(key: str) -> Optional[YouTubeVideo]:
