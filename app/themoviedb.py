@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict
 
 import isodate
 import tmdbsimple
@@ -15,7 +15,7 @@ from app.util import today, to_tmdb_id
 
 BASE_URL = 'https://image.tmdb.org/t/p/'
 POSTER_SIZE = 'w500'
-YOUTUBE_DURATIONS_CACHE = {}
+YOUTUBE_DURATIONS_CACHE: Dict[str, int] = {}
 
 
 class VideoType(Enum):
