@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, Tuple
 
 import isodate
 import tmdbsimple
@@ -15,6 +15,7 @@ from app.util import today, to_tmdb_id
 
 BASE_URL = 'https://image.tmdb.org/t/p/'
 POSTER_SIZE = 'w500'
+YOUTUBE_DURATIONS_CACHE = {}
 
 
 class VideoType(Enum):
@@ -104,25 +105,29 @@ def get_or_add_first_youtube_trailer(videos) -> Optional[str]:
 
 # types: https://developers.themoviedb.org/3/movies/get-movie-videos
 # Trailer, Teaser, Clip, Featurette, Behind the Scenes, Bloopers
-def _sort_trailer(trailer):
+def _sort_trailer(trailer) -> Tuple[int, int]:
     # Trailers are obviously ideal. Clips are also OK. Teasers should really be avoided.
     priorities = ['Trailer', 'Clip', 'Featurette', 'Bloopers', 'Behind the Scenes', 'Teaser']
+
+    duration = _get_video_duration_from_youtube(trailer['key'])
+    # if we don't find a duration, it's probably because the video was deleted
+    if not duration:
+        return len(priorities) + 1, 0
+
     try:
-        return priorities.index(trailer['type'])
+        return priorities.index(trailer['type']), -duration
     except ValueError:
-        return len(priorities)
+        return len(priorities), -duration
 
 
 def get_or_add_youtube_video(key: str) -> Optional[YouTubeVideo]:
     maybe_video = YouTubeVideo.query.filter_by(key=key).one_or_none()
     if not maybe_video:
-        video_data = Api(api_key=kv.get('YOUTUBE_API_KEY')).get_video_by_id(video_id=key)
-        # we won't get back metadata from YouTube if the video was deleted, set to private, etc.
-        if video_data.items:
-            pt_string = video_data.items[0].contentDetails.duration
+        seconds = _get_video_duration_from_youtube(key)
+        if seconds:
             maybe_video = YouTubeVideo(
                 key=key,
-                duration_seconds=isodate.parse_duration(pt_string).total_seconds()
+                duration_seconds=seconds
             )
             db.session.add(maybe_video)
             db.session.commit()
@@ -130,6 +135,20 @@ def get_or_add_youtube_video(key: str) -> Optional[YouTubeVideo]:
             return None
 
     return maybe_video
+
+
+def _get_video_duration_from_youtube(key) -> Optional[int]:
+    if key in YOUTUBE_DURATIONS_CACHE:
+        return YOUTUBE_DURATIONS_CACHE.get(key)
+
+    video_data = Api(api_key=kv.get('YOUTUBE_API_KEY')).get_video_by_id(video_id=key)
+    # we won't get back metadata from YouTube if the video was deleted, set to private, etc.
+    if video_data.items:
+        pt_string = video_data.items[0].contentDetails.duration
+        seconds = isodate.parse_duration(pt_string).total_seconds()
+        YOUTUBE_DURATIONS_CACHE[key] = seconds
+        return seconds
+    return None
 
 
 def get_or_add_credit(video_id, order, tmdb_credit_id):
@@ -248,10 +267,11 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
 def backfill_null():
     for video in Video.query.all():
         if video.film_or_tv == "film":
-            m_credits = tmdbsimple.Movies(to_tmdb_id(video.id)).credits()
+            m_videos = tmdbsimple.Movies(to_tmdb_id(video.id)).videos()
         else:
-            m_credits = tmdbsimple.TV(to_tmdb_id(video.id)).credits()
-        hydrate_credits(video.id, m_credits)
+            m_videos = tmdbsimple.TV(to_tmdb_id(video.id)).videos()
+        video.youtube_trailer_key = get_or_add_first_youtube_trailer(m_videos)
+        db.session.commit()
 
 
 def get_full_tmdb_image_url(path):
