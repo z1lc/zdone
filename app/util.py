@@ -22,14 +22,14 @@ def htmlize_note(raw_note) -> str:
 
 def get_navigation(user: User, current_page: str) -> str:
     pages = list()
-    pages.append('<a href="/spotify" target="_self">Music</a>' if current_page != "Music" else "Music")
-    if user.tmdb_session_id:
-        pages.append('<a href="/video" target="_self">Video</a>' if current_page != "Video" else "Video")
+    if user.trello_api_key and user.trello_api_access_token:
+        pages.append('<a href="/" target="_self">Tasks</a>' if current_page != "Tasks" else "Tasks")
     if user.pushover_user_key:
         pages.append(
             '<a href="/reminders" target="_self">Reminders</a>' if current_page != "Reminders" else "Reminders")
-    if user.trello_api_key and user.trello_api_access_token:
-        pages.append('<a href="/" target="_self">Tasks</a>' if current_page != "Tasks" else "Tasks")
+    pages.append('<a href="/spotify" target="_self">Music</a>' if current_page != "Music" else "Music")
+    if user.tmdb_session_id:
+        pages.append('<a href="/video" target="_self">Video</a>' if current_page != "Video" else "Video")
     if user.username in ['rsanek', 'vsanek', 'will']:
         pages.append('<a href="/hn" target="_self">HN</a>' if current_page != "HN" else "HN")
     if user.username in ['rsanek']:
