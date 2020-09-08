@@ -3,6 +3,7 @@ from typing import List, Dict, Set
 
 import genanki
 from genanki import Model, Deck
+from sqlalchemy import and_
 
 from app import db
 from app.card_generation.util import zdNote, create_html_unordered_list, AnkiCard, get_template, get_rs_anki_css, \
@@ -68,17 +69,17 @@ def generate_videos(user: User, deck: Deck, tags: List[str]):
                 'yes' if managed_video.watched else '',
                 trailer_key,
                 str(youtube_durations.get(trailer_key, '')),
-                f"<img src='{video.poster_image_url}'>",
+                f"<img src='{video.poster_image_url}'>" if video.poster_image_url else '',
             ])
         deck.add_note(video_as_note)
 
-    top_people_sql = """
+    top_people_sql = f"""
 select vp.id
 from video_credits vc
          join video_persons vp on vc.person_id = vp.id
          join managed_videos mv on vc.video_id = mv.video_id
 where ((character is not null and character not like '%%uncredited%%')
-    or job = 'Director' or job = 'Creator') and ("order" is null or "order" <= 10)
+    or job = 'Director' or job = 'Creator') and ("order" is null or "order" <= 10) and mv.user_id = {user.id}
 group by 1
 having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
     top_people = [row[0] for row in list(db.engine.execute(top_people_sql))]
@@ -91,7 +92,8 @@ having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
         "Production": "producer",
     }
 
-    for video_person in VideoPerson.query.filter(VideoPerson.id.in_(top_people)).all():  # type: ignore
+    for video_person in VideoPerson.query.filter(
+            and_(VideoPerson.image_url.isnot(None), VideoPerson.id.in_(top_people))).all():  # type: ignore
         has_actor_credit = False
         has_director_credit = False
         has_film_credit = False
@@ -122,7 +124,7 @@ from video_persons vp
          join videos v on vc.video_id = v.id
          full outer join managed_videos mv on v.id = mv.video_id
 where v.id in (select credits.video_id from credits) and vp.id in ({top_people_string})
-  and vc.person_id != '{video_person.id}'
+  and vc.person_id != '{video_person.id}' and mv.user_id = {user.id}
 group by 1, 2"""
         co_stars = [(row[0], video_id_to_html_formatted_name_and_year[row[1]]) for row in
                     list(db.engine.execute(co_stars_sql))]

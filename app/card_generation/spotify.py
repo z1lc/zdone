@@ -3,6 +3,7 @@ from collections import defaultdict
 from typing import Dict, List, Optional
 
 import genanki
+from dateutil import parser
 from genanki import Model, Deck
 
 from app import db
@@ -38,6 +39,8 @@ def generate_tracks(user: User, deck: Deck, tags: List[str]):
         inner_artists = []
         for inner_artist in track['artists']:
             inner_artists.append(inner_artist['name'])
+        album_name = track['album']['name'].replace('"', '\'')
+        release_year = parser.parse(track['album']['release_date']).date().year
         track_as_note = SpotifyTrackNote(
             model=get_track_model(user),
             tags=tags,
@@ -45,7 +48,7 @@ def generate_tracks(user: User, deck: Deck, tags: List[str]):
                 track['uri'],
                 track['name'].replace('"', '\''),
                 ", ".join(inner_artists).replace('"', '\''),
-                track['album']['name'].replace('"', '\''),
+                f"<i>{album_name}</i> ({release_year})",
                 f"<img src='{track['album']['images'][0]['url']}'>"
             ])
         if track['uri'] in legacy_mappings:
