@@ -39,8 +39,16 @@ group by 1, 2
 order by 3 asc, 4 asc;"""
         potential_reminders = list(db.engine.execute(valid_potential_reminders_to_be_sent_with_counts))
         if potential_reminders:
+            # there are a few requirements from the selection of the reminder:
+            # * we don't want to repeat a recent reminder (handled by SQL above)
+            # * we want to prefer reminders that we've seen less than reminders we've already seen more
+            # * we don't want reminder selection to be predictable (same order / same day)
+            # below, we opt for a two-stage randomness algorithm to achieve this,
             lowest_number_of_notifications = potential_reminders[0][2]
-            potential_reminders = [p for p in potential_reminders if p[2] == lowest_number_of_notifications]
+            highest_number_of_notifications = potential_reminders[-1][2]
+            num_notifications_max_random_choice = random.choice(
+                list(range(lowest_number_of_notifications, highest_number_of_notifications + 1)))
+            potential_reminders = [p for p in potential_reminders if p[2] <= num_notifications_max_random_choice]
             selected_reminder_id = random.choice(potential_reminders)[0]
             log(f"Will send notification for reminder id {selected_reminder_id} for user {user.username}.")
             send_and_log_notification(user, selected_reminder_id)
