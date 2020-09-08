@@ -100,16 +100,15 @@ order by 1 asc, 3 desc"""
 
     log(f"getting common artists... {today_datetime()}")
     for artist in get_common_artists(user):
-        img_src: Optional[str]
+        img_src: Optional[str] = None
         if artist.good_image and artist.spotify_image_url:
             img_src = artist.spotify_image_url
         elif artist.image_override_name:
             img_src = f"https://www.zdone.co/static/images/artists/{artist.image_override_name}"
-        else:
-            img_src = None
 
         if img_src:
-            top_played_tracks_for_artist = [clean_track_name(row[2]) for row in top_played_tracks if row[0] == artist.uri]
+            top_played_tracks_for_artist = [clean_track_name(row[2]) for row in top_played_tracks if
+                                            row[0] == artist.uri]
             top_played_tracks_for_artist = list(dict.fromkeys(top_played_tracks_for_artist))
             songs = create_html_unordered_list(top_played_tracks_for_artist)
 
