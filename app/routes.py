@@ -373,7 +373,8 @@ def api():
             "time_zone": user.current_time_zone,
             "latest_reminder": {
                 "title": latest_reminder.title,
-                "message": latest_reminder.message
+                "message": latest_reminder.message,
+                "id": latest_reminder.id,
             },
         }
         r = make_response(r)
