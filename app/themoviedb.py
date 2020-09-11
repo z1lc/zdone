@@ -111,7 +111,8 @@ def _sort_trailer(trailer) -> Tuple[int, int]:
 
     duration = _get_video_duration_from_youtube(trailer['key'])
     # if we don't find a duration, it's probably because the video was deleted
-    if not duration:
+    # if the duration is more than 60 minutes, we actually probably have the real movie, which we also don't want
+    if not duration or duration > 60 * 60:
         return len(priorities) + 1, 0
 
     try:

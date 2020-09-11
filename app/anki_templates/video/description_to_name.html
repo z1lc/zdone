@@ -1,7 +1,9 @@
 {{ '{{#Description}}' }}
 <div id="textPart">
     What {{ '{{Video Type}}' }}?<br>
-    {{ '{{Description}}' }}<hr>
+    {% if not is_front %}<span class="mini">{% endif %}
+    {{ '{{Description}}' }}{% if not is_front %}</span>{% endif %}
+    <hr>
     {% if not is_front %}
         <span class="rsAnkiBold rsAnswer" id="answer">{{ '{{Name}}' }}</span> ({{ '{{Year Released}}' }})<br>
     {% endif %}
