@@ -258,8 +258,12 @@ def index():
 def reminders(reminder_id):
     if reminder_id:
         reminder = Reminder.query.filter_by(user_id=current_user.id, id=reminder_id).one_or_none()
-        return render_template("single_reminder.html", title=reminder.title,
-                               message=reminder.message.replace("\n", "<br>"))
+        if reminder:
+            return render_template("single_reminder.html", title=reminder.title,
+                                   message=reminder.message.replace("\n", "<br>"))
+        else:
+            return render_template("single_reminder.html",
+                                   title=f"Reminder not found for user {current_user.username}!")
     form = ReminderForm()
     if form.validate_on_submit():
         reminder = Reminder(
