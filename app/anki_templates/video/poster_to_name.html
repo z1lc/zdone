@@ -3,7 +3,8 @@
     {% if is_front %}
         What {{ '{{Video Type}}' }}?
     {% else %}
-        <span class="rsAnswer rsAnkiBold">{{ '{{Name}}' }}</span> ({{ '{{Year Released}}' }})
+        <span class="rsAnswer rsAnkiBold">{{ '{{Name}}' }}</span>{{ '{{#Year Released}}' }}
+        ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}
         <br>
         <ul class="mini">
             {{ '{{#Top Actors}}' }}

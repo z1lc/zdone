@@ -3,13 +3,17 @@
 <div id="textPart">
     {% if is_front %}
         What {{ '{{Video Type}}' }}?<br>
-        <div class="video-container" >
+        <div class="video-container">
             <div class="video-foreground">
-                <div class="iframe-container"><div id="player"></div></div>
+                <div class="iframe-container">
+                    <div id="player"></div>
+                </div>
             </div>
         </div>
     {% else %}
-        <span class="rsAnswer rsAnkiBold">{{ '{{Name}}' }}</span> ({{ '{{Year Released}}' }})<br>
+        <span class="rsAnswer rsAnkiBold">{{ '{{Name}}' }}</span>{{ '{{#Year Released}}' }}
+        ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}
+        <br>
     {% endif %}
 </div>
 

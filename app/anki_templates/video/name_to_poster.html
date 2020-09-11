@@ -1,9 +1,11 @@
 {{ '{{#Poster Image}}' }}
 <div id="textPart">
     {% if is_front %}
-        Visualize the poster for <span class="rsAnkiBold">{{ '{{Name}}' }}</span> ({{ '{{Year Released}}' }})
+        Visualize the poster for <span class="rsAnkiBold">{{ '{{Name}}' }}</span>{{ '{{#Year Released}}' }}
+        ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}
     {% else %}
-        <span class="rsAnkiBold">{{ '{{Name}}' }}</span> ({{ '{{Year Released}}' }})
+        <span class="rsAnkiBold">{{ '{{Name}}' }}</span>{{ '{{#Year Released}}' }}
+        ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}
         <br>
         <ul class="mini">
             {{ '{{#Top Actors}}' }}

@@ -1,9 +1,11 @@
 {{ '{{#Description}}' }}
 <div id="textPart">
     {% if is_front %}
-        Describe <span class="rsAnkiBold">{{ '{{Name}}' }}</span> ({{ '{{Year Released}}' }}):
+        Describe <span class="rsAnkiBold">{{ '{{Name}}' }}</span>{{ '{{#Year Released}}' }}
+        ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}
     {% else %}
-        <span class="rsAnkiBold">{{ '{{Name}}' }}</span> ({{ '{{Year Released}}' }})<hr>
+        <span class="rsAnkiBold">{{ '{{Name}}' }}</span>{{ '{{#Year Released}}' }}
+        ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}<hr>
         <span class="rsAnswer">{{ '{{Description}}' }}</span>
     {% endif %}
 </div>
