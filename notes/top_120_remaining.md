@@ -44,7 +44,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * ~~Lil Wayne~~
 * ~~Fleetwood Mac~~
 * Rod Stewart
-* Bee Gees
+* ~~Bee Gees~~
 ### 100m+
 * Nicki Minaj
 * Beyoncé
