@@ -74,8 +74,8 @@ having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
         top_actors_and_roles_html = ''
         if (VideoCredit.query.filter(and_(
                 VideoCredit.video_id == video.id,
-                VideoCredit.person_id.in_(top_people),
-                VideoCredit.order <= 5)).count() > 0):
+                VideoCredit.person_id.in_(top_people),  # type: ignore
+                VideoCredit.order <= 5)).count() > 0):  # type: ignore
             top_actors_and_roles_html = \
                 create_html_unordered_list([v for _, v in top_actors_and_roles], max_length=99, should_sort=False)
 
