@@ -43,7 +43,7 @@ def get_reminders_from_this_week(user: User) -> List[Reminder]:
         .filter(Reminder.user_id == user.id) \
         .filter(ReminderNotification.sent_at >= today() - datetime.timedelta(days=7)) \
         .order_by(ReminderNotification.sent_at.desc()).all()  # type: ignore
-    return [r for _, r in notification_reminder_pair]
+    return [r for _, r in notification_reminder_pair][:7]
 
 
 def get_most_recent_reminder(user: User) -> Optional[Reminder]:

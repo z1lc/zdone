@@ -1,0 +1,23 @@
+{{ '{{#Watched?}}' }}
+{{ '{{#Top Actors and Roles}}' }}
+<div id="textPart">
+    {% if is_front %}
+        Name an actor in <span class="rsAnkiBold">{{ '{{Name}}' }}</span>{{ '{{#Year Released}}' }}
+        ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}
+    {% else %}
+        <span class="rsAnkiBold">{{ '{{Name}}' }}</span>{{ '{{#Year Released}}' }}
+        ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}<hr>
+        <span class="rsAnswer">{{ '{{Top Actors and Roles}}' }}</span>
+    {% endif %}
+</div>
+
+<div id="imagePart">
+    {% if not is_front %}
+        {{ '{{Poster Image}}' }}
+    {% endif %}
+</div>
+
+
+{{ script_include|safe }}
+{{ '{{/Top Actors and Roles}}' }}
+{{ '{{/Watched?}}' }}

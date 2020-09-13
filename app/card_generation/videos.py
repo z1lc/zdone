@@ -33,6 +33,18 @@ def generate_videos(user: User, deck: Deck, tags: List[str]):
         .join(ManagedVideo) \
         .filter_by(user_id=user.id) \
         .all()
+    top_people_sql = f"""
+select vp.id
+from video_credits vc
+         join video_persons vp on vc.person_id = vp.id
+         join managed_videos mv on vc.video_id = mv.video_id
+where ((character is not null and character not like '%%uncredited%%')
+    or job = 'Director' or job = 'Creator') and ("order" is null or "order" <= 10) and mv.user_id = {user.id}
+group by 1
+having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
+    top_people = [row[0] for row in list(db.engine.execute(top_people_sql))]
+    top_people_string = "'" + "','".join(top_people) + "'"
+
     for managed_video, video in managed_video_pair:
         trailer_key = youtube_overrides.get(video.id, video.youtube_trailer_key) or ''
 
@@ -50,9 +62,22 @@ def generate_videos(user: User, deck: Deck, tags: List[str]):
 
         directors = VideoPerson.query.join(VideoCredit).filter_by(video_id=video.id, job='Director').all()
         creators = VideoPerson.query.join(VideoCredit).filter_by(video_id=video.id, job='Creator').all()
+
+        # seems like order is sometimes 0-based and other times 1-based?
         top_actors = VideoPerson.query.join(VideoCredit).filter_by(video_id=video.id) \
                          .filter(VideoCredit.order <= 3).all()[:3]  # type: ignore
-        # seems like order is sometimes 0-based and other times 1-based?
+        top_actors_and_roles = [(vp.id, f"{vp.name} as {vc.character}")
+                                for vc, vp in db.session.query(VideoCredit, VideoPerson) \
+                                                  .join(VideoCredit) \
+                                                  .filter_by(video_id=video.id) \
+                                                  .filter(VideoCredit.order <= 5).all()[:5]]  # type: ignore
+        top_actors_and_roles_html = ''
+        if (VideoCredit.query.filter(and_(
+                VideoCredit.video_id == video.id,
+                VideoCredit.person_id.in_(top_people),
+                VideoCredit.order <= 5)).count() > 0):
+            top_actors_and_roles_html = \
+                create_html_unordered_list([v for _, v in top_actors_and_roles], max_length=99, should_sort=False)
 
         video_as_note = zdNote(
             model=get_video_model(user),
@@ -66,24 +91,13 @@ def generate_videos(user: User, deck: Deck, tags: List[str]):
                 ", ".join([d.name for d in directors]) if video.is_film() else '',
                 ", ".join([c.name for c in creators]) if video.is_tv() else '',
                 ", ".join([a.name for a in top_actors]),
+                top_actors_and_roles_html,
                 'yes' if managed_video.watched else '',
                 trailer_key,
                 str(youtube_durations.get(trailer_key, '')),
                 f"<img src='{video.poster_image_url}'>" if video.poster_image_url else '',
             ])
         deck.add_note(video_as_note)
-
-    top_people_sql = f"""
-select vp.id
-from video_credits vc
-         join video_persons vp on vc.person_id = vp.id
-         join managed_videos mv on vc.video_id = mv.video_id
-where ((character is not null and character not like '%%uncredited%%')
-    or job = 'Director' or job = 'Creator') and ("order" is null or "order" <= 10) and mv.user_id = {user.id}
-group by 1
-having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
-    top_people = [row[0] for row in list(db.engine.execute(top_people_sql))]
-    top_people_string = "'" + "','".join(top_people) + "'"
 
     known_for_map = {
         "Acting": "actor",
@@ -166,6 +180,7 @@ def get_video_model(user: User) -> Model:
             {'name': 'Director'},
             {'name': 'Creator'},
             {'name': 'Top Actors'},
+            {'name': 'Top Actors and Roles'},
             {'name': 'Watched?'},
             {'name': 'YouTube Trailer Key'},
             {'name': 'YouTube Trailer Duration'},
@@ -179,6 +194,7 @@ def get_video_model(user: User) -> Model:
             get_template(AnkiCard.VIDEO_TO_NAME, user),
             get_template(AnkiCard.DESCRIPTION_TO_NAME, user),
             get_template(AnkiCard.NAME_TO_DESCRIPTION, user),
+            get_template(AnkiCard.NAME_TO_ACTORS, user),
             # TODO: add extra templates before public release
         ]
     )
