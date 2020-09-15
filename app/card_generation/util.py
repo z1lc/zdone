@@ -49,6 +49,7 @@ class AnkiCard(Enum):
     DESCRIPTION_TO_NAME = (23, 'video')
     NAME_TO_DESCRIPTION = (24, 'video')
     NAME_TO_ACTORS = (30, 'video')
+    NAME_TO_DIRECTOR = (31, 'video')
 
     # Video Person model
     VP_IMAGE_TO_NAME = (25, 'video_person', 'Image>Name')

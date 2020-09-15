@@ -72,10 +72,7 @@ having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
                                                   .filter_by(video_id=video.id) \
                                                   .filter(VideoCredit.order <= 5).all()[:5]]  # type: ignore
         top_actors_and_roles_html = ''
-        if (VideoCredit.query.filter(and_(
-                VideoCredit.video_id == video.id,
-                VideoCredit.person_id.in_(top_people),  # type: ignore
-                VideoCredit.order <= 5)).count() > 0):  # type: ignore
+        if len(set([vpid for vpid, _ in top_actors_and_roles]).intersection(top_people)) > 0:
             top_actors_and_roles_html = \
                 create_html_unordered_list([v for _, v in top_actors_and_roles], max_length=99, should_sort=False)
 
@@ -93,6 +90,7 @@ having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
                 ", ".join([a.name for a in top_actors]),
                 top_actors_and_roles_html,
                 'yes' if managed_video.watched else '',
+                'yes' if len(set([d.id for d in directors]).intersection(top_people)) > 0 else '',
                 trailer_key,
                 str(youtube_durations.get(trailer_key, '')),
                 f"<img src='{video.poster_image_url}'>" if video.poster_image_url else '',
@@ -182,6 +180,7 @@ def get_video_model(user: User) -> Model:
             {'name': 'Top Actors'},
             {'name': 'Top Actors and Roles'},
             {'name': 'Watched?'},
+            {'name': 'Create Director Card?'},
             {'name': 'YouTube Trailer Key'},
             {'name': 'YouTube Trailer Duration'},
             {'name': 'Poster Image'},
@@ -195,6 +194,7 @@ def get_video_model(user: User) -> Model:
             get_template(AnkiCard.DESCRIPTION_TO_NAME, user),
             get_template(AnkiCard.NAME_TO_DESCRIPTION, user),
             get_template(AnkiCard.NAME_TO_ACTORS, user),
+            get_template(AnkiCard.NAME_TO_DIRECTOR, user),
             # TODO: add extra templates before public release
         ]
     )
