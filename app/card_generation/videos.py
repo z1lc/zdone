@@ -137,6 +137,7 @@ from video_persons vp
          full outer join managed_videos mv on v.id = mv.video_id
 where v.id in (select credits.video_id from credits) and vp.id in ({top_people_string})
   and vc.person_id != '{video_person.id}' and mv.user_id = {user.id}
+  and (job is null or not (job = 'Director' or job = 'Creator'))
 group by 1, 2"""
         co_stars = [(row[0], video_id_to_html_formatted_name_and_year[row[1]]) for row in
                     list(db.engine.execute(co_stars_sql))]
