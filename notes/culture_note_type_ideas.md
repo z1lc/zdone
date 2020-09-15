@@ -99,8 +99,14 @@ Potential services:
 
 ## Art
 Potential services:
-* [Artsy.net](https://www.artsy.net/) (paintings+sculptures, public API)
+* [Artsy.net](https://www.artsy.net/) (paintings+sculptures, public API. [`collections`](https://developers.artsy.net/v2/docs/collections) endpoint can be used to retrieve a users' favorites)
+* [WikiArt.org](https://www.wikiart.org/en) (paintings+sculptures, limited/under construction public API, seemingly not updated since 2017. Does not seem to have endpoint to list favorites / follows of a user)
 
 ## Video Games
 Potential services:
 * [Steam](https://store.steampowered.com/) (some big titles & most indie games, public API)
+* [TheGamesDB](https://thegamesdb.net/) (all titles, public API)
+
+## Books
+Potential services:
+* [Goodreads](https://www.goodreads.com/)
