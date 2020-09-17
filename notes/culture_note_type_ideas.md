@@ -101,6 +101,7 @@ Potential services:
 Potential services:
 * [Artsy.net](https://www.artsy.net/) (paintings+sculptures, public API. [`collections`](https://developers.artsy.net/v2/docs/collections) endpoint can be used to retrieve a users' favorites)
 * [WikiArt.org](https://www.wikiart.org/en) (paintings+sculptures, limited/under construction public API, seemingly not updated since 2017. Does not seem to have endpoint to list favorites / follows of a user)
+* [Essential Architecture](https://ankiweb.net/shared/info/42823875) shared deck on Ankiweb
 
 ## Video Games
 Potential services:
