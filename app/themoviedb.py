@@ -83,7 +83,9 @@ def get_stuff(user: User):
 
 
 def clean_description(description, video_name, replacement):
-    return description.replace(video_name, replacement)
+    return description \
+        .replace(video_name, replacement) \
+        .replace(video_name.lower(), replacement)
 
 
 def hydrate_credits(video_id, credits):
