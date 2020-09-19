@@ -66,11 +66,14 @@ having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
         # seems like order is sometimes 0-based and other times 1-based?
         top_actors = VideoPerson.query.join(VideoCredit).filter_by(video_id=video.id) \
                          .filter(VideoCredit.order <= 3).all()[:3]  # type: ignore
-        top_actors_and_roles = [(vp.id, f"{vp.name} as {vc.character}")
-                                for vc, vp in db.session.query(VideoCredit, VideoPerson) \
-                                                  .join(VideoCredit) \
-                                                  .filter_by(video_id=video.id) \
-                                                  .filter(VideoCredit.order <= 5).all()[:5]]  # type: ignore
+
+        top_actors_and_roles = list()
+        for vc, vp in db.session.query(VideoCredit, VideoPerson) \
+                              .join(VideoCredit) \
+                              .filter_by(video_id=video.id) \
+                              .filter(VideoCredit.order <= 5).all()[:5]: # type: ignore
+            extra = " as {vc.character}" if vc.character else ""
+            top_actors_and_roles.append((vp.id, f"{vp.name}{extra}"))
         top_actors_and_roles_html = ''
         if len(set([vpid for vpid, _ in top_actors_and_roles]).intersection(top_people)) > 0:
             top_actors_and_roles_html = \
