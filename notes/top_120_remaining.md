@@ -4,7 +4,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * ~~The Beatles~~
 * ~~Elvis Presley~~
 * ~~Michael Jackson~~
-* Elton John
+* ~~Elton John~~
 * Madonna
 * ~~Led Zeppelin~~
 * ~~Rihanna~~
