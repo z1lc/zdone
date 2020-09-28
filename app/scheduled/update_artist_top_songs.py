@@ -20,11 +20,19 @@ if __name__ == '__main__':
     all_users = User.query.all()
     log('Will update last.fm scrobble counts for all users.')
     for registered_user in all_users:
-        update_last_fm_scrobble_counts(registered_user)
+        try:
+            update_last_fm_scrobble_counts(registered_user)
+        except Exception as e:
+            log(f'Received exception while updating for {registered_user.username}')
+            capture_exception(e)
 
     log('Will update downloadable playlist for all users.')
     for registered_user in all_users:
-        update_spotify_anki_playlist(registered_user)
+        try:
+            update_spotify_anki_playlist(registered_user)
+        except Exception as e:
+            log(f'Received exception while updating for {registered_user.username}')
+            capture_exception(e)
 
     log('Will update the top songs for all followed artists in table `managed_spotify_artists`.')
     log('Getting artists...')
