@@ -183,6 +183,7 @@ def get_or_add_person(person_id: str) -> VideoPerson:
             name=person['name'],
             image_url=get_full_tmdb_image_url(person['profile_path']),
             birthday=person['birthday'],
+            deathday=person['deathday'],
             known_for=person['known_for_department'],
         )
         db.session.add(maybe_person)
@@ -268,13 +269,18 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
 
 
 def backfill_null():
-    for video in Video.query.all():
-        if video.film_or_tv == "film":
-            m_videos = tmdbsimple.Movies(to_tmdb_id(video.id)).videos()
-        else:
-            m_videos = tmdbsimple.TV(to_tmdb_id(video.id)).videos()
-        video.youtube_trailer_key = get_or_add_first_youtube_trailer(m_videos)
+    for person in VideoPerson.query.all():
+        api_person = tmdbsimple.People(to_tmdb_id(person.id)).info()
+        person.deathday = api_person['deathday']
+        log(f"Added death for {person.name}")
         db.session.commit()
+    # for video in Video.query.all():
+    #     if video.film_or_tv == "film":
+    #         m_videos = tmdbsimple.Movies(to_tmdb_id(video.id)).videos()
+    #     else:
+    #         m_videos = tmdbsimple.TV(to_tmdb_id(video.id)).videos()
+    #     video.youtube_trailer_key = get_or_add_first_youtube_trailer(m_videos)
+    #     db.session.commit()
 
 
 def get_full_tmdb_image_url(path):

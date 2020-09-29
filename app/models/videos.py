@@ -70,6 +70,7 @@ class VideoPerson(BaseModel):
     id: str = db.Column(db.Text, primary_key=True)
     name: str = db.Column(db.Text)
     birthday: datetime.date = db.Column(db.Date)
+    deathday: datetime.date = db.Column(db.Date)
     known_for: str = db.Column(db.Text)
     image_url: str = db.Column(db.Text)
 
