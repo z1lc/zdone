@@ -38,10 +38,17 @@ select vp.id
 from video_credits vc
          join video_persons vp on vc.person_id = vp.id
          join managed_videos mv on vc.video_id = mv.video_id
+         join videos v on vc.video_id = v.id
 where ((character is not null and character not like '%%uncredited%%')
     or job = 'Director' or job = 'Creator') and ("order" is null or "order" <= 10) and mv.user_id = {user.id}
 group by 1
-having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
+having sum(case when mv.watched
+                    then case when v.seasons is not null
+                                  -- cap at 10 seasons per show, and consider 3 seasons as ≈ 1 movie 
+                                  then least(v.seasons::float, 10.0) / 3
+                              else 1 end
+                -- 'want to watch' should be counted the same, whether it's a TV show or a movie
+                else 0.5 end) >= 4"""
     top_people = [row[0] for row in list(db.engine.execute(top_people_sql))]
     top_people_string = "'" + "','".join(top_people) + "'"
 
@@ -71,7 +78,7 @@ having sum(case when mv.watched then 1 else 0.5 end) >= 4"""
         for vc, vp in db.session.query(VideoCredit, VideoPerson) \
                               .join(VideoCredit) \
                               .filter_by(video_id=video.id) \
-                              .filter(VideoCredit.order <= 5).all()[:5]: # type: ignore
+                              .filter(VideoCredit.order <= 5).all()[:5]:  # type: ignore
             extra = f" as {vc.character}" if vc.character else ""
             top_actors_and_roles.append((vp.id, f"{vp.name}{extra}"))
         top_actors_and_roles_html = ''

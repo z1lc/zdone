@@ -22,6 +22,7 @@ class Video(BaseModel):
     film_or_tv: str = db.Column(db.Text, nullable=False, server_default='film')
     budget: int = db.Column(db.BigInteger)
     revenue: int = db.Column(db.BigInteger)
+    seasons: int = db.Column(db.Integer)
 
     def is_film(self) -> bool:
         return self.film_or_tv == 'film'

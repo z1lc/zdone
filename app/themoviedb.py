@@ -240,6 +240,7 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
                 youtube_trailer_key=get_or_add_first_youtube_trailer(tv_details.videos()),
                 poster_image_url=get_full_tmdb_image_url(tmdb_api_movie_or_tv_response['poster_path']),
                 film_or_tv='TV show',
+                seasons=len([s for s in tv_info['seasons'] if s['air_date']])
             )
 
         db.session.add(maybe_video)
@@ -269,18 +270,21 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
 
 
 def backfill_null():
-    for person in VideoPerson.query.all():
+    for person in VideoPerson.query.filter_by(deathday=None).all():
         api_person = tmdbsimple.People(to_tmdb_id(person.id)).info()
         person.deathday = api_person['deathday']
         log(f"Added death for {person.name}")
         db.session.commit()
     # for video in Video.query.all():
-    #     if video.film_or_tv == "film":
-    #         m_videos = tmdbsimple.Movies(to_tmdb_id(video.id)).videos()
-    #     else:
-    #         m_videos = tmdbsimple.TV(to_tmdb_id(video.id)).videos()
-    #     video.youtube_trailer_key = get_or_add_first_youtube_trailer(m_videos)
-    #     db.session.commit()
+        # if video.is_film():
+        #     m_videos = tmdbsimple.Movies(to_tmdb_id(video.id)).videos()
+        # else:
+        #     m_videos = tmdbsimple.TV(to_tmdb_id(video.id)).videos()
+        # video.youtube_trailer_key = get_or_add_first_youtube_trailer(m_videos)
+        # if video.is_tv():
+        #     tv_info = tmdbsimple.TV(to_tmdb_id(video.id)).info()
+        #     video.seasons=len([s for s in tv_info['seasons'] if s['air_date']])
+        #     db.session.commit()
 
 
 def get_full_tmdb_image_url(path):
