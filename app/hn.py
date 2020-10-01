@@ -16,6 +16,7 @@ def get_unread_stories(user: User) -> List[HnStory]:
         .filter(read_logs.c.id == None)
         .filter(HnStory.score >= 100)
         .order_by(HnStory.score.desc())  # type: ignore
+        .limit(100)
         .all()]
     for story in stories:
         story.posted_at = humanize.naturaltime(datetime.datetime.now() - story.posted_at)
