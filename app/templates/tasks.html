@@ -38,7 +38,9 @@
         tasks = data["tasks_to_do"];
         serverTimeZone = data["time_zone"]
         deviceTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        $('div.reminder').html(`<b><a href="/reminders/${data["latest_reminder"]["id"]}">${data["latest_reminder"]["title"]}</a></b>`);
+        if (data["latest_reminder"] !== undefined) {
+          $('div.reminder').html(`<b><a href="/reminders/${data["latest_reminder"]["id"]}">${data["latest_reminder"]["title"]}</a></b>`);
+        }
         $('div.reminder').fadeIn(1000);
 
         if (serverTimeZone !== deviceTimeZone) {

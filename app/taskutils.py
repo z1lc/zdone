@@ -106,11 +106,18 @@ def ensure_trello_setup_idempotent(user: User) -> str:
 
             if not has_zdone_hook:
                 to_return += "Creating zdone webhook...<br>"
-                hook = client.create_hook(
-                    callback_url="https://www.zdone.co/trello_webhook",
-                    id_model=backlogs_board.id
-                )
-                to_return += f"Successfully created zdone webhook with id {hook.id}.<br>"
+                try:
+                    hook = client.create_hook(
+                        callback_url="https://www.zdone.co/trello_webhook",
+                        id_model=backlogs_board.id,
+                    )
+                except Exception as e:
+                    to_return += f"Received exception while adding webhook: {e}<br>"
+                    to_return += f"Did not succeed in creating webhook!" \
+                                 f" It is likely the Trello library is still broken." \
+                                 f" You'll probably just have to do this by hand in Postman."
+                else:
+                    to_return += f"Successfully created zdone webhook with id {hook.id}.<br>"
 
     return to_return
 

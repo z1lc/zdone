@@ -53,8 +53,11 @@ from reminder_notifications
 where user_id = {user.id}
 order by sent_at desc
 limit 1"""
-    most_recent_reminder_id = list(db.engine.execute(prepared_sql))[0][0]
-    return Reminder.query.filter_by(id=most_recent_reminder_id).one_or_none()
+    reminders = list(db.engine.execute(prepared_sql))
+    if reminders:
+        most_recent_reminder_id = reminders[0][0]
+        return Reminder.query.filter_by(id=most_recent_reminder_id).one_or_none()
+    return None
 
 
 def send_and_log_notification(user: User, reminder_id: int, should_log: bool = True) -> None:

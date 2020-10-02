@@ -370,17 +370,19 @@ def api():
             else:
                 ret_tasks.append(tcard)
 
-        latest_reminder = get_most_recent_reminder(user)
         r = {
             "average_daily_load": round(average_daily_load, 2),
             "tasks_to_do": ret_tasks,
             "time_zone": user.current_time_zone,
-            "latest_reminder": {
-                "title": latest_reminder.title,
-                "message": latest_reminder.message,
-                "id": latest_reminder.id,
-            },
         }
+
+        latest_reminder = get_most_recent_reminder(user)
+        if latest_reminder:
+            r["latest_reminder"] = {
+                                       "title": latest_reminder.title,
+                                       "message": latest_reminder.message,
+                                       "id": latest_reminder.id,
+                                   },
         r = make_response(r)
         r.mimetype = 'application/json'
         return r, 200
