@@ -50,13 +50,14 @@ def do_update_task(update: str,
             user.cached_trello_data = None
             db.session.commit()
             client = get_trello_client(user)
-            completed_list_id = \
-                [l for l in [board for board in client.list_boards() if board.name == 'Backlogs'][0].list_lists() if
-                 l.name == "Completed via zdone"][0].id
-            client.get_card(task_id).change_list(completed_list_id)
-            log.task_name = task_raw_name
-            db.session.add(log)
-            db.session.commit()
+            if client:
+                completed_list_id = \
+                    [l for l in [board for board in client.list_boards() if board.name == 'Backlogs'][0].list_lists() if
+                     l.name == "Completed via zdone"][0].id
+                client.get_card(task_id).change_list(completed_list_id)
+                log.task_name = task_raw_name
+                db.session.add(log)
+                db.session.commit()
         return success()
     else:
         return failure(f"unexpected service type '{service}'")

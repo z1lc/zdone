@@ -382,7 +382,7 @@ def api():
                                        "title": latest_reminder.title,
                                        "message": latest_reminder.message,
                                        "id": latest_reminder.id,
-                                   },
+                                   }
         r = make_response(r)
         r.mimetype = 'application/json'
         return r, 200
