@@ -26,7 +26,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * ~~Justin Bieber~~
 * ~~Billy Joel~~
 * ~~U2~~
-* Barbra Streisand
+* ~~Barbra Streisand~~
 * Phil Collins
 * Aerosmith
 * ~~ABBA~~
