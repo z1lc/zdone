@@ -49,10 +49,7 @@ def do_update_task(update: str,
             # clear out cache so we force a refresh in case we don't receive the webhook from Trello
             user.cached_trello_data = None
             db.session.commit()
-            client = TrelloClient(
-                api_key=current_user.trello_api_key,
-                api_secret=current_user.trello_api_access_token
-            )
+            client = get_trello_client(user)
             completed_list_id = \
                 [l for l in [board for board in client.list_boards() if board.name == 'Backlogs'][0].list_lists() if
                  l.name == "Completed via zdone"][0].id
