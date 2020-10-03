@@ -404,6 +404,9 @@ def trello_webhook():
                 scope.set_tag("request", json.dumps(req))
                 capture_exception(
                     ValueError(f"Received Trello webhook without a mapping to member {maybe_member} in the database."))
-    else:
-        capture_exception(ValueError(f"Received Trello webhook without a json payload."))
+
+    if not req and flask.request.method == 'POST':
+        capture_exception(ValueError(
+            f"Received Trello webhook POST without a json payload. Payload should only be empty for HEAD requests, "
+            f"which Trello sends the first time when a webhook is created as validation."))
     return success()
