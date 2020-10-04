@@ -68,8 +68,8 @@ def api_key_failure() -> Tuple[Response, int]:
 
 def jsonp(function_name: str, payload: Union[str, Tuple]) -> str:
     if isinstance(payload, str):
-        return f"{function_name}({payload})"
+        return Response(f"{function_name}({payload})", mimetype='text/javascript')
     elif isinstance(payload, tuple):
         # we've received payload from a success() or failure() method
         payload = payload[0].get_data().decode('utf-8').replace('\n', '')
-        return f"{function_name}({payload})"
+        return Response(f"{function_name}({payload})", mimetype='text/javascript')
