@@ -66,7 +66,7 @@ def api_key_failure() -> Tuple[Response, int]:
     return failure("Make sure you are passing a valid API key in the x-api-key header.", 401)
 
 
-def jsonp(function_name: str, payload: Union[str, Tuple]) -> str:
+def jsonp(function_name: str, payload: Union[str, Tuple]) -> Response:
     if isinstance(payload, str):
         return Response(f"{function_name}({payload})", mimetype='text/javascript')
     elif isinstance(payload, tuple):
