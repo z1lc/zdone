@@ -42,15 +42,18 @@
 
 {% block body %}
     {{ navigation|safe }}<br><br>
+    You've read {{ total_reads }} stories, an average of <b>{{ average_reads_per_week }}</b> per week.<br><br>
     <table id="hn_items_table">
         <thead>
         <tr>
+            <th>Points</th>
             <th>Story</th>
         </tr>
         </thead>
         <tbody>
         {% for item in hn_items %}
             <tr id="{{ item.id }}">
+                <td class="dt-body-right">{{ item.score }}</td>
                 <td class="dt-body-left"><a onclick="clickLink({{ item.id }}, '{{ item.url }}')"
                                             target="_blank">{{ item.title }}</a></td>
             </tr>

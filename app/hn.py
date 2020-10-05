@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Tuple
 
 import humanize
 
@@ -21,6 +21,16 @@ def get_unread_stories(user: User) -> List[HnStory]:
     for story in stories:
         story.posted_at = humanize.naturaltime(datetime.datetime.now() - story.posted_at)
     return stories
+
+
+def get_total_and_average_reads_per_week(user: User) -> Tuple[float, float]:
+    sql = f"""
+
+select count(*), count(*) / extract(days from (current_date - min(at))) * 7
+from hn_read_logs
+where user_id = {user.id}"""
+    results = list(db.engine.execute(sql))
+    return (round(results[0][0], 1), round(results[0][1], 1)) if results else (0, 0)
 
 
 def get_hn_articles_from_this_week(user: User) -> List[HnStory]:

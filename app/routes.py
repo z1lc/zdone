@@ -17,7 +17,7 @@ from app.card_generation.anki import generate_full_apkg
 from app.models.base import User
 from . import app, db, kv
 from .forms import LoginForm, RegistrationForm, ReminderForm, REMINDER_DEFAULT
-from .hn import get_unread_stories
+from .hn import get_unread_stories, get_total_and_average_reads_per_week
 from .log import log
 from .models.hn import HnReadLog
 from .models.spotify import ManagedSpotifyArtist, SpotifyArtist
@@ -292,9 +292,12 @@ def hn(item_id):
         db.session.commit()
         return success()
     else:
+        total_reads, average_reads_per_week = get_total_and_average_reads_per_week(current_user)
         return render_template("hn.html",
                                navigation=get_navigation(current_user, "HN"),
-                               hn_items=get_unread_stories(current_user))
+                               hn_items=get_unread_stories(current_user),
+                               total_reads=total_reads,
+                               average_reads_per_week=average_reads_per_week)
 
 
 @app.route('/video')
