@@ -1,10 +1,12 @@
 import datetime
 import json
+import re
 from typing import List, Tuple, Optional
 
 import pytz
 from flask import Response
 from flask_login import current_user
+from tld import get_fld
 # watch out, this dependency is actually py-trello
 from trello import TrelloClient, trellolist
 
@@ -133,11 +135,15 @@ def get_updated_trello_cards(user: User, force_refresh: bool = False):
         items = []
         for tlist in get_open_trello_lists(user):
             for tcard in tlist.list_cards():
+                pretty_name = tcard.name
+                urls = re.findall(r'(https?://[^\s]+)', pretty_name)
+                for url in urls:
+                    pretty_name = pretty_name.replace(url, f'<a href="{url}">{get_fld(url)} 🔗</a>')
                 item = {
                     "id": tcard.id,
                     "service": "trello",
                     "raw_name": f"{tcard.name}",
-                    "name": f"<a href='{tcard.url}'>{tlist.name}</a>: {tcard.name}",
+                    "name": f"<a href='{tcard.url}'>{tlist.name}</a>: {pretty_name}",
                     "note": tcard.description.replace('\n', '<br>'),
                     "list_name": tlist.name,
                     "subtask_id": None,
