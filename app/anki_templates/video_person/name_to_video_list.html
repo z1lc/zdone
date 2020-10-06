@@ -6,7 +6,7 @@
         {{ '{{#Has TV credit?}}' }}TV show{{ '{{/Has TV credit?}}' }}
         {{ '{{Name}}' }} {{ '{{#Actor?}}' }}starred in{{ '{{/Actor?}}' }}{{ '{{#Actor?}}' }}{{ '{{#Director?}}' }} or {{ '{{/Director?}}' }}{{ '{{/Actor?}}' }}{{ '{{#Director?}}' }}directed{{ '{{/Director?}}' }}.
     {% else %}
-        {{ '{{Name}}' }}
+        {{ '{{Name}}' }}{{ '{{#Age}}' }}, {{ '{{Age}}' }}{{ '{{/Age}}' }}
         <hr>
         <span class="rsAnswerMulti">{{ '{{Video List}}' }}</span>
     {% endif %}

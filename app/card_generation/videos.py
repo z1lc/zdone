@@ -1,7 +1,9 @@
+import datetime
 from collections import defaultdict
 from typing import List, Dict, Set
 
 import genanki
+from dateutil.relativedelta import relativedelta
 from genanki import Model, Deck
 from sqlalchemy import and_
 
@@ -157,12 +159,17 @@ group by 1, 2"""
         co_stars_grouped_by_star_list = [f'{k} <span class="mini">{", ".join(v)}</span>' for k, v in
                                          co_stars_grouped_by_star.items()]
 
+        age = ''
+        if not video_person.deathday and video_person.birthday:
+            age = str(relativedelta(datetime.date.today(), video_person.birthday).years)
+
         person_as_note = zdNote(
             model=get_video_person_model(user),
             tags=tags,
             fields=[
                 video_person.id,
                 video_person.name,
+                age,
                 known_for_map.get(video_person.known_for, "crew member"),
                 create_html_unordered_list(list(credits_with_role), should_sort=True),
                 create_html_unordered_list(list(credits_without_role), max_length=99, should_sort=True),
@@ -218,6 +225,7 @@ def get_video_person_model(user: User) -> Model:
         fields=[
             {'name': 'zdone Person ID'},
             {'name': 'Name'},
+            {'name': 'Age'},
             {'name': 'Known For'},
             {'name': 'Selected Credits'},
             {'name': 'Video List'},

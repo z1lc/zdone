@@ -2,7 +2,7 @@
     {% if is_front %}
         Visualize <span class="rsAnkiBold">{{ '{{Name}}' }}</span>
     {% else %}
-        <span class="rsAnkiBold">{{ '{{Name}}' }}</span><br>
+        <span class="rsAnkiBold">{{ '{{Name}}' }}</span>{{ '{{#Age}}' }}, {{ '{{Age}}' }}{{ '{{/Age}}' }}<br>
         <span class="mini">{{ '{{Selected Credits}}' }}</span>
     {% endif %}
 </div>
