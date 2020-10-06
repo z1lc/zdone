@@ -6,10 +6,10 @@
  * **Cultural enrichment system**: integrations between [Anki](https://apps.ankiweb.net/) & external services to promote cultural knowledge.
    * **Music**: uses [Spotify](https://www.spotify.com/) to help you get more into music. Read more about it in the [launch post on Reddit](https://www.reddit.com/r/Anki/comments/g0zgyc/spotify_anki_learn_to_recognize_songs_by_your/). Open for [registration](https://www.zdone.co/register).
    * **Movies & TV**: uses [TMDb](https://www.themoviedb.org/) and [YouTube](https://www.youtube.com/) to help you get more into movies & TV shows. Invite-only.
-   * Future planned categories include **Art**, **Books**, and **Video Games**. 
+   * Future planned categories include **Art**, **Books**, and **Video Games**.
  * **Todo system**: a forgiving todo management system focused on recurring tasks. You set up a recurrence interval for all your tasks, and zdone will prioritize your tasks based on how overdue they are. Invite-only.
  * **Reminder system**: a low-touch way to consistently remind yourself of arbitrary thoughts over time. You set up a list of such reminders, and zdone will notify you via push notifications on a daily basis. Invite-only.
- * **HN reader**: an interface to [Hacker News](https://news.ycombinator.com/) articles that sorts stories by all-time score. Once you read a story, you never see it again. Invite-only. 
+ * **HN reader**: an interface to [Hacker News](https://news.ycombinator.com/) articles that sorts stories by all-time score. Once you read a story, you never see it again. Invite-only.
 
 ## Code
 Much of the templating, user login/session management, and database schema/migration framework follow [The Flask Mega-Tutorial](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world) by Miguel Grinberg. Looking at code examples from that tutorial will be helpful in understanding zdone code.

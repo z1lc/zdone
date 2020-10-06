@@ -31,7 +31,7 @@ see [Whimsical](https://whimsical.com/WKr5BEqNM9EgYW9nE76vvc) for ideas
  * years active+genres>name+image
 
 ### Album
-Generally, probably fine to wait to add this card until the user has listened to 3+ songs from that album. This doesn't deal with the issue of a new release from an artist whose songs don't get popular, or which is a live album (think, RÜFÜS DU SOL's *Live from Joshua Tree*). So alternative might be, for followed artists go ahead and add all albums that are 'real' albums (labeled as such in the Spotify API). Not clear this would solve the example given, or if it's even worth it though. 
+Generally, probably fine to wait to add this card until the user has listened to 3+ songs from that album. This doesn't deal with the issue of a new release from an artist whose songs don't get popular, or which is a live album (think, RÜFÜS DU SOL's *Live from Joshua Tree*). So alternative might be, for followed artists go ahead and add all albums that are 'real' albums (labeled as such in the Spotify API). Not clear this would solve the example given, or if it's even worth it though.
 #### Fields
  * Name
  * Artist
@@ -77,7 +77,7 @@ Potential services:
  * ~~Description>Name~~
  * ~~Name>Description~~
  * Name>Actors+Roles (if watched)
- * Actors+Roles>Name (if watched) 
+ * Actors+Roles>Name (if watched)
  * Name>Director (if watched and have 3+ films under management with same director)
 
 

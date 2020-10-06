@@ -25,10 +25,10 @@ A general, long-term approach to avoiding compatibility problems:
  * When you want to add a new field and/or template, ensure you DO NOT CHANGE THE NAME, ORDERING, OR TOTAL COUNT.
    If you do, you will cause a permanent backwards incompatibility. Use the unique field names you created in the
    beginning in the unique template names (also created in v1 of the model). This sucks, since your field and template
-   names aren't going to make sense to people reading them in the browser / card type editor, but it is the way it must 
+   names aren't going to make sense to people reading them in the browser / card type editor, but it is the way it must
    be if we want to assure compatibility over the long term.
 
-Docs above based on local testing by messing with template & field names, using forked genanki version at 
+Docs above based on local testing by messing with template & field names, using forked genanki version at
 https://github.com/z1lc/genanki. See https://gist.github.com/z1lc/544a971164bf6179655a869e1f3c3980 for one of the
 versions of the code (edited it multiple times & tried importing to test functionality).
 """

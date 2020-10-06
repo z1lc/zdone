@@ -46,7 +46,7 @@ where ((character is not null and character not like '%%uncredited%%')
 group by 1
 having sum(case when mv.watched
                     then case when v.seasons is not null
-                                  -- cap at 10 seasons per show, and consider 3 seasons as ≈ 1 movie 
+                                  -- cap at 10 seasons per show, and consider 3 seasons as ≈ 1 movie
                                   then least(v.seasons::float, 10.0) / 3
                               else 1 end
                 -- 'want to watch' should be counted the same, whether it's a TV show or a movie

@@ -1,7 +1,7 @@
 """users table
 
 Revision ID: 1aeed0f68691
-Revises: 
+Revises:
 Create Date: 2019-08-09 16:06:24.496302
 
 """

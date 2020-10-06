@@ -70,4 +70,3 @@ class kv(BaseModel):
     id: int = db.Column(db.Integer, primary_key=True)
     k: str = db.Column(db.Text, unique=True)
     v: str = db.Column(db.Text)
-
