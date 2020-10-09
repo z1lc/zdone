@@ -7,7 +7,18 @@
     {% else %}
         <span class="rsAnkiBold">{{ '{{Name}}' }}</span>{{ '{{#Year Released}}' }}
         ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}<hr>
-        <span class="rsAnswer">{{ '{{Director}}' }}</span>
+        <ul class="mini">
+            {{ '{{#Top Actors}}' }}
+            <li>Stars {{ '{{Top Actors}}' }}</li>
+            {{ '{{/Top Actors}}' }}
+            {{ '{{#Director}}' }}
+            <li>Directed by <span class="rsAnswer">{{ '{{Director}}' }}</span></li>
+            {{ '{{/Director}}' }}
+            {{ '{{#Creator}}' }}
+            <li>Created by {{ '{{Creator}}' }}</li>
+            {{ '{{/Creator}}' }}
+        </ul>
+
     {% endif %}
 </div>
 

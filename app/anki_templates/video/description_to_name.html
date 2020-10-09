@@ -7,6 +7,17 @@
     {% if not is_front %}
         <span class="rsAnkiBold rsAnswer" id="answer">{{ '{{Name}}' }}</span>{{ '{{#Year Released}}' }}
         ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}<br>
+        <ul class="mini">
+            {{ '{{#Top Actors}}' }}
+            <li>Stars {{ '{{Top Actors}}' }}</li>
+            {{ '{{/Top Actors}}' }}
+            {{ '{{#Director}}' }}
+            <li>Directed by {{ '{{Director}}' }}</li>
+            {{ '{{/Director}}' }}
+            {{ '{{#Creator}}' }}
+            <li>Created by {{ '{{Creator}}' }}</li>
+            {{ '{{/Creator}}' }}
+        </ul>
     {% endif %}
 </div>
 

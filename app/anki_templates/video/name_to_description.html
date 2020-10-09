@@ -5,7 +5,18 @@
         ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}
     {% else %}
         <span class="rsAnkiBold">{{ '{{Name}}' }}</span>{{ '{{#Year Released}}' }}
-        ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}<hr>
+        ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}<br>
+        <ul class="mini">
+            {{ '{{#Top Actors}}' }}
+            <li>Stars {{ '{{Top Actors}}' }}</li>
+            {{ '{{/Top Actors}}' }}
+            {{ '{{#Director}}' }}
+            <li>Directed by {{ '{{Director}}' }}</li>
+            {{ '{{/Director}}' }}
+            {{ '{{#Creator}}' }}
+            <li>Created by {{ '{{Creator}}' }}</li>
+            {{ '{{/Creator}}' }}
+        </ul><hr>
         <span class="rsAnswer">{{ '{{Description}}' }}</span>
     {% endif %}
 </div>
