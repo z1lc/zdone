@@ -28,3 +28,16 @@ def test_get_or_add_person():
 def test_get_or_add_youtube_video():
     tmdbsimple.API_KEY = kv.get('TMDB_API_KEY')
     get_or_add_youtube_video('RTMk-xy2dTY')
+
+
+@pytest.mark.skip(reason="integration")
+def get_imdb_top_250():
+    top250IM = list()  # extract with regex on HTML from https://www.imdb.com/chart/top/
+    top250TM = list()
+    for imdbid in top250IM:
+        movie = tmdbsimple.Find(imdbid).info(language="en-US", external_source="imdb_id")['movie_results'][0]
+        top250TM.append(movie['id'])
+        print('Got ' + movie['original_title'])
+
+    for tmdbid in top250TM:
+        tmdbsimple.Lists(id=123456789, session_id='REPLACE').add_item(media_id=tmdbid)
