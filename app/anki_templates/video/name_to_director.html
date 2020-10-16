@@ -5,17 +5,18 @@
         Who directed <span class="rsAnkiBold">{{ '{{Name}}' }}</span>{{ '{{#Year Released}}' }}
         ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}?
     {% else %}
-        <span class="rsAnkiBold">{{ '{{Name}}' }}</span>{{ '{{#Year Released}}' }}
+        <span class="rsAnkiBold">{{ '{{Name}}' }}</span>{{ '{{#Original Name}}' }}
+        or {{ '{{Original Name}}' }}{{ '{{/Original Name}}' }}{{ '{{#Year Released}}' }}
         ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}<hr>
-        <ul class="mini">
-            {{ '{{#Top Actors}}' }}
-            <li>Stars {{ '{{Top Actors}}' }}</li>
-            {{ '{{/Top Actors}}' }}
+        <ul>
             {{ '{{#Director}}' }}
             <li>Directed by <span class="rsAnswer">{{ '{{Director}}' }}</span></li>
             {{ '{{/Director}}' }}
+            {{ '{{#Top Actors}}' }}
+            <li class="mini">Stars {{ '{{Top Actors}}' }}</li>
+            {{ '{{/Top Actors}}' }}
             {{ '{{#Creator}}' }}
-            <li>Created by {{ '{{Creator}}' }}</li>
+            <li class="mini">Created by {{ '{{Creator}}' }}</li>
             {{ '{{/Creator}}' }}
         </ul>
 

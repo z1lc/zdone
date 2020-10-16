@@ -5,7 +5,8 @@
     {{ '{{Description}}' }}{% if not is_front %}</span>{% endif %}
     <hr>
     {% if not is_front %}
-        <span class="rsAnkiBold rsAnswer" id="answer">{{ '{{Name}}' }}</span>{{ '{{#Year Released}}' }}
+        <span class="rsAnkiBold rsAnswer" id="answer">{{ '{{Name}}' }}</span>{{ '{{#Original Name}}' }}
+        or {{ '{{Original Name}}' }}{{ '{{/Original Name}}' }}{{ '{{#Year Released}}' }}
         ({{ '{{Year Released}}' }}){{ '{{/Year Released}}' }}<br>
         <ul class="mini">
             {{ '{{#Top Actors}}' }}

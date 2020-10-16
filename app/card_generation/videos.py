@@ -35,6 +35,8 @@ def generate_videos(user: User, deck: Deck, tags: List[str]):
         .join(ManagedVideo) \
         .filter_by(user_id=user.id) \
         .all()
+    watched_uris = [v.id for mv, v in managed_video_pair if mv.watched]
+
     top_people_sql = f"""
 select vp.id
 from video_credits vc
@@ -95,6 +97,7 @@ having sum(case when mv.watched
                 video.id,
                 video.film_or_tv,
                 f"<i>{video.name}</i>",
+                f"<i>{video.original_name}</i>" if video.original_name else "",
                 video.description,
                 release,
                 ", ".join([d.name for d in directors]) if video.is_film() else '',
@@ -118,27 +121,28 @@ having sum(case when mv.watched
 
     for video_person in VideoPerson.query.filter(
             and_(VideoPerson.image_url.isnot(None), VideoPerson.id.in_(top_people))).all():  # type: ignore
-        has_actor_credit = False
-        has_director_credit = False
-        has_film_credit = False
-        has_tv_credit = False
-        credits_with_role = set()
-        credits_without_role = set()
+        has_actor_credit, has_director_credit, has_film_credit, has_tv_credit = False, False, False, False
+        # b and sb represent <b> and </b>
+        b, sb = "", ""
+        credits_with_role, credits_without_role = set(), set()
         for credit in VideoCredit.query.filter_by(person_id=video_person.id).all():
             if credit.video_id in films:
                 has_film_credit = True
             elif credit.video_id in tvs:
                 has_tv_credit = True
+            if credit.video_id in watched_uris:
+                b, sb = "<b>", "</b>"
 
             if credit.character and "uncredited" not in credit.character:
                 has_actor_credit = True
                 credits_with_role.add(
-                    f"{credit.character} in {video_id_to_html_formatted_name_and_year[credit.video_id]}")
-                credits_without_role.add(video_id_to_html_formatted_name_and_year[credit.video_id])
+                    f"{b}{credit.character} in {video_id_to_html_formatted_name_and_year[credit.video_id]}{sb}")
+                credits_without_role.add(f"{b}{video_id_to_html_formatted_name_and_year[credit.video_id]}{sb}")
             elif credit.job:
                 has_director_credit = True
-                credits_with_role.add(f"{credit.job} of {video_id_to_html_formatted_name_and_year[credit.video_id]}")
-                credits_without_role.add(video_id_to_html_formatted_name_and_year[credit.video_id])
+                credits_with_role.add(
+                    f"{b}{credit.job} of {video_id_to_html_formatted_name_and_year[credit.video_id]}{sb}")
+                credits_without_role.add(f"{b}{video_id_to_html_formatted_name_and_year[credit.video_id]}{sb}")
 
         co_stars_sql = f"""
 with credits as (select * from video_credits where person_id = '{video_person.id}')
@@ -191,6 +195,7 @@ def get_video_model(user: User) -> Model:
             {'name': 'zdone Video ID'},
             {'name': 'Video Type'},
             {'name': 'Name'},
+            {'name': 'Original Name'},
             {'name': 'Description'},
             {'name': 'Year Released'},
             {'name': 'Director'},
