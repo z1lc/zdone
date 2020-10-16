@@ -204,7 +204,8 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
     if not maybe_video:
         if type == VideoType.MOVIE:
             m_id = tmdb_api_movie_or_tv_response['id']
-            title = tmdb_api_movie_or_tv_response['original_title']
+            title = tmdb_api_movie_or_tv_response['title']
+            original_title = tmdb_api_movie_or_tv_response['original_title']
             description = tmdb_api_movie_or_tv_response['overview']
             image = get_full_tmdb_image_url(tmdb_api_movie_or_tv_response['poster_path'])
 
@@ -217,6 +218,7 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
             maybe_video = Video(
                 id=video_id,
                 name=title,
+                original_name=original_title if original_title != title else None,
                 description=clean_description(description, title, "[film]"),
                 release_date=tmdb_api_movie_or_tv_response.get('release_date', None),
                 last_air_date=None,
@@ -230,9 +232,12 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
             tv_details = tmdbsimple.TV(tmdb_api_movie_or_tv_response['id'])
             tv_info = tv_details.info()
             m_credits = tmdbsimple.TV(tmdb_api_movie_or_tv_response['id']).credits()
+            name = tmdb_api_movie_or_tv_response['name']
+            original_name = tmdb_api_movie_or_tv_response['original_name']
             maybe_video = Video(
                 id=video_id,
-                name=tmdb_api_movie_or_tv_response['name'],
+                name=name,
+                original_name=original_name if original_name != name else None,
                 description=clean_description(tmdb_api_movie_or_tv_response['overview'],
                                               tmdb_api_movie_or_tv_response['name'], "[TV show]"),
                 release_date=tv_info['first_air_date'],

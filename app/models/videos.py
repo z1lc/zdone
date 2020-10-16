@@ -13,6 +13,7 @@ class Video(BaseModel):
     # format of id is zdone:video:service:service_id
     id: str = db.Column(db.Text, primary_key=True)
     name: str = db.Column(db.Text, nullable=False)
+    original_name: str = db.Column(db.Text)
     description: str = db.Column(db.Text)
     release_date: datetime.date = db.Column(db.Date)
     last_air_date: datetime.date = db.Column(db.Date)
