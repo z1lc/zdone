@@ -20,7 +20,7 @@ from .forms import LoginForm, RegistrationForm, ReminderForm, REMINDER_DEFAULT
 from .hn import get_unread_stories, get_total_and_average_reads_per_week
 from .log import log
 from .models.hn import HnReadLog
-from .models.spotify import ManagedSpotifyArtist, SpotifyArtist
+from .models.spotify import ManagedSpotifyArtist, SpotifyArtist, SpotifyPlay
 from .models.tasks import Reminder, Task
 from .models.videos import Video, ManagedVideo
 from .reminders import get_reminders, get_most_recent_reminder
@@ -145,7 +145,8 @@ def spotify():
     total_tracks = 0
     if "total_track_counts" in request.args:
         tracks = get_tracks(current_user)
-        total_tracks = len(tracks)
+        play_uris = set([sp.spotify_track_uri for sp in SpotifyPlay.query.filter_by(user_id=current_user.id).all()])
+        total_tracks = len(play_uris.union(set([t['uri'] for t in tracks])))
         for track in tracks:
             for artist in track['artists']:
                 uris.append(artist['uri'])
