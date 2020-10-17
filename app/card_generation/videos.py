@@ -122,10 +122,10 @@ having sum(case when mv.watched
     for video_person in VideoPerson.query.filter(
             and_(VideoPerson.image_url.isnot(None), VideoPerson.id.in_(top_people))).all():  # type: ignore
         has_actor_credit, has_director_credit, has_film_credit, has_tv_credit = False, False, False, False
-        # b and sb represent <b> and </b>
-        b, sb = "", ""
         credits_with_role, credits_without_role = set(), set()
         for credit in VideoCredit.query.filter_by(person_id=video_person.id).all():
+            # b and sb represent <b> and </b>
+            b, sb = "", ""
             if credit.video_id in films:
                 has_film_credit = True
             elif credit.video_id in tvs:
