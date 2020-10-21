@@ -2,10 +2,10 @@ insert into youtube_video_overrides (video_id, youtube_trailer_key)
 values ('zdone:video:tmdb:1104', 'RTMk-xy2dTY');
 
 insert into tasks (user_id, title, description, ideal_interval, last_completion, defer_until)
-values (5,
+values (1,
         '', --title
         '', --description
-        183, --ideal interval
+        7, --ideal interval
         current_date, --last completion
         NULL --defer until
 )
