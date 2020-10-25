@@ -1,7 +1,9 @@
 import datetime
 from typing import List
 
+import humanize
 import pytz
+from dateutil import parser
 from pifx import PIFX
 from suntime import Sun
 
@@ -26,9 +28,25 @@ def set_to(now: datetime.datetime, target: datetime.datetime, config, descriptio
     are_or_are_not = "are" if within_15_minutes else "are not"
     log(f'We {are_or_are_not} within 15 minutes of target {description} time of {target.time()}.')
     if within_15_minutes:
-        difference: float = (target - now_pacific_time).total_seconds()
-        log(f'Will attempt to change LIFX lights to {config[0]}K, {config[1]} brightness over {difference} seconds.')
-        log_return(p.set_state(color=f'kelvin:{config[0]} brightness:{config[1]}', duration=str(difference)))
+        difference: float = round((target - now_pacific_time).total_seconds())
+        kelvin, brightness = config
+        log(f'Will attempt to change LIFX lights to {kelvin}K, {brightness} brightness over {difference} seconds.')
+        log_return(p.set_state(color=f'kelvin:{kelvin} brightness:{brightness}', duration=str(difference)))
+
+
+def print_status(p, show_old=False, tabbed=True):
+    response = p.list_lights()
+    response.sort(key=lambda light: light['label'])
+    log('Current light statuses:')
+    for light in response:
+        diff = datetime.datetime.utcnow() - parser.parse(light['last_seen']).replace(tzinfo=None)
+        if diff.days < 7 or show_old:
+            connected_string = "connected" if light['connected'] else "disconnected"
+            last_seen = humanize.naturaltime(diff)
+            product_name = light['product']['name'] or "Unknown Product"
+            beginning = "\t" if tabbed else ""
+            log(f"{beginning}{light['label']} ({product_name}): {connected_string}, power {light['power']}"
+                f" | {light['color']['kelvin']}K, {light['brightness']} brightness | last seen {last_seen}")
 
 
 if __name__ == '__main__':
@@ -41,5 +59,6 @@ if __name__ == '__main__':
                                                 local_time_zone=pytz.timezone('America/Los_Angeles'))
 
     log(f'It is {now_pacific_time.time()}.')
+    print_status(p)
     set_to(now_pacific_time, wake_up_datetime, DAY_CONFIG, 'wake up')
     set_to(now_pacific_time, sunset_datetime, EARLY_NIGHT_CONFIG, 'sunset')
