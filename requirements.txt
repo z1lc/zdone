@@ -26,6 +26,8 @@ marshmallow==3.8.0
 sendgrid==6.4.7
 humanize==3.1.0
 tld==0.12.2
+pifx==1.0.1
+suntime==1.2.5
 
 git+git://github.com/z1lc/spotipy.git#egg=spotipy
 git+git://github.com/z1lc/genanki.git#egg=genanki
