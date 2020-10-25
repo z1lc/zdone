@@ -18,6 +18,14 @@ A few dependencies have been forked from their public versions to integrate addi
  * [spotipy](https://github.com/z1lc/spotipy) to allow selecting a custom offset to start songs at
  * [genanki](https://github.com/z1lc/genanki) to allow custom creation dates for notes
 
+### Development
+To develop zdone locally, clone the repository, `pip install -r requirements.txt` and set environment variables:
+ * `DATABASE_URL` to a postgres database, of the style `postgres://user:password@host:port/database`. Once connected, you can get a blank database into the right state by running `flask db upgrade` from the repo root.
+ * `SECRET_KEY` to a long, random string
+
+It may also be useful to install pre-commit to avoid common issues that will fail the build: `pip install pre-commit`; `pre-commit install`; then `pre-commit run --all-files` from the repo root. Read more in [their documentation](https://pre-commit.com/).
+
+
 ## Milestones
  * 2019-08-01 [First commit](https://github.com/z1lc/zdone/commit/9f13a15ef013a073b1d2af17abefa08727f73aac)
  * 2019-08-07 [zdone.co](https://www.zdone.co) domain purchased
