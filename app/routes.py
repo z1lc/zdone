@@ -232,6 +232,10 @@ def api_play_song_v2(api_key, track_uri, callback_function_name):
             return jsonp(callback_function_name,
                          failure("Did not detect a device playing music.<br>"
                                  "Please <a href='spotify:'>begin playback on your device</a> and return to this card."))
+        if "non existing id" in repr(e):
+            return jsonp(callback_function_name,
+                         failure("It appears this song has been removed from Spotify.<br>"
+                                 "Please suspend this card."))
         else:
             capture_exception(e)
             return jsonp(callback_function_name, failure("An unexpected server error occurred.<br>"
