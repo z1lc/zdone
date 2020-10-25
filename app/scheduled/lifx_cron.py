@@ -37,7 +37,8 @@ if __name__ == '__main__':
     sun = Sun(37.78, -122.42)  # SF lat/long
     now_pacific_time = datetime.datetime.now(pytz.timezone('America/Los_Angeles'))
     wake_up_datetime = now_pacific_time.replace(hour=8, minute=0, second=0, microsecond=0)
-    sunset_datetime = sun.get_local_sunset_time(local_time_zone=pytz.timezone('America/Los_Angeles'))
+    sunset_datetime = sun.get_local_sunset_time(date=now_pacific_time,
+                                                local_time_zone=pytz.timezone('America/Los_Angeles'))
 
     log(f'It is {now_pacific_time.time()}.')
     set_to(now_pacific_time, wake_up_datetime, DAY_CONFIG, 'wake up')
