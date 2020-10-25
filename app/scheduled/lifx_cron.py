@@ -25,7 +25,7 @@ def set_to(now: datetime.datetime, target: datetime.datetime, config, descriptio
     within_15_minutes = target - datetime.timedelta(minutes=15) < now < target
     are_or_are_not = "are" if within_15_minutes else "are not"
     log(f'We {are_or_are_not} within 15 minutes of target {description} time of {target.time()}.')
-    if target - datetime.timedelta(minutes=15) < now_pacific_time < target:
+    if within_15_minutes:
         difference: float = (target - now_pacific_time).total_seconds()
         log(f'Will attempt to change LIFX lights to {config[0]}K, {config[1]} brightness over {difference} seconds.')
         log_return(p.set_state(color=f'kelvin:{config[0]} brightness:{config[1]}', duration=str(difference)))
