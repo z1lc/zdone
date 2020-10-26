@@ -212,7 +212,8 @@ def spotify_anki_import():
 @login_required
 def spotify_download_apkg():
     log(f"endpoint hit {today_datetime()}")
-    filename: str = os.path.join(app.instance_path, f'songs-{current_user.username}.apkg')
+    filename: str = os.path.join(app.instance_path,
+                                 f'anki-export-{current_user.username}-{today_datetime().date()}.apkg')
     os.makedirs(app.instance_path, exist_ok=True)
     generate_full_apkg(current_user, filename)
     log(f"before sendfile {today_datetime()}")
@@ -387,10 +388,10 @@ def api():
         latest_reminder = get_most_recent_reminder(user)
         if latest_reminder:
             r["latest_reminder"] = {
-                                       "title": latest_reminder.title,
-                                       "message": latest_reminder.message,
-                                       "id": latest_reminder.id,
-                                   }
+                "title": latest_reminder.title,
+                "message": latest_reminder.message,
+                "id": latest_reminder.id,
+            }
         r = make_response(r)
         r.mimetype = 'application/json'
         return r, 200
