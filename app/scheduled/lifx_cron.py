@@ -10,6 +10,7 @@ from suntime import Sun
 from app import kv
 from app.log import log
 
+WAKE_UP_TIME_HOURS_MINUTES = 7, 30
 DAY_CONFIG = 5500, 1
 EARLY_NIGHT_CONFIG = 2700, 0.6
 WITHIN_MINUTES = 30
@@ -57,7 +58,8 @@ if __name__ == '__main__':
     now_pacific_time = datetime.datetime.now(pytz.timezone('America/Los_Angeles'))
     log(f'It is {now_pacific_time.time()}.')
 
-    wake_up_datetime = now_pacific_time.replace(hour=8, minute=0, second=0, microsecond=0)
+    wake_up_hours, wake_up_minutes = WAKE_UP_TIME_HOURS_MINUTES
+    wake_up_datetime = now_pacific_time.replace(hour=wake_up_hours, minute=wake_up_minutes, second=0, microsecond=0)
     sun_for_date = now_pacific_time.date() + datetime.timedelta(days=1)  # not sure why you have to add a day?
     sunset_datetime = sun.get_local_sunset_time(date=sun_for_date, local_time_zone=pytz.timezone('America/Los_Angeles'))
     if now_pacific_time.day != sunset_datetime.day:
