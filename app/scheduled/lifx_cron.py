@@ -55,11 +55,15 @@ if __name__ == '__main__':
     p = PIFX(kv.get('LIFX_ACCESS_TOKEN'))
     sun = Sun(37.78, -122.42)  # SF lat/long
     now_pacific_time = datetime.datetime.now(pytz.timezone('America/Los_Angeles'))
+    log(f'It is {now_pacific_time.time()}.')
+
     wake_up_datetime = now_pacific_time.replace(hour=8, minute=0, second=0, microsecond=0)
     sun_for_date = now_pacific_time.date() + datetime.timedelta(days=1)  # not sure why you have to add a day?
     sunset_datetime = sun.get_local_sunset_time(date=sun_for_date, local_time_zone=pytz.timezone('America/Los_Angeles'))
+    if now_pacific_time.day != sunset_datetime.day:
+        log(f'ERROR: Sunset datetime received differs from today\'s date!\n'
+            f'\tnow: {now_pacific_time} | sunset: {sunset_datetime}')
 
-    log(f'It is {now_pacific_time.time()}.')
     print_status(p)
     set_to(now_pacific_time, wake_up_datetime, DAY_CONFIG, 'wake up')
     set_to(now_pacific_time, sunset_datetime, EARLY_NIGHT_CONFIG, 'sunset')
