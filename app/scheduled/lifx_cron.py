@@ -15,7 +15,7 @@ EARLY_NIGHT_CONFIG = 2700, 0.6
 WITHIN_MINUTES = 30
 
 
-def log_return(response: List):
+def log_return(response: List) -> None:
     responded_lights = [l['label'] for l in response if l['status'] == 'ok']
     responded_lights.sort()
     log(f'   {len(responded_lights)} lights responded with "ok" status to change: {responded_lights}')
@@ -24,7 +24,7 @@ def log_return(response: List):
     log(f'   {len(non_responded_lights)} lights responded with non-"ok" status to change: {non_responded_lights}')
 
 
-def set_to(now: datetime.datetime, target: datetime.datetime, config, description: str):
+def set_to(now: datetime.datetime, target: datetime.datetime, config, description: str) -> None:
     within_minutes = target - datetime.timedelta(minutes=WITHIN_MINUTES) < now < target
     are_or_are_not = "are" if within_minutes else "are not"
     log(f'We {are_or_are_not} within {WITHIN_MINUTES} minutes of target {description} time of {target.time()}.')
@@ -35,7 +35,7 @@ def set_to(now: datetime.datetime, target: datetime.datetime, config, descriptio
         log_return(p.set_state(color=f'kelvin:{kelvin} brightness:{brightness}', duration=str(difference)))
 
 
-def print_status(p, show_old=False, tabbed=True):
+def print_status(p: PIFX, show_old: bool = False, tabbed: bool = True) -> None:
     response = p.list_lights()
     response.sort(key=lambda light: light['label'])
     log('Current light statuses:')
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     sun = Sun(37.78, -122.42)  # SF lat/long
     now_pacific_time = datetime.datetime.now(pytz.timezone('America/Los_Angeles'))
     wake_up_datetime = now_pacific_time.replace(hour=8, minute=0, second=0, microsecond=0)
-    sun_for_date = now_pacific_time.date() + datetime.timedelta(days=1) # not sure why you have to add a day?
+    sun_for_date = now_pacific_time.date() + datetime.timedelta(days=1)  # not sure why you have to add a day?
     sunset_datetime = sun.get_local_sunset_time(date=sun_for_date, local_time_zone=pytz.timezone('America/Los_Angeles'))
 
     log(f'It is {now_pacific_time.time()}.')
