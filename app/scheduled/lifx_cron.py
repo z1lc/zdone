@@ -12,6 +12,7 @@ from app.log import log
 
 DAY_CONFIG = 5500, 1
 EARLY_NIGHT_CONFIG = 2700, 0.6
+WITHIN_MINUTES = 30
 
 
 def log_return(response: List):
@@ -24,10 +25,10 @@ def log_return(response: List):
 
 
 def set_to(now: datetime.datetime, target: datetime.datetime, config, description: str):
-    within_15_minutes = target - datetime.timedelta(minutes=15) < now < target
-    are_or_are_not = "are" if within_15_minutes else "are not"
-    log(f'We {are_or_are_not} within 15 minutes of target {description} time of {target.time()}.')
-    if within_15_minutes:
+    within_minutes = target - datetime.timedelta(minutes=WITHIN_MINUTES) < now < target
+    are_or_are_not = "are" if within_minutes else "are not"
+    log(f'We {are_or_are_not} within {WITHIN_MINUTES} minutes of target {description} time of {target.time()}.')
+    if within_minutes:
         difference: float = round((target - now_pacific_time).total_seconds())
         kelvin, brightness = config
         log(f'Will attempt to change LIFX lights to {kelvin}K, {brightness} brightness over {difference} seconds.')
