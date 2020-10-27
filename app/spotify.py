@@ -342,13 +342,21 @@ def play_track(full_url: str, track_uri: str, user: User, offset: Optional[int] 
         db.session.commit()
     else:
         start = offset
+
+    # sometimes, a song that was previously mapped to an ID becomes unplayable. Generally, it would be expensive to
+    # detect this ahead of time, and our spotipy library does not thread through the status code (204) that Spotify
+    # returns for the start playback call. Here, we try to start playback first anyway (to keep latency as low as
+    # possible for the happy path) and then after that call we check, was this song actually playable?
     sp.start_playback(uris=[track_uri], position_ms=start)
-    spotify_play = SpotifyPlay(user_id=user.id,
-                               spotify_track_uri=track.uri,
-                               created_at=today_datetime())
-    db.session.add(spotify_play)
-    db.session.commit()
-    return ""
+    if not sp.track(track_uri)['is_playable']:
+        raise ValueError('Track is not playable')
+    else:
+        spotify_play = SpotifyPlay(user_id=user.id,
+                                   spotify_track_uri=track.uri,
+                                   created_at=today_datetime())
+        db.session.add(spotify_play)
+        db.session.commit()
+        return ""
 
 
 def get_liked_page(sp, offset: int) -> List[JsonDict]:
