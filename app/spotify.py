@@ -348,7 +348,7 @@ def play_track(full_url: str, track_uri: str, user: User, offset: Optional[int] 
     # returns for the start playback call. Here, we try to start playback first anyway (to keep latency as low as
     # possible for the happy path) and then after that call we check, was this song actually playable?
     sp.start_playback(uris=[track_uri], position_ms=start)
-    if not sp.track(track_uri)['is_playable']:
+    if not sp.track(track_uri, market='US')['is_playable']:
         raise ValueError('Track is not playable')
     else:
         spotify_play = SpotifyPlay(user_id=user.id,
