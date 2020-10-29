@@ -16,12 +16,14 @@ def get_reminders(user: User) -> List[Reminder]:
     return Reminder.query.filter_by(user_id=user.id).all()
 
 
-def get_task_completions_from_this_week(user: User) -> List[Task]:
+def get_recent_task_completions(
+        user: User,
+        date_start: datetime.date = today() - datetime.timedelta(days=7)) -> List[Task]:
     log_task_pair = db.session.query(TaskLog, Task) \
         .outerjoin(Task) \
         .filter(TaskLog.user_id == user.id) \
         .filter(TaskLog.action == "complete") \
-        .filter(TaskLog.at >= today() - datetime.timedelta(days=7)) \
+        .filter(TaskLog.at >= date_start) \
         .order_by(TaskLog.at.desc()).all()  # type: ignore
     return [tlog.task_name or task.title for tlog, task in log_task_pair]
 

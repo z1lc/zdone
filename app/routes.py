@@ -23,7 +23,7 @@ from .models.hn import HnReadLog
 from .models.spotify import ManagedSpotifyArtist, SpotifyArtist, SpotifyPlay
 from .models.tasks import Reminder, Task
 from .models.videos import Video, ManagedVideo
-from .reminders import get_reminders, get_most_recent_reminder
+from .reminders import get_reminders, get_most_recent_reminder, get_recent_task_completions
 from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, follow_unfollow_artists, \
     get_random_song_family, get_tracks, get_top_recommendations, get_artists_images, populate_null
 from .taskutils import do_update_task, get_updated_trello_cards, ensure_trello_setup_idempotent
@@ -379,8 +379,12 @@ def api():
             else:
                 ret_tasks.append(tcard)
 
+        current_date = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date()
+        this_sunday = current_date - datetime.timedelta(days=current_date.weekday() + 1)
+
         r = {
             "average_daily_load": round(average_daily_load, 2),
+            "num_tasks_completed": len(get_recent_task_completions(user, date_start=this_sunday)),
             "tasks_to_do": ret_tasks,
             "time_zone": user.current_time_zone,
         }

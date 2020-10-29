@@ -4,6 +4,7 @@
 <title>tasks</title>
 <script data-api-key="{{ api_key }}" src="{{ url_for('static',filename='scripts/app.js') }}"></script>
 <script src="//kit.fontawesome.com/874826286d.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/styles/fire.css">
 <script>
   $.ajaxSetup({
     headers: {
@@ -12,9 +13,10 @@
   });
   let task;
   let tasks;
+  let num_tasks_completed;
 
   function fade(selector, html) {
-    $(selector).fadeOut(150, function() {
+    $(selector).fadeOut(150, function () {
       $(this).html(html);
     }).fadeIn(150);
   }
@@ -24,6 +26,12 @@
       task = tasks.shift();
       fade('#countdownExample .name', task.name);
       fade('#countdownExample .note', task.note);
+      // Trello doesn't have defer behavior implemented
+      if (task.service === "zdone") {
+        $("button.defer").fadeIn(200);
+      } else {
+        $("button.defer").fadeOut(200);
+      }
     } else {
       fade('#countdownExample .name', "All done!");
       fade('#countdownExample .note', "");
@@ -31,17 +39,37 @@
     }
   }
 
+  // via https://codepen.io/yamanda/pen/RpNMaY
+  function updateFire() {
+    let numTasksCompleted = num_tasks_completed
+    const left = '<div class="fire-left"><div class="main-fire"></div><div class="particle-fire"></div></div>';
+    const main = '<div class="fire-main"><div class="main-fire"></div><div class="particle-fire"></div></div>';
+    const right = '<div class="fire-right"><div class="main-fire"></div><div class="particle-fire"></div></div>';
+    const bottom = '<div class="fire-bottom"><div class="main-fire"></div></div>';
+    let fireString = ""
+    if (numTasksCompleted >= 21) {
+      fireString = left + main + right + bottom;
+    } else if (numTasksCompleted >= 14) {
+      fireString = left + right;
+    } else if (numTasksCompleted >= 7) {
+      fireString = left;
+    }
+    $('div#fire').html('<div class="fire">' + fireString + '</div>').fadeIn(1000);
+  }
+
   $(function () {
     $.get(
       "/api?zdone",
       function (data) {
         tasks = data["tasks_to_do"];
-        serverTimeZone = data["time_zone"]
-        deviceTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const serverTimeZone = data["time_zone"]
+        const deviceTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         if (data["latest_reminder"] !== undefined) {
           $('div.reminder').html(`<b><a href="/reminders/${data["latest_reminder"]["id"]}">${data["latest_reminder"]["title"]}</a></b>`);
         }
         $('div.reminder').fadeIn(1000);
+        num_tasks_completed = data["num_tasks_completed"]
+        updateFire()
 
         if (serverTimeZone !== deviceTimeZone) {
           fade('#countdownExample .name', "Time zone mismatch!");
@@ -57,11 +85,15 @@
     );
     $("button#complete").click(function (event) {
       completeItem(task.service, task.id, task.raw_name);
+      num_tasks_completed++;
       nextTask();
       event.preventDefault();
     });
     $("button.defer").click(function (event) {
-      const days = parseInt($(this).attr("data-days"));
+      let days = parseInt(prompt(`How many days do you want to defer task "${task.raw_name}"?`, "3"));
+      if (days === null || isNaN(days)) {
+        return
+      }
       deferItem(task.service, task.id, days, task.raw_name);
       nextTask();
       event.preventDefault();
@@ -79,57 +111,69 @@
   });
 </script>
 <style>
-    #countdownExample {
-        margin: 0 auto;
-        text-align: center;
-    }
+  #countdownExample {
+    margin: 0 auto;
+    text-align: center;
+  }
 
-    .name {
-        font-weight: bold;
-    }
+  .name {
+    font-weight: bold;
+  }
 
-    div.button, div.button2 {
-      display: none;
-      font-size: 25px;
-    }
+  div.button, div.button2 {
+    display: none;
+    font-size: 25px;
+  }
 
-    button#complete {
-      font-size: 40px;
-    }
+  button#complete {
+    font-size: 40px;
+  }
 
-    body {
-        line-height: 1.3;
-        font-size: 40px;
-    }
+  body {
+    line-height: 1.3;
+    font-size: 40px;
+  }
 
-    .reminder {
-        padding-top: 20px;
-        font-size: 20px;
-        display: none;
-    }
+  .reminder {
+    padding-top: 20px;
+    font-size: 20px;
+    display: none;
+  }
 
-    div.taskContainer {
-        max-width: 700px;
-        margin: 5px auto auto;
-    }
+  div.taskContainer {
+    max-width: 700px;
+    margin: 5px auto auto;
+  }
 
-    .bottomContainer {
-        width: 100%;
-        position: fixed;
-        bottom: 5px;
-    }
+  .bottomContainer {
+    width: 100%;
+    position: fixed;
+    bottom: 5px;
+  }
 
-    div.note {
-        font-size: 15px;
-    }
+  div.note {
+    font-size: 15px;
+  }
 
-    button#later, button.defer {
-        font-size: 20px;
-    }
+  button#later, button.defer {
+    font-size: 20px;
+  }
+
+  button.defer {
+    display: none;
+  }
+
+  #fire {
+    position: absolute;
+    bottom: 25px;
+    left: 25px;
+    display: none;
+  }
 </style>
 {% endblock %}
 
 {% block body %}
+<div id="fire"></div>
 <base target="_blank">
 <div id="countdownExample">
     <div style="font-size: 12px; padding-top: 10px;">{{ navigation|safe }}</div>
@@ -142,12 +186,10 @@
             <button id="nocare">I don't care</button>
         </div>
         <div class="button">
-            <button id="complete">Complete</button><br>
+            <button id="complete">Complete</button>
+            <br>
             <button id="later">Later</button>
-            <button class="defer" data-days="1">Defer 1 Days</button>
-            <button class="defer" data-days="3">Defer 3 Days</button><br>
-            <button class="defer" data-days="7">Defer 7 Days</button>
-            <button class="defer" data-days="30">Defer 30 Days</button>
+            <button class="defer">Defer...</button>
         </div>
         <div class="reminder"></div>
     </div>

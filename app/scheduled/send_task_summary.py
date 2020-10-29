@@ -8,7 +8,7 @@ from app import kv
 from app.hn import get_hn_articles_from_this_week
 from app.log import log
 from app.models.base import User
-from app.reminders import get_reminders_from_this_week, get_task_completions_from_this_week, get_current_median_skew
+from app.reminders import get_reminders_from_this_week, get_recent_task_completions, get_current_median_skew
 from app.spotify import get_distinct_songs_this_week, get_new_songs_this_week, get_new_this_week
 
 env: Environment = Environment(
@@ -23,7 +23,7 @@ subject = "Weekly zdone Summary"
 def send_email(user: User):
     to_email = sendgrid.To(user.email)
     reminders = get_reminders_from_this_week(user)
-    tasks = get_task_completions_from_this_week(user)
+    tasks = get_recent_task_completions(user)
     articles = get_hn_articles_from_this_week(user)
     distinct_listens = get_distinct_songs_this_week(user)
     new_listens = get_new_songs_this_week(user)
