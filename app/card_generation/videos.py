@@ -84,7 +84,8 @@ having sum(case when mv.watched
                               .filter_by(video_id=video.id) \
                               .filter(VideoCredit.order <= 5).all()[:5]:  # type: ignore
             extra = f" as {vc.character}" if vc.character else ""
-            top_actors_and_roles.append((vp.id, f"{vp.name}{extra}"))
+            b, sb = ("<b>", "</b>") if vp.id in top_people else ("", "")
+            top_actors_and_roles.append((vp.id, f"{b}{vp.name}{sb}{extra}"))
         top_actors_and_roles_html = ''
         if len(set([vpid for vpid, _ in top_actors_and_roles]).intersection(top_people)) > 0:
             top_actors_and_roles_html = \
