@@ -279,9 +279,9 @@ def reminders(reminder_id):
         )
         db.session.add(reminder)
         db.session.commit()
-        form.title.data = ""
-        form.message.data = ""
         flash(f"Added '{reminder.title}' reminder.")
+        # redirect after form submission to avoid things like 'resubmit?' question on refresh
+        return redirect(url_for('reminders'))
     return render_template("reminders.html",
                            navigation=get_navigation(current_user, "Reminders"),
                            reminders=get_reminders(current_user),
