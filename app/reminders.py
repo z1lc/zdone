@@ -16,6 +16,16 @@ def get_reminders(user: User) -> List[Reminder]:
     return Reminder.query.filter_by(user_id=user.id).all()
 
 
+def get_unseen_reminders(user: User) -> List[Reminder]:
+    unseen_ids = f"""
+select r.id
+from reminders r
+         left join reminder_notifications rn on r.id = rn.reminder_id
+where rn.id is null and user_id={user.id} and active"""
+    unseen_list = [row[0] for row in list(db.engine.execute(unseen_ids))]
+    return Reminder.query.filter(Reminder.id.in_(unseen_list)).all()  # type: ignore
+
+
 def get_recent_task_completions(
         user: User,
         date_start: datetime.date = today() - datetime.timedelta(days=7)) -> List[Task]:

@@ -8,7 +8,8 @@ from app import kv
 from app.hn import get_hn_articles_from_this_week
 from app.log import log
 from app.models.base import User
-from app.reminders import get_reminders_from_this_week, get_recent_task_completions, get_current_median_skew
+from app.reminders import get_reminders_from_this_week, get_recent_task_completions, get_current_median_skew, \
+    get_reminders, get_unseen_reminders
 from app.spotify import get_distinct_songs_this_week, get_new_songs_this_week, get_new_this_week
 
 env: Environment = Environment(
@@ -21,6 +22,7 @@ subject = "Weekly zdone Summary"
 
 
 def send_email(user: User):
+    sg = sendgrid.SendGridAPIClient(api_key=kv.get('SENDGRID_API_KEY'))
     to_email = sendgrid.To(user.email)
     reminders = get_reminders_from_this_week(user)
     tasks = get_recent_task_completions(user)
@@ -38,13 +40,14 @@ def send_email(user: User):
             distinct_listens=distinct_listens,
             new_listens=new_listens,
             artists=get_new_this_week(user)[:5],
+            active_reminders=len([r for r in get_reminders(user) if r.active]),
+            unseen_reminders=len(get_unseen_reminders(user)),
         ))
         mail = sendgrid.Mail(from_email, to_email, subject, content)
-        response = sg.client.mail.send.post(request_body=mail.get())
+        sg.client.mail.send.post(request_body=mail.get())
 
 
 if __name__ == '__main__':
-    sg = sendgrid.SendGridAPIClient(api_key=kv.get('SENDGRID_API_KEY'))
     for user in User.query.filter(User.pushover_user_key.isnot(None)).all():  # type: ignore
         if datetime.datetime.now(pytz.timezone(user.current_time_zone)).weekday() != 5:
             log(f"Will not send to {user.username} because it is not Saturday "

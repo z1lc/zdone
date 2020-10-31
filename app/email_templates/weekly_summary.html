@@ -23,6 +23,7 @@ Your weekly summary of activity on <a href="https://www.zdone.co/">zdone</a>.
 {% endif %}
 {% if reminders %}
     <h2><a href="https://www.zdone.co/reminders/">Reminders</a></h2>
+    You have a total of {{ active_reminders }} active reminders, {{ unseen_reminders }} of which are new (unseen). You were reminded of:
     <ul>
         {% for reminder in reminders %}
             <li><a href="https://www.zdone.co/reminders/{{ reminder.id }}">{{ reminder.title }}</a></li>
