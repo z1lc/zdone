@@ -33,7 +33,7 @@
         }
 
         textarea, input {
-            width: 700px;
+            width: 100%;
         }
     </style>
 {% endblock %}
@@ -49,7 +49,7 @@
         </p>
         <p>
             {{ form.message.label }}<br>
-            {{ form.message(rows="5", onfocus="clearIf('" + reminder_default + "')") }}<br>
+            {{ form.message(rows="8", onfocus="clearIf('" + reminder_default + "')") }}<br>
         </p>
         <p>{{ form.submit() }}</p>
     </form>
