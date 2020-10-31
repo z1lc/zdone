@@ -24,7 +24,7 @@ from .models.spotify import ManagedSpotifyArtist, SpotifyArtist, SpotifyPlay
 from .models.tasks import Reminder, Task
 from .models.videos import Video, ManagedVideo
 from .reminders import get_reminders, get_most_recent_reminder, get_recent_task_completions
-from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, follow_unfollow_artists, \
+from .spotify import get_top_liked, play_track, maybe_get_spotify_authorize_url, follow_unfollow_artists, \
     get_random_song_family, get_tracks, get_top_recommendations, get_artists_images, populate_null
 from .taskutils import do_update_task, get_updated_trello_cards, ensure_trello_setup_idempotent, get_open_trello_lists
 from .util import today_datetime, failure, success, api_key_failure, jsonp, validate_api_key, get_navigation, \
@@ -193,20 +193,6 @@ def spotify_family():
                                correct_artist=artists['correct_artist'])
     else:
         return artists
-
-
-@app.route('/spotify/anki_import/')
-@login_required
-def spotify_anki_import():
-    maybe_uris = get_anki_csv(current_user)
-    if not maybe_uris:
-        return "User {0} is not authenticated. If you'd like to auth, please go to " \
-               "<a href='/spotify/auth'>/spotify/auth</a>.".format(current_user.username)
-    else:
-        output = make_response(maybe_uris)
-        output.headers["Content-Disposition"] = "attachment; filename=spotify_songs_as_anki_notes.csv"
-        output.headers["Content-type"] = "text/csv"
-        return output
 
 
 @app.route('/spotify/download_apkg/')

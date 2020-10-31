@@ -56,7 +56,7 @@
     } else if (numTasksCompleted >= 7) {
       fireString = left;
     }
-    $('div#fire').html('<div class="fire">' + fireString + '</div>').fadeIn(1000);
+    $('div#fire').html(`<div class="fire">${fireString}</div>`).fadeIn(1000);
   }
 
   function moveCurrentItemToList(list_id) {

@@ -74,7 +74,7 @@ def send_and_log_notification(user: User, reminder_id: int, should_log: bool = T
         'html': 1,
     }
     if len(reminder.message) > 1000:
-        args['message'] = reminder.message[:1000] + "..."
+        args['message'] = f"{reminder.message[:1000]}..."
         args['url_title'] = "Read more..."
         args['url'] = f"https://zdone.co/reminders/{reminder.id}"
     client.send_message(**args)

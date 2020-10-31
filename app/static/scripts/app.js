@@ -27,6 +27,6 @@ function updateItem(service, id, days, rawName, updateAction, toListId) {
         url: "update_task"
       });
   } else {
-    alert("Unexpected service '" + service + "'!")
+    alert(`Unexpected service '${service}'!`)
   }
 }

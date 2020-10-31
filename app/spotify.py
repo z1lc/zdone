@@ -210,7 +210,7 @@ def maybe_get_spotify_authorize_url(full_url: str, user: User) -> Optional[str]:
         client_id="03f34cada5cc46a5929be06ff7532321",
         client_secret=kv.get('SPOTIFY_CLIENT_SECRET'),
         redirect_uri="https://www.zdone.co/spotify/auth" if "zdone" in full_url else "http://127.0.0.1:5000/spotify/auth",
-        cache_path=".cache-" + user.username)
+        cache_path=f".cache-{user.username}")
 
     token_info = get_cached_token_info(sp_oauth, user)
 
@@ -230,7 +230,7 @@ def get_spotify(full_url: str, user: User):
         client_id="03f34cada5cc46a5929be06ff7532321",
         client_secret=kv.get('SPOTIFY_CLIENT_SECRET'),
         redirect_uri="https://www.zdone.co/spotify/auth" if "zdone" in full_url else "http://127.0.0.1:5000/spotify/auth",
-        cache_path=".cache-" + user.username)
+        cache_path=f".cache-{user.username}")
 
     token_info = get_cached_token_info(sp_oauth, user)
 
@@ -465,24 +465,6 @@ def get_tracks(user: User) -> List[JsonDict]:
     log(f"[skipped] ensuring all tracks are in db {today_datetime()}")
     # bulk_add_tracks(sp, [track['uri'] for track in output])
     return list(output)
-
-
-def get_anki_csv(user: User) -> str:
-    tracks = get_tracks(user)
-    return "".join([create_csv_line(track) for track in tracks])
-
-
-def create_csv_line(track) -> str:
-    csv_line = "\""
-    csv_line += track['uri'] + "\",\""
-    csv_line += track['name'].replace('"', '\'') + "\",\""
-    inner_artists = []
-    for inner_artist in track['artists']:
-        inner_artists.append(inner_artist['name'])
-    csv_line += ", ".join(inner_artists).replace('"', '\'') + "\",\""
-    csv_line += track['album']['name'].replace('"', '\'') + "\",\""
-    csv_line += "<img src='" + track['album']['images'][0]['url'] + "'>\"\n"
-    return csv_line
 
 
 def get_top_liked() -> JsonDict:

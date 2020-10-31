@@ -20,12 +20,12 @@
       });
 
       function clickLink(id, url) {
-        window.open("https://news.ycombinator.com/item?id=" + id);
+        window.open(`https://news.ycombinator.com/item?id=${id}`);
         if (!url.includes("news.ycombinator.com")) {
           window.open(url);
         }
-        table.row($('tr#' + id)).remove().draw();
-        $.ajax({type: "POST", url: "/hn/" + id + '/'});
+        table.row($(`tr#${id}`)).remove().draw();
+        $.ajax({type: "POST", url: `/hn/${id}/`});
       }
     </script>
     <style>

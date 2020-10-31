@@ -37,7 +37,7 @@ def get_imdb_top_250():
     for imdbid in top250IM:
         movie = tmdbsimple.Find(imdbid).info(language="en-US", external_source="imdb_id")['movie_results'][0]
         top250TM.append(movie['id'])
-        print('Got ' + movie['original_title'])
+        print(f"Got {movie['original_title']}")
 
     for tmdbid in top250TM:
         tmdbsimple.Lists(id=123456789, session_id='REPLACE').add_item(media_id=tmdbid)

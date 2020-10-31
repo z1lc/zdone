@@ -26,7 +26,7 @@
   }
 
   function answerQuestion(correct_artist, guess) {
-    let $sel = $('div.' + guess.split(" ")[0]);
+    let $sel = $(`div.${guess.split(" ")[0]}`);
     if (correct_artist === guess) {
       $sel.css("background-color", "green");
       sleep(1000).then(() => {
