@@ -20,12 +20,18 @@ def do_update_task(update: str,
                    service: str,
                    task_id: str,
                    days: Optional[int],
-                   task_raw_name: str,
+                   task_raw_name: Optional[str],
+                   to_list_id: Optional[str],
                    user: User = current_user) -> Tuple[Response, int]:
     if task_id is None:
-        return failure(f"must pass a valid task_id")
+        return failure(f"Must pass a valid task_id.")
+    if service not in ["trello", "zdone"]:
+        return failure(f"Must pass a valid service.")
+    if update not in ["complete", "defer", "move"]:
+        return failure(f"Must pass a valid update type.")
     if user.current_time_zone is None:
         return failure(f"User {user.username} does not have a time zone setting.")
+
     log = TaskLog(
         user_id=user.id,
         at=datetime.datetime.utcnow(),
@@ -44,22 +50,32 @@ def do_update_task(update: str,
             else:
                 task.defer_until = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date() \
                                    + datetime.timedelta(days=days)
+        else:
+            failure(f"Update type {update} not supported for zdone.")
         db.session.commit()
         return success()
     elif service == "trello":
+        # clear out cache so we force a refresh in case we don't receive the webhook from Trello
+        user.cached_trello_data = None
+        db.session.commit()
+        client = get_trello_client(user)
+        if not client:
+            return failure(f"Failed to get Trello client for user {user.username}.")
+
         if update == "complete":
-            # clear out cache so we force a refresh in case we don't receive the webhook from Trello
-            user.cached_trello_data = None
+            completed_list_id = \
+                [l for l in [board for board in client.list_boards() if board.name == 'Backlogs'][0].list_lists() if
+                 l.name == "Completed via zdone"][0].id
+            client.get_card(task_id).change_list(completed_list_id)
+            log.task_name = task_raw_name
+            db.session.add(log)
             db.session.commit()
-            client = get_trello_client(user)
-            if client:
-                completed_list_id = \
-                    [l for l in [board for board in client.list_boards() if board.name == 'Backlogs'][0].list_lists() if
-                     l.name == "Completed via zdone"][0].id
-                client.get_card(task_id).change_list(completed_list_id)
-                log.task_name = task_raw_name
-                db.session.add(log)
-                db.session.commit()
+        elif update == "move":
+            if not to_list_id:
+                return failure(f"Need to pass what list to move task to.")
+            client.get_card(task_id).change_list(to_list_id)
+        else:
+            return failure(f"Update type '{update}' not supported for Trello.")
         return success()
     else:
         return failure(f"unexpected service type '{service}'")

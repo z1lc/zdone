@@ -29,8 +29,10 @@
       // Trello doesn't have defer behavior implemented
       if (task.service === "zdone") {
         $("button.defer").fadeIn(200);
+        $("button#moveto").fadeOut(200);
       } else {
         $("button.defer").fadeOut(200);
+        $("button#moveto").fadeIn(200);
       }
     } else {
       fade('#countdownExample .name', "All done!");
@@ -57,6 +59,13 @@
     $('div#fire').html('<div class="fire">' + fireString + '</div>').fadeIn(1000);
   }
 
+  function moveCurrentItemToList(list_id) {
+    moveItem(task.id, list_id);
+    $("div.button").fadeIn(200);
+    $("div#move_to_selection").fadeOut(200);
+    nextTask();
+  }
+
   $(function () {
     $.get(
       "/api?zdone",
@@ -67,6 +76,10 @@
         if (data["latest_reminder"] !== undefined) {
           $('div.reminder').html(`<b><a href="/reminders/${data["latest_reminder"]["id"]}">${data["latest_reminder"]["title"]}</a></b>`);
         }
+        data["trello_lists"].forEach(function(list) {
+          $("div#move_to_selection").append(`<button onclick="moveCurrentItemToList('${list.id}')">${list.name}</button>&nbsp;`)
+        })
+
         $('div.reminder').fadeIn(1000);
         num_tasks_completed = data["num_tasks_completed"]
         updateFire()
@@ -98,6 +111,12 @@
       nextTask();
       event.preventDefault();
     });
+    $("button#moveto").click(function (event) {
+      $("div.button").fadeOut(200);
+      $("div#move_to_selection").fadeIn(200);
+      event.preventDefault();
+    });
+
     $("button#later").click(function (event) {
       nextTask();
       event.preventDefault();
@@ -155,11 +174,11 @@
     font-size: 15px;
   }
 
-  button#later, button.defer {
+  button#later, button.defer, button#moveto {
     font-size: 20px;
   }
 
-  button.defer {
+  button.defer, button#moveto {
     display: none;
   }
 
@@ -168,6 +187,11 @@
     bottom: 25px;
     left: 25px;
     display: none;
+  }
+
+  #move_to_selection {
+    display: none;
+    font-size: 20px;
   }
 </style>
 {% endblock %}
@@ -190,6 +214,10 @@
             <br>
             <button id="later">Later</button>
             <button class="defer">Defer...</button>
+            <button id="moveto">Move to...</button>
+        </div>
+        <div id="move_to_selection">
+
         </div>
         <div class="reminder"></div>
     </div>

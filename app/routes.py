@@ -26,7 +26,7 @@ from .models.videos import Video, ManagedVideo
 from .reminders import get_reminders, get_most_recent_reminder, get_recent_task_completions
 from .spotify import get_top_liked, get_anki_csv, play_track, maybe_get_spotify_authorize_url, follow_unfollow_artists, \
     get_random_song_family, get_tracks, get_top_recommendations, get_artists_images, populate_null
-from .taskutils import do_update_task, get_updated_trello_cards, ensure_trello_setup_idempotent
+from .taskutils import do_update_task, get_updated_trello_cards, ensure_trello_setup_idempotent, get_open_trello_lists
 from .util import today_datetime, failure, success, api_key_failure, jsonp, validate_api_key, get_navigation, \
     htmlize_note
 
@@ -93,8 +93,9 @@ def update_task():
     task_id = req["id"]
     days = req["days"]
     task_raw_name = req["raw_name"]
+    to_list_id = req["to_list_id"]
 
-    return do_update_task(update, service, task_id, days, task_raw_name, current_user)
+    return do_update_task(update, service, task_id, days, task_raw_name, to_list_id, current_user)
 
 
 @app.context_processor
@@ -379,6 +380,8 @@ def api():
             else:
                 ret_tasks.append(tcard)
 
+        lists = [{"id": l.id, "name": l.name} for l in get_open_trello_lists(user) if l.name != 'Completed via zdone']
+
         current_date = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date()
         this_sunday = current_date - datetime.timedelta(days=current_date.weekday() + 1)
 
@@ -387,6 +390,7 @@ def api():
             "num_tasks_completed": len(get_recent_task_completions(user, date_start=this_sunday)),
             "tasks_to_do": ret_tasks,
             "time_zone": user.current_time_zone,
+            "trello_lists": lists,
         }
 
         latest_reminder = get_most_recent_reminder(user)

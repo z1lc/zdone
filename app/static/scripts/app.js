@@ -1,12 +1,16 @@
-function completeItem(service, id, raw_name) {
-  updateItem(service, id, null, raw_name, "complete");
+function completeItem(service, id, rawName) {
+  updateItem(service, id, null, rawName, "complete", null);
 }
 
-function deferItem(service, id, days, raw_name) {
-  updateItem(service, id, days, raw_name, "defer");
+function deferItem(service, id, days, rawName) {
+  updateItem(service, id, days, rawName, "defer", null);
 }
 
-function updateItem(service, id, days, raw_name, updateAction) {
+function moveItem(id, toListId) {
+  updateItem("trello", id, null, null, "move", toListId);
+}
+
+function updateItem(service, id, days, rawName, updateAction, toListId) {
   if (service === "zdone" || service === "trello") {
     $
       .ajax({
@@ -15,8 +19,9 @@ function updateItem(service, id, days, raw_name, updateAction) {
           "service": service,
           "id": id,
           "days": days,
-          "raw_name": raw_name,
+          "raw_name": rawName,
           "update": updateAction,
+          "to_list_id": toListId,
         }),
         type: "POST",
         url: "update_task"
