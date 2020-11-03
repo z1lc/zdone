@@ -562,15 +562,16 @@ def get_distinct_songs_this_week(user: User) -> int:
         .count()
 
 
-def get_new_this_week(user: User) -> List[SpotifyArtist]:
-    return db.session.query(SpotifyArtist.name, func.count(SpotifyArtist.name)) \
-        .join(SpotifyTrack, SpotifyArtist.uri == SpotifyTrack.spotify_artist_uri) \
-        .join(SpotifyPlay, SpotifyTrack.uri == SpotifyPlay.spotify_track_uri) \
-        .filter(SpotifyPlay.user_id == user.id) \
-        .filter(SpotifyPlay.created_at >= today() - datetime.timedelta(days=7)) \
-        .group_by(SpotifyArtist.name) \
-        .order_by(func.count(SpotifyArtist.name).desc()) \
-        .all()
+def get_new_this_week(user: User) -> List[str]:
+    artists_ordered_by_distinct_days_and_total_listens = f"""
+select sa.name, count(distinct date_trunc('day', sp.created_at)), count(sp.id)
+from spotify_artists sa
+         join spotify_tracks st on sa.uri = st.spotify_artist_uri
+         join spotify_plays sp on st.uri = sp.spotify_track_uri
+where user_id = {user.id} and sp.created_at >= current_date - interval '7 days'
+group by 1
+order by 2 desc, 3 desc"""
+    return [row[0] for row in list(db.engine.execute(artists_ordered_by_distinct_days_and_total_listens))]
 
 
 def get_new_songs_this_week(user: User) -> int:

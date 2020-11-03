@@ -5,7 +5,7 @@ Your weekly summary of activity on <a href="https://www.zdone.co/">zdone</a>.
     You listened to {{ distinct_listens }} unique songs.{% if new_listens > 0 %} {{ new_listens }} of those were brand new!{% endif %} Here's who you're vibing with:
     <ul>
         {% for artist in artists %}
-            <li>{{ artist.name }}</li>
+            <li>{{ artist }}</li>
         {% endfor %}
     </ul>
 {% endif %}
