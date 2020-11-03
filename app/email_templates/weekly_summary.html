@@ -2,7 +2,7 @@
 Your weekly summary of activity on <a href="https://www.zdone.co/">zdone</a>.
 {% if distinct_listens > 0 %}
     <h2><a href="https://www.zdone.co/spotify/">Music</a></h2>
-    You listened to {{ distinct_listens }} unique songs. {{ new_listens }} of those were brand new! Here's who you're vibing with:
+    You listened to {{ distinct_listens }} unique songs.{% if new_listens > 0 %} {{ new_listens }} of those were brand new!{% endif %} Here's who you're vibing with:
     <ul>
         {% for artist in artists %}
             <li>{{ artist.name }}</li>
@@ -23,7 +23,7 @@ Your weekly summary of activity on <a href="https://www.zdone.co/">zdone</a>.
 {% endif %}
 {% if reminders %}
     <h2><a href="https://www.zdone.co/reminders/">Reminders</a></h2>
-    You have a total of {{ active_reminders }} active reminders, {{ unseen_reminders }} of which are new (unseen). You were reminded of:
+    You have a total of {{ active_reminders }} active reminders{% if unseen_reminders > 0 %}, {{ unseen_reminders }} of which are new (unseen){% endif %}. You were reminded of:
     <ul>
         {% for reminder in reminders %}
             <li><a href="https://www.zdone.co/reminders/{{ reminder.id }}">{{ reminder.title }}</a></li>
