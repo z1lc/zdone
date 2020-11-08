@@ -34,7 +34,8 @@ versions of the code (edited it multiple times & tried importing to test functio
 """
 
 
-def generate_full_apkg(user: User, filename: str) -> None:
+# returns number of notes generated
+def generate_full_apkg(user: User, filename: str) -> int:
     deck: Deck = Deck(
         SPOTIFY_TRACK_DECK_ID,
         'Spotify Tracks')
@@ -55,3 +56,4 @@ def generate_full_apkg(user: User, filename: str) -> None:
 
     log(f"Packaging into file... {today_datetime()}")
     genanki.Package(deck).write_to_file(filename)
+    return len(deck.notes)

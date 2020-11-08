@@ -3,8 +3,11 @@ import re
 from typing import Dict, Any, Optional, Tuple, Union
 
 import pytz
+from b2sdk.account_info import InMemoryAccountInfo
+from b2sdk.api import B2Api
 from flask import jsonify, Response
 
+from app import kv
 from app.models.base import User
 
 JsonDict = Dict[str, Any]
@@ -73,3 +76,10 @@ def jsonp(function_name: str, payload: Union[str, Tuple]) -> Response:
         # we've received payload from a success() or failure() method
         payload = payload[0].get_data().decode('utf-8').replace('\n', '')
         return Response(f"{function_name}({payload})", mimetype='text/javascript')
+
+
+def get_b2_api():
+    info = InMemoryAccountInfo()
+    b2_api = B2Api(info)
+    b2_api.authorize_account("production", kv.get('B2_KEY_ID'), kv.get('B2_APPLICATION_KEY'))
+    return b2_api

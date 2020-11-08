@@ -3,9 +3,11 @@ import itertools
 import json
 import os
 import uuid
+from typing import Optional
 
 import flask
 import pytz
+from b2sdk.download_dest import DownloadDestLocalFile
 from flask import render_template, request, make_response, redirect, send_file
 from flask import url_for, flash
 from flask_login import current_user, login_user, logout_user
@@ -28,7 +30,7 @@ from .spotify import get_top_liked, play_track, maybe_get_spotify_authorize_url,
     get_random_song_family, get_tracks, get_top_recommendations, get_artists_images, populate_null
 from .taskutils import do_update_task, get_updated_trello_cards, ensure_trello_setup_idempotent, get_open_trello_lists
 from .util import today_datetime, failure, success, api_key_failure, jsonp, validate_api_key, get_navigation, \
-    htmlize_note
+    htmlize_note, get_b2_api
 
 
 @app.errorhandler(500)
@@ -195,6 +197,17 @@ def spotify_family():
         return artists
 
 
+def get_latest_file_id(user: User) -> Optional[str]:
+    latest_b2_file_id = f"""
+select b2_file_id
+from apkg_generations
+where user_id={user.id}
+order by at desc
+limit 1"""
+    unseen_list = [row[0] for row in list(db.engine.execute(latest_b2_file_id))]
+    return unseen_list[0] if unseen_list else None
+
+
 @app.route('/spotify/download_apkg/')
 @login_required
 def spotify_download_apkg():
@@ -202,7 +215,19 @@ def spotify_download_apkg():
     filename: str = os.path.join(app.instance_path,
                                  f'anki-export-{current_user.username}-{today_datetime().date()}.apkg')
     os.makedirs(app.instance_path, exist_ok=True)
-    generate_full_apkg(current_user, filename)
+
+    maybe_generated_file_id = get_latest_file_id(current_user)
+    if maybe_generated_file_id:
+        log(f"Found pre-generated apkg on B2 for user {current_user.username}. Will download & return.")
+        # we can't just give them a public link here because we're using a private bucket
+        get_b2_api().download_file_by_id(
+            file_id=maybe_generated_file_id,
+            download_dest=DownloadDestLocalFile(filename)
+        )
+    else:
+        log(f"Did not find pre-generated apkg on B2 for user {current_user.username}. Will generate within request.")
+        generate_full_apkg(current_user, filename)
+
     log(f"before sendfile {today_datetime()}")
     return send_file(filename, as_attachment=True, add_etags=False, cache_timeout=0)
 
