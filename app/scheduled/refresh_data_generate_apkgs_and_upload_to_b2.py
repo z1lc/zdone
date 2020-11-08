@@ -35,34 +35,37 @@ if __name__ == '__main__':
                 filename: str = os.path.join(app.instance_path, f'anki-export-{user.username}.apkg')
                 os.makedirs(app.instance_path, exist_ok=True)
                 notes = generate_full_apkg(user, filename)
-                log(f'Successfully generated apkg with {notes} notes. Beginning upload to B2...')
+                if notes == 0:
+                    log(f'0 notes were generated for user {user.username}. Will not upload to B2.')
+                else:
+                    log(f'Successfully generated apkg with {notes} notes. Beginning upload to B2...')
 
-                at = datetime.utcnow()
-                b2_filename = f'{at.strftime("%Y%m%d")}-{user.username}-{uuid.uuid4()}.apkg'
-                b2_file = b2_api.get_bucket_by_name('zdone-apkgs').upload_local_file(
-                    local_file=filename,
-                    file_name=b2_filename,
-                    file_infos={
-                        'user': user.username,
-                        'user_id': str(user.id),
-                        'note_count': str(notes),
-                    }
-                )
-                id = b2_file.id_
-                size = b2_file.size
-                log(f'Successfully uploaded apkg file with name {b2_filename} to B2. Received file id {id}. '
-                    f'Will log into apkg_generations table...')
-                db.session.add(ApkgGeneration(
-                    user_id=user.id,
-                    at=at,
-                    b2_file_id=id,
-                    b2_file_name=b2_filename,
-                    file_size=size,
-                    notes=notes
-                ))
-                db.session.commit()
+                    at = datetime.utcnow()
+                    b2_filename = f'{at.strftime("%Y%m%d")}-{user.username}-{uuid.uuid4()}.apkg'
+                    b2_file = b2_api.get_bucket_by_name('zdone-apkgs').upload_local_file(
+                        local_file=filename,
+                        file_name=b2_filename,
+                        file_infos={
+                            'user': user.username,
+                            'user_id': str(user.id),
+                            'note_count': str(notes),
+                        }
+                    )
+                    id = b2_file.id_
+                    size = b2_file.size
+                    log(f'Successfully uploaded apkg file with name {b2_filename} to B2. Received file id {id}. '
+                        f'Will log into apkg_generations table...')
+                    db.session.add(ApkgGeneration(
+                        user_id=user.id,
+                        at=at,
+                        b2_file_id=id,
+                        b2_file_name=b2_filename,
+                        file_size=size,
+                        notes=notes
+                    ))
+                    db.session.commit()
 
-                log(f'Successfully completed apkg generation & upload for user {user.username}.')
+                    log(f'Successfully completed apkg generation & upload for user {user.username}.')
         except Exception as e:
             log(f'Received unexpected exception for user {user.username}!')
             capture_exception(e)
