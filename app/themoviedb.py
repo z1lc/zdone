@@ -41,7 +41,7 @@ def _get_page_results(function, page: int):
     return ret['total_pages'], ret['results']
 
 
-def get_stuff(user: User):
+def refresh_videos(user: User):
     tmdbsimple.API_KEY = kv.get('TMDB_API_KEY')
     # to get session id, GET https://api.themoviedb.org/3/authentication/token/new?api_key=API_KEY
     # then use request_token to forward person to https://www.themoviedb.org/authenticate/REQUEST_TOKEN?redirect_to=http://callback.com
