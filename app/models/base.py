@@ -52,6 +52,8 @@ class User(UserMixin, BaseModel):
 
     tmdb_session_id: str = db.Column(db.Text, unique=True)
 
+    readwise_access_token: str = db.Column(db.Text, unique=True)
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
