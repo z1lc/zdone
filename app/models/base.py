@@ -70,6 +70,7 @@ def load_user(id) -> User:
 
 
 class kv(BaseModel):
+    __tablename__ = "kv"
     id: int = db.Column(db.Integer, primary_key=True)
     k: str = db.Column(db.Text, unique=True)
     v: str = db.Column(db.Text)
