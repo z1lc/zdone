@@ -39,15 +39,12 @@ def get_highlights(user: User):
                     INNER JOIN managed_readwise_books mrb 
                     ON rh.managed_readwise_book_id = mrb.id AND mrb.user_id = {user.id}) as the_highlights 
         ON the_highlights.book_id = books.id;
-    """"
+    """
     highlights = list(db.engine.execute(prepared_sql))
-
-
-
     return [{
-        'text': 'The most important technique for achieving deep modules is information hiding.',
-        'source_title': 'A Philosophy of Software Design',
-        'source_author': 'John Ousterhout'}]
+        'text': highlight[0],
+        'source_title': highlight[1],
+        'source_author': highlight[2]} for highlight in highlights]
 
 def generate_readwise_highlight_clozes(user: User, deck: Deck, tags: List[str]):
     for highlight in get_highlights(user):
