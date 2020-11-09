@@ -32,9 +32,8 @@ def get_highlight_model(user: User):
 
 
 def get_highlights(user: User):
-    # TODO: actually implement the SQL queries and return highlight info
     prepared_sql = f"""
-    SELECT the_highlights.text, books.title, books.author FROM readwise_books as books 
+    SELECT the_highlights.text as text, books.title as source_title, books.author as source_author FROM readwise_books as books 
         INNER JOIN (SELECT rh.text as text, mrb.readwise_book_id as book_id FROM readwise_highlights rh 
                     INNER JOIN managed_readwise_books mrb 
                     ON rh.managed_readwise_book_id = mrb.id AND mrb.user_id = {user.id}) as the_highlights 

@@ -86,5 +86,8 @@ def get_longest_word(words):
 # returns sentence with all occurrences of keyword clozed out
 # this is case-sensitive for now
 def cloze_out_keyword(keyword, idx, sentence):
-    clozed_keyword = '{{c' + str(idx + 1) + '::' + keyword + "}}"
-    return sentence.replace(keyword, clozed_keyword)
+    sentence_words = sentence.split(" ")
+    return " ".join(map(lambda word: cloze_word(idx, word) if word.lower() == keyword.lower() else word, sentence_words))
+
+def cloze_word(idx, word):
+    return '{{c' + str(idx + 1) + '::' + word + "}}"
