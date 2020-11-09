@@ -1,21 +1,22 @@
+from genanki import Deck
 from typing import List
 
 import genanki
 
+from app import db
 from app.card_generation.highlight_clozer import get_clozed_highlight
 from app.card_generation.util import zdNote, get_rs_anki_css, get_default_css, get_template, AnkiCard
+from app.models.base import User
 from app.util import JsonDict
 
 READWISE_HIGHLIGHT_CLOZE_MODEL_ID = 1604800000000
 
 
-def get_highlight_model(user):
+def get_highlight_model(user: User):
     templates: List[JsonDict] = [
         get_template(AnkiCard.READWISE_HIGHLIGHT_CLOZE, user)
     ]
     return genanki.Model(
-        # the legacy model ID was from when I imported my model to everyone else. I migrated to the publicly-facing,
-        # default model ID, but kept existing users on my old model ID for simplicity.
         READWISE_HIGHLIGHT_CLOZE_MODEL_ID,
         'Readwise Highlight',
         fields=[
@@ -30,24 +31,31 @@ def get_highlight_model(user):
         templates=templates)
 
 
-def get_highlights(user):
+def get_highlights(user: User):
     # TODO: actually implement the SQL queries and return highlight info
-    # select highlights, title, author from readwise_highlights rh [some join type] managed_readwise_books mrb
-    # ON rh.managed_book_readwise_book_id = mrb.id AND mrb.user_id = user.id
-    # or something like that (needs to incorporate readwise_books table as well somehow)
-    # for now, just return a simple list with one highlight (as a dictionary)
+    prepared_sql = f"""
+    SELECT the_highlights.text, books.title, books.author FROM readwise_books as books 
+        INNER JOIN (SELECT rh.text as text, mrb.readwise_book_id as book_id FROM readwise_highlights rh 
+                    INNER JOIN managed_readwise_books mrb 
+                    ON rh.managed_readwise_book_id = mrb.id AND mrb.user_id = {user.id}) as the_highlights 
+        ON the_highlights.book_id = books.id;
+    """"
+    highlights = list(db.engine.execute(prepared_sql))
+
+
+
     return [{
         'text': 'The most important technique for achieving deep modules is information hiding.',
         'source_title': 'A Philosophy of Software Design',
         'source_author': 'John Ousterhout'}]
 
-def generate_readwise_highlight_clozes(user, deck, tags):
+def generate_readwise_highlight_clozes(user: User, deck: Deck, tags: List[str]):
     for highlight in get_highlights(user):
         highlight_text = highlight['text']
         clozed_highlight = get_clozed_highlight(highlight_text)
         highlight_source_title = highlight['source_title']
         highlight_source_author = highlight['source_author']
-        highlight_as_note = ReadwiseHighlightClozeNote(
+        highlight_as_note = zdNote(
             model=get_highlight_model(user),
             tags=tags,
             fields=[
@@ -55,40 +63,3 @@ def generate_readwise_highlight_clozes(user, deck, tags):
                 highlight_source_title,
                 highlight_source_author])
         deck.add_note(highlight_as_note)
-
-
-class ReadwiseHighlightClozeNote(zdNote):
-    # this more-extended version of guid methods is necessary to provide the legacy guid behavior
-    @property
-    def guid(self):
-        if self._guid is None:
-            # TODO: rob, will this be correct if the highlight text is first field? Just need sanity check
-            return genanki.guid_for(self.fields[0])
-        return self._guid
-
-    @guid.setter
-    def guid(self, val):
-        self._guid = val
-
-
-def generate_tracks(user: User, deck: Deck, tags: List[str]):
-
-    for track in get_tracks(user):
-        inner_artists = []
-        for inner_artist in track['artists']:
-            inner_artists.append(inner_artist['name'])
-        album_name = track['album']['name'].replace('"', '\'')
-        release_year = parser.parse(track['album']['release_date']).date().year
-        track_as_note = ReadwiseHighlightClozeNote(
-            model=get_track_model(user),
-            tags=tags,
-            fields=[
-                track['uri'],
-                track['name'].replace('"', '\''),
-                ", ".join(inner_artists).replace('"', '\''),
-                f"<i>{album_name}</i> ({release_year})",
-                f"<img src='{track['album']['images'][0]['url']}'>"
-            ])
-        if track['uri'] in legacy_mappings:
-            track_as_note.guid = legacy_mappings.get(track['uri'])
-        deck.add_note(track_as_note)

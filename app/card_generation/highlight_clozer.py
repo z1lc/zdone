@@ -34,7 +34,7 @@ def get_keywords(sentence):
     doc = nlp_model(sentence)
     # first see if we have some nice named entities for the cloze
     result = get_best_entities(doc.ents)
-    if len(result) > 0:
+    if result:
         # return the first named entity just because multiple clozes in a highlight ends up being a lot of reviewing
         # for a card that probably isn't ideal (even if the cloze's are good, the volume of highlights should be
         # pretty high)
@@ -81,12 +81,7 @@ def is_interesting_noun(text):
 
 def get_longest_word(words):
     # probably a more pythonic way of doing this but whatevs
-    longest = words[0]
-    for word in words:
-        if len(word) > len(longest):
-            longest = word
-    return longest
-
+    return max(words, key=len)
 
 # returns sentence with all occurrences of keyword clozed out
 # this is case-sensitive for now
