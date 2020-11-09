@@ -46,8 +46,7 @@ def get_keywords(sentence):
             return [noun_chunk.root.text]
 
     # nothing has worked, so just return whatever word is longest
-    words = sentence.split(" ")
-    return [get_longest_word(words)]
+    return max(sentence.split(" "), key=len)
 
 
 # return the most interesting entities from a list of entities in a sentence
@@ -77,11 +76,6 @@ def get_best_entities(ents):
 def is_interesting_noun(text):
     boring_words = ['they', 'them', 'one', 'two', 'it', 'we', 'you', 'i', 'me']
     return text.lower() not in boring_words
-
-
-def get_longest_word(words):
-    # probably a more pythonic way of doing this but whatevs
-    return max(words, key=len)
 
 # returns sentence with all occurrences of keyword clozed out
 # this is case-sensitive for now
