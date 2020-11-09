@@ -20,7 +20,8 @@ def get_highlight_model(user: User):
         READWISE_HIGHLIGHT_CLOZE_MODEL_ID,
         'Readwise Highlight',
         fields=[
-            {'name': 'Text'},
+            {'name': 'Original Highlight'},
+            {'name': 'Clozed Highlight'},
             {'name': 'Source Title'},
             {'name': 'Source Author'},
             {'name': 'Prev Highlight'},
@@ -33,11 +34,11 @@ def get_highlight_model(user: User):
 
 def get_highlights(user: User):
     prepared_sql = f"""
-    SELECT the_highlights.text as text, books.title as source_title, books.author as source_author FROM readwise_books as books 
-        INNER JOIN (SELECT rh.text as text, mrb.readwise_book_id as book_id FROM readwise_highlights rh 
-                    INNER JOIN managed_readwise_books mrb 
-                    ON rh.managed_readwise_book_id = mrb.id AND mrb.user_id = {user.id}) as the_highlights 
-        ON the_highlights.book_id = books.id;
+        select text, title, author
+        from readwise_books b
+            join managed_readwise_books mrb on b.id = mrb.readwise_book_id
+            join readwise_highlights rh on mrb.id = rh.managed_readwise_book_id
+        where mrb.user_id = {user.id}
     """
     highlights = list(db.engine.execute(prepared_sql))
     return [{
@@ -55,6 +56,7 @@ def generate_readwise_highlight_clozes(user: User, deck: Deck, tags: List[str]):
             model=get_highlight_model(user),
             tags=tags,
             fields=[
+                highlight_text,
                 clozed_highlight,
                 highlight_source_title,
                 highlight_source_author])
