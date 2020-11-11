@@ -1,20 +1,8 @@
 import spacy
 
 
-# This may not be necessary, but it seemed to me
-# like recreating the nlp model for every highlight is a slow thing
-# So this class will do lazy initialization and the following global will
-# ensure the model sticks around
-class NlpModel:
-    @property
-    def get_model(cls):
-        if getattr(cls, '_NLP_MODEL', None) is None:
-            nlp = spacy.load("en_core_web_sm")
-            cls._NLP_MODEL = nlp
-        return cls._NLP_MODEL
-
-
-NLP = NlpModel()
+# initialize the model once when we import this script
+NLP = spacy.load("en_core_web_sm")
 
 
 def get_clozed_highlight(highlight):
@@ -30,8 +18,7 @@ def get_clozed_highlight(highlight):
 # currently, the list only ever has a single item, because the input sentences are not intended for
 # super long term retention. This can be configured
 def get_keywords(sentence):
-    nlp_model = NLP.get_model()
-    doc = nlp_model(sentence)
+    doc = NLP(sentence)
     # first see if we have some nice named entities for the cloze
     result = get_best_entities(doc.ents)
     if result:
@@ -63,7 +50,7 @@ def get_best_entities(ents):
         # this will match the first entitiy that isn't something like "one"
         # also will deliberately not match any entities that are the first word in the sentence, as
         # that makes for a jarring cloze card
-        if ent_count > max_count and (ent.label_ not in ["ORDINAL", "CARDINAL"] and ent.start is not 0):
+        if ent_count > max_count and (ent.label_ not in ["ORDINAL", "CARDINAL"] and ent.start != 0):
             max_count = ent_count
             best_entity = ent.text
 

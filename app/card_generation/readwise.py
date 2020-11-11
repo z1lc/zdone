@@ -1,3 +1,5 @@
+from itertools import groupby
+
 from genanki import Deck
 from typing import List
 
@@ -14,7 +16,7 @@ READWISE_HIGHLIGHT_CLOZE_MODEL_ID = 1604800000000
 
 def get_highlight_model(user: User):
     templates: List[JsonDict] = [
-        get_template(AnkiCard.READWISE_HIGHLIGHT_CLOZE, user)
+        get_template(AnkiCard.HIGHLIGHT_CLOZE_1, user)
     ]
     return genanki.Model(
         READWISE_HIGHLIGHT_CLOZE_MODEL_ID,
@@ -24,12 +26,15 @@ def get_highlight_model(user: User):
             {'name': 'Clozed Highlight'},
             {'name': 'Source Title'},
             {'name': 'Source Author'},
+            {'name': 'Image'},
             {'name': 'Prev Highlight'},
             {'name': 'Next Highlight'},
             # TODO(rob/will): Add more fields before public release
         ],
         css=(get_rs_anki_css() if user.uses_rsAnki_javascript else get_default_css()),
-        templates=templates)
+        templates=templates,
+        model_type=genanki.Model.CLOZE
+    )
 
 
 def get_highlights(user: User):
@@ -46,18 +51,40 @@ def get_highlights(user: User):
         'source_title': highlight[1],
         'source_author': highlight[2]} for highlight in highlights]
 
+
+def group_highlights_by_book(all_highlights):
+    keyFunc = lambda highlight: highlight['source_title']
+    all_highlights_sorted = sorted(all_highlights, key=keyFunc)
+    return groupby(all_highlights_sorted, keyFunc)
+
 def generate_readwise_highlight_clozes(user: User, deck: Deck, tags: List[str]):
-    for highlight in get_highlights(user):
-        highlight_text = highlight['text']
-        clozed_highlight = get_clozed_highlight(highlight_text)
-        highlight_source_title = highlight['source_title']
-        highlight_source_author = highlight['source_author']
-        highlight_as_note = zdNote(
-            model=get_highlight_model(user),
-            tags=tags,
-            fields=[
-                highlight_text,
-                clozed_highlight,
-                highlight_source_title,
-                highlight_source_author])
-        deck.add_note(highlight_as_note)
+    all_highlights = get_highlights(user)
+    grouped_highlights = group_highlights_by_book(all_highlights)
+    for book, book_highlights in grouped_highlights:
+        # convert to list to use indexing for prev/next highlight
+        book_highlights_list = list(book_highlights)
+        for i in range(len(book_highlights_list)):
+            highlight_i = book_highlights_list[i]
+            highlight_i['clozed_highlight'] = get_clozed_highlight(highlight_i['text'])
+            if i > 0:
+                highlight_i['prev_highlight'] = book_highlights_list[i - 1]['text']
+            else:
+                highlight_i['prev_highlight'] = ""
+            if i < len(book_highlights_list) - 1:
+                highlight_i['next_highlight'] = book_highlights_list[i + 1]['text']
+            else:
+                highlight_i['next_highlight'] = ""
+            highlight_i['image'] = ""
+            highlight_as_note = zdNote(
+                model=get_highlight_model(user),
+                tags=tags,
+                fields=[
+                    highlight_i['text'],
+                    highlight_i['clozed_highlight'],
+                    highlight_i['source_title'],
+                    highlight_i['source_author'],
+                    "",  # Image field, blank for now
+                    highlight_i['prev_highlight'],
+                    highlight_i['next_highlight']
+                ])
+            deck.add_note(highlight_as_note)

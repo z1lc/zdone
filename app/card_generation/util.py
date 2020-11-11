@@ -59,7 +59,7 @@ class AnkiCard(Enum):
     NAME_AND_IMAGE_TO_COSTARS = (29, 'video_person')
 
     # Readwise Highlight model
-    READWISE_HIGHLIGHT_CLOZE = (30, 'readwise_highlight_cloze')
+    HIGHLIGHT_CLOZE_1 = (30, 'readwise_highlight_cloze')
 
     def __init__(self, unique_number, directory, name_override=None):
         self.unique_number = unique_number

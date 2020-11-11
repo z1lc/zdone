@@ -1,6 +1,12 @@
 <div id="textPart">
         {{ '{{#Title}}' }}<span id="rsAnkiContext">{{ '{{Title}}' }}:</span>{{ '{{/Title}}' }}<br>
         {{ '{{cloze:Clozed Highlight}}' }}
+    {% if not is_front %}
+        <ul>
+            {{ '{{#Prev Highlight}}' }}<li>{{ '{{Prev Highlight}}' }}</li>{{ '{{/Prev Highlight}}' }}
+            {{ '{{#Next Highlight}}' }}<li>{{ '{{Next Highlight}}' }}</li>{{ '{{/Next Highlight}}' }}
+        </ul>
+    {% endif %}
 </div>
 <div id="imagePart">{{ '{{Image}}' }}</div>
 
