@@ -233,7 +233,7 @@ def spotify_download_apkg():
 
 
 @app.route("/api/<api_key>/play/<track_uri>/<callback_function_name>")
-def api_play_song_v2(api_key, track_uri, callback_function_name):
+def api_play_song(api_key, track_uri, callback_function_name):
     user = validate_api_key(api_key)
     if not user:
         return api_key_failure()
