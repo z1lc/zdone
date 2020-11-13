@@ -51,10 +51,22 @@ def upsert_highlight(user: User, highlight: JsonDict):
 
 
 def get(user: User, endpoint: str) -> Response:
+    tries = 0
+    saved_exception = None
     headers = {"Authorization": f"Token {user.readwise_access_token}"}
     # TODO: query all pages
     query_string = {"page_size": 1000}
-    return requests.get(url=f"{READWISE_BASE_URL}/{endpoint}/", headers=headers, params=query_string)
+
+    while tries < 10:
+        tries += 1
+        try:
+            return requests.get(url=f"{READWISE_BASE_URL}/{endpoint}/", headers=headers, params=query_string)
+        except Exception as e:
+            saved_exception = e
+            continue
+    if saved_exception:
+        capture_exception(saved_exception)
+    return Response()
 
 
 def refresh_highlights_and_books(user: User) -> None:

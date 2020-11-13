@@ -35,6 +35,7 @@ You are least likely to run into compabitility issues if you match your Python v
  * 2020-04-14 Spotify + Anki integration [publicly released](https://www.reddit.com/r/Anki/comments/g0zgyc/spotify_anki_learn_to_recognize_songs_by_your/)
  * 2020-05-16 [MVP](https://github.com/z1lc/zdone/commit/2399fe0a2db63664fd22e413f127adb9629a7f1d) for Reminders
  * 2020-06-13 [MVP](https://github.com/z1lc/zdone/commit/278d2f7e5a4611c3547affcaaa428f4cc7df9a12) for Tasks v2
+ * 2020-07-05 Isolated [QA environment](https://zdone-qa.herokuapp.com) created for testing
  * 2020-07-16 [MVP](https://github.com/z1lc/zdone/commit/1a728255fd34a1d1e47c8ee822219be0c3538eee) for Movies & TV
  * 2020-07-23 Tasks v1 [sunsetted](https://github.com/z1lc/zdone/pull/37)
  * 2020-08-13 [MVP](https://github.com/z1lc/zdone/commit/6221269634b5ec28f75afdeb7bf23a6c9db9881d) for HN reader
