@@ -16,6 +16,7 @@ from app.util import today, to_tmdb_id
 BASE_URL = 'https://image.tmdb.org/t/p/'
 POSTER_SIZE = 'w500'
 YOUTUBE_DURATIONS_CACHE: Dict[str, int] = {}
+IGNORED_VIDEO_IDS = ['zdone:video:tmdb:693874']
 
 
 class VideoType(Enum):
@@ -57,10 +58,11 @@ def refresh_videos(user: User):
             [(False, wtv) for wtv in _get_full_paginated(acct.watchlist_tv)]):
         try:
             video_id = f"zdone:video:tmdb:{tv['id']}"
-            get_or_add_tv(video_id, tv, user, watched)
-            name_and_year = f"{tv['name']} ({tv['first_air_date'][:4]})"
-            log(f"Successfully added {name_and_year}")
-            result += f"{name_and_year}<br>"
+            if video_id not in IGNORED_VIDEO_IDS:
+                get_or_add_tv(video_id, tv, user, watched)
+                name_and_year = f"{tv['name']} ({tv['first_air_date'][:4]})"
+                log(f"Successfully added {name_and_year}")
+                result += f"{name_and_year}<br>"
         except Exception as e:
             log(f"Received exception when trying to add TV show https://www.themoviedb.org/tv/{tv['id']}")
             capture_exception(e)
@@ -71,10 +73,11 @@ def refresh_videos(user: User):
             [(False, wm) for wm in _get_full_paginated(acct.watchlist_movies)]):
         try:
             video_id = f"zdone:video:tmdb:{movie['id']}"
-            get_or_add_movie(video_id, movie, user, watched)
-            name_and_year = f"{movie['original_title']} ({movie.get('release_date', '9999')[:4]})"
-            log(f"Successfully added {name_and_year}")
-            result += f"{name_and_year}<br>"
+            if video_id not in IGNORED_VIDEO_IDS:
+                get_or_add_movie(video_id, movie, user, watched)
+                name_and_year = f"{movie['original_title']} ({movie.get('release_date', '9999')[:4]})"
+                log(f"Successfully added {name_and_year}")
+                result += f"{name_and_year}<br>"
         except Exception as e:
             log(f"Received exception when trying to add movie https://www.themoviedb.org/movie/{movie['id']}")
             capture_exception(e)
