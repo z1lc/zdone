@@ -370,7 +370,7 @@ def get_liked_page(sp, offset: int) -> List[JsonDict]:
     return []
 
 
-def get_top_tracks(sp, artist: SpotifyArtist, allow_refresh: bool = False) -> Tuple[List[TopTrack], List[TopTrack]]:
+def get_top_tracks(sp, artist: SpotifyArtist, allow_refresh: bool = False) -> Tuple[int, List[TopTrack]]:
     should_refresh = allow_refresh and (artist.last_top_tracks_refresh is None or
                                         artist.last_top_tracks_refresh < (
                                                 datetime.datetime.utcnow() - timedelta(days=7)))
@@ -390,7 +390,7 @@ def get_top_tracks(sp, artist: SpotifyArtist, allow_refresh: bool = False) -> Tu
         db.session.commit()
         return dropped, to_return
     else:
-        return [], TopTrack.query.filter_by(artist_uri=artist.uri).all()
+        return 0, TopTrack.query.filter_by(artist_uri=artist.uri).all()
 
 
 def get_followed_managed_spotify_artists_for_user(user: User, should_update: bool) -> List[ManagedSpotifyArtist]:
