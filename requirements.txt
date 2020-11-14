@@ -31,6 +31,6 @@ suntime==1.2.5
 b2sdk==1.2.0
 spacy==2.3.2
 
-https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.2.0/en_core_web_sm-2.2.0.tar.gz
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.3.0/en_core_web_sm-2.3.0.tar.gz
 git+git://github.com/z1lc/spotipy.git@9bbad0cb1789d863d9c0f77ac6653ac5c4471305#egg=spotipy
 git+git://github.com/z1lc/genanki.git#egg=genanki
