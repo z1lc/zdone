@@ -59,8 +59,7 @@ class AnkiCard(Enum):
     NAME_AND_IMAGE_TO_COSTARS = (29, 'video_person', 'zdone Person ID')
 
     # Readwise Highlight model
-    HIGHLIGHT_CLOZE_1 = (30, 'readwise_highlight_cloze')
-    # TODO: Add ID field for highlight cloze note
+    HIGHLIGHT_CLOZE_1 = (30, 'readwise_highlight_cloze', 'zdone Highlight ID')
 
     def __init__(self, unique_number: int, directory: str, id_field_name: str = None, name_override: str = None):
         self.unique_number = unique_number
