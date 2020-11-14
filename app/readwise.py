@@ -50,12 +50,11 @@ def upsert_highlight(user: User, highlight: JsonDict):
     db.session.commit()
 
 
-def get(user: User, endpoint: str) -> Response:
+def get(user: User, endpoint: str, page: int = 1) -> Response:
     tries = 0
     saved_exception = None
     headers = {"Authorization": f"Token {user.readwise_access_token}"}
-    # TODO: query all pages
-    query_string = {"page_size": 1000}
+    query_string = {"page_size": 1000, "page": page}
 
     while tries < 10:
         tries += 1
@@ -69,6 +68,18 @@ def get(user: User, endpoint: str) -> Response:
     return Response()
 
 
+def get_paginated(user: User, endpoint: str):
+    done = False
+    page = 1
+    results = []
+    while not done:
+        returned = get(user, endpoint, page).json()
+        results.extend(returned['results'])
+        page += 1
+        done = returned['next'] is None
+    return results
+
+
 def refresh_highlights_and_books(user: User) -> None:
     if get(user, "auth").status_code != 204:
         error = f'Error! Received non-204 response during access token validation from Readwise for user {user.username}'
@@ -76,8 +87,8 @@ def refresh_highlights_and_books(user: User) -> None:
         capture_exception(ValueError(error))
         return
 
-    for book in get(user, "books").json()['results']:
+    for book in get_paginated(user, "books"):
         upsert_book(user, book)
 
-    for highlight in get(user, "highlights").json()['results']:
+    for highlight in get_paginated(user, "highlights"):
         upsert_highlight(user, highlight)
