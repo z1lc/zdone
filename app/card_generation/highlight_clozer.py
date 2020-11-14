@@ -18,11 +18,11 @@ def get_clozed_highlight(highlight):
     return result
 
 
-# Returns a word with punctuation chars removed, except dash
+# Returns a word with punctuation chars removed, except dashes in middle of word
 # ham, -> ham
 # extra-crispy -> extra-crispy
 def no_punc(word: str) -> str:
-    return ''.join(ch for ch in word if ch not in string.punctuation or ch == '-')
+    return word.strip(string.punctuation)
 
 
 # returns a list of keywords for a given sentence
@@ -83,18 +83,34 @@ def get_best_entities(ents: Tuple[Span]):
     return [best_entity]
 
 
-def is_interesting_noun(text):
+def is_interesting_noun(text: str) -> bool:
     boring_words = ['they', 'them', 'one', 'two', 'it', 'we', 'you', 'i', 'me']
-    return text.lower() not in boring_words
+    return no_punc(text.lower()) not in boring_words
 
 
 # returns sentence with all occurrences of keyword clozed out
 # this is case-sensitive for now
-def cloze_out_keyword(keyword, idx, sentence):
+def cloze_out_keyword(keyword: str, idx: int, sentence: str):
     sentence_words = sentence.split(" ")
-    return " ".join(map(lambda word: cloze_word(idx, word) if no_punc(word.lower()) == keyword.lower() else word,
+    return " ".join(map(lambda word: cloze_word_with_punc(idx, word) if no_punc(word.lower()) == keyword.lower() else word,
                         sentence_words))
 
 
-def cloze_word(idx, word):
-    return '{{c' + str(idx + 1) + '::' + word + "}}"
+def get_prefix_punc(word):
+    prefix_punc_end_idx = 0
+    while prefix_punc_end_idx < len(word) and word[prefix_punc_end_idx] in string.punctuation:
+        prefix_punc_end_idx += 1
+    return word[:prefix_punc_end_idx]
+
+
+def get_suffix_punc(word):
+    suffix_punc_start_idx = len(word) - 1
+    while suffix_punc_start_idx >= 0 and word[suffix_punc_start_idx] in string.punctuation:
+        suffix_punc_start_idx -= 1
+    return word[suffix_punc_start_idx + 1:]
+
+
+def cloze_word_with_punc(idx, word):
+    prefix_punc = get_prefix_punc(word)
+    suffix_punc = get_suffix_punc(word)
+    return prefix_punc + '{{c' + str(idx + 1) + '::' + no_punc(word) + "}}" + suffix_punc
