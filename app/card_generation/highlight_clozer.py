@@ -1,5 +1,7 @@
-import spacy
+import string
+from typing import List
 
+import spacy
 
 # initialize the model once when we import this script
 NLP = spacy.load("en_core_web_sm")
@@ -14,9 +16,17 @@ def get_clozed_highlight(highlight):
     return result
 
 
+# Returns a word with punctuation chars removed, except dash
+# ham, -> ham
+# extra-crispy -> extra-crispy
+def no_punc(word: str) -> str:
+    return ''.join(ch for ch in word if ch not in string.punctuation or ch == '-')
+
+
 # returns a list of keywords for a given sentence
 # currently, the list only ever has a single item, because the input sentences are not intended for
 # super long term retention. This can be configured
+# Returned keywords should not have punctuation
 def get_keywords(sentence):
     doc = NLP(sentence)
     # first see if we have some nice named entities for the cloze
@@ -25,15 +35,17 @@ def get_keywords(sentence):
         # return the first named entity just because multiple clozes in a highlight ends up being a lot of reviewing
         # for a card that probably isn't ideal (even if the cloze's are good, the volume of highlights should be
         # pretty high)
-        return result[:1]
+        return list(no_punc(result[0]))
     # we didn't find any good entities, so let's just return a core noun from a noun phrase
     for noun_chunk in doc.noun_chunks:
         # don't return bad nouns like "they"
         if is_interesting_noun(noun_chunk.root.text):
-            return [noun_chunk.root.text]
+            return list(no_punc(noun_chunk.root.text))
 
     # nothing has worked, so just return whatever word is longest
-    return max(sentence.split(" "), key=len)
+    no_punctuation = no_punc(sentence)
+    return list(max(no_punctuation.split(" ", key=len)))
+
 
 # Highlights will fairly regularly have the structure of
 # "One way to do..." or "Two things that differentiate..." etc
@@ -43,6 +55,7 @@ def get_keywords(sentence):
 # out.
 def not_number_at_front(ent):
     return ent.label_ not in ["ORDINAL", "CARDINAL"] and ent.start != 0
+
 
 # return the most interesting entities from a list of entities in a sentence
 # input: tuple of nlp-generated entities from a sentence
@@ -72,11 +85,14 @@ def is_interesting_noun(text):
     boring_words = ['they', 'them', 'one', 'two', 'it', 'we', 'you', 'i', 'me']
     return text.lower() not in boring_words
 
+
 # returns sentence with all occurrences of keyword clozed out
 # this is case-sensitive for now
 def cloze_out_keyword(keyword, idx, sentence):
     sentence_words = sentence.split(" ")
-    return " ".join(map(lambda word: cloze_word(idx, word) if word.lower() == keyword.lower() else word, sentence_words))
+    return " ".join(map(lambda word: cloze_word(idx, word) if no_punc(word.lower()) == keyword.lower() else word,
+                        sentence_words))
+
 
 def cloze_word(idx, word):
     return '{{c' + str(idx + 1) + '::' + word + "}}"
