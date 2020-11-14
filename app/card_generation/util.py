@@ -20,50 +20,52 @@ env: Environment = Environment(
 # DO NOT CHANGE THESE ENUM NAMES or you will cause backwards incompatibility: the names are used as template names
 class AnkiCard(Enum):
     # Spotify Track model
-    AUDIO_TO_ARTIST = (1, 'spotify_track')
-    AUDIO_AND_ALBUM_ART_TO_ALBUM = (2, 'spotify_track')  # only used by me, not externally
+    AUDIO_TO_ARTIST = (1, 'spotify_track', 'Track URI')
+    AUDIO_AND_ALBUM_ART_TO_ALBUM = (2, 'spotify_track', 'Track URI')  # only used by me, not externally
 
     # Spotify Artist model
-    IMAGE_TO_NAME = (3, 'spotify_artist')
-    NAME_TO_IMAGE = (4, 'spotify_artist')
-    NAME_AND_IMAGE_TO_SONG = (5, 'spotify_artist')
-    SONGS_TO_NAME = (6, 'spotify_artist')
-    NAME_AND_IMAGE_TO_GENRES = (7, 'spotify_artist')
-    NAME_AND_IMAGE_TO_SIMILAR_ARTISTS = (8, 'spotify_artist')
-    NAME_AND_IMAGE_TO_YEARS_ACTIVE = (9, 'spotify_artist')
-    EXTRA_ARTIST_TEMPLATE_1 = (10, 'spotify_artist')  # Albums > Name+Image
-    EXTRA_ARTIST_TEMPLATE_2 = (11, 'spotify_artist')  # Name+Image > Albums
-    EXTRA_ARTIST_TEMPLATE_3 = (12, 'spotify_artist')
-    EXTRA_ARTIST_TEMPLATE_4 = (13, 'spotify_artist')
-    EXTRA_ARTIST_TEMPLATE_5 = (14, 'spotify_artist')
-    EXTRA_ARTIST_TEMPLATE_6 = (15, 'spotify_artist')
-    EXTRA_ARTIST_TEMPLATE_7 = (16, 'spotify_artist')
-    EXTRA_ARTIST_TEMPLATE_8 = (17, 'spotify_artist')
-    EXTRA_ARTIST_TEMPLATE_9 = (18, 'spotify_artist')
-    EXTRA_ARTIST_TEMPLATE_10 = (19, 'spotify_artist')
+    IMAGE_TO_NAME = (3, 'spotify_artist', 'Artist URI')
+    NAME_TO_IMAGE = (4, 'spotify_artist', 'Artist URI')
+    NAME_AND_IMAGE_TO_SONG = (5, 'spotify_artist', 'Artist URI')
+    SONGS_TO_NAME = (6, 'spotify_artist', 'Artist URI')
+    NAME_AND_IMAGE_TO_GENRES = (7, 'spotify_artist', 'Artist URI')
+    NAME_AND_IMAGE_TO_SIMILAR_ARTISTS = (8, 'spotify_artist', 'Artist URI')
+    NAME_AND_IMAGE_TO_YEARS_ACTIVE = (9, 'spotify_artist', 'Artist URI')
+    EXTRA_ARTIST_TEMPLATE_1 = (10, 'spotify_artist', 'Artist URI')  # Albums > Name+Image
+    EXTRA_ARTIST_TEMPLATE_2 = (11, 'spotify_artist', 'Artist URI')  # Name+Image > Albums
+    EXTRA_ARTIST_TEMPLATE_3 = (12, 'spotify_artist', 'Artist URI')
+    EXTRA_ARTIST_TEMPLATE_4 = (13, 'spotify_artist', 'Artist URI')
+    EXTRA_ARTIST_TEMPLATE_5 = (14, 'spotify_artist', 'Artist URI')
+    EXTRA_ARTIST_TEMPLATE_6 = (15, 'spotify_artist', 'Artist URI')
+    EXTRA_ARTIST_TEMPLATE_7 = (16, 'spotify_artist', 'Artist URI')
+    EXTRA_ARTIST_TEMPLATE_8 = (17, 'spotify_artist', 'Artist URI')
+    EXTRA_ARTIST_TEMPLATE_9 = (18, 'spotify_artist', 'Artist URI')
+    EXTRA_ARTIST_TEMPLATE_10 = (19, 'spotify_artist', 'Artist URI')
 
     # Video model
-    POSTER_TO_NAME = (20, 'video')
-    NAME_TO_POSTER = (21, 'video')
-    VIDEO_TO_NAME = (22, 'video')
-    DESCRIPTION_TO_NAME = (23, 'video')
-    NAME_TO_DESCRIPTION = (24, 'video')
-    NAME_TO_ACTORS = (30, 'video')
-    NAME_TO_DIRECTOR = (31, 'video')
+    POSTER_TO_NAME = (20, 'video', 'zdone Video ID')
+    NAME_TO_POSTER = (21, 'video', 'zdone Video ID')
+    VIDEO_TO_NAME = (22, 'video', 'zdone Video ID')
+    DESCRIPTION_TO_NAME = (23, 'video', 'zdone Video ID')
+    NAME_TO_DESCRIPTION = (24, 'video', 'zdone Video ID')
+    NAME_TO_ACTORS = (30, 'video', 'zdone Video ID')
+    NAME_TO_DIRECTOR = (31, 'video', 'zdone Video ID')
 
     # Video Person model
-    VP_IMAGE_TO_NAME = (25, 'video_person', 'Image>Name')
-    VP_NAME_TO_IMAGE = (26, 'video_person', 'Name>Image')
-    CREDITS_TO_NAME = (27, 'video_person')
-    NAME_TO_VIDEO_LIST = (28, 'video_person')
-    NAME_AND_IMAGE_TO_COSTARS = (29, 'video_person')
+    VP_IMAGE_TO_NAME = (25, 'video_person', 'zdone Person ID', 'Image>Name')
+    VP_NAME_TO_IMAGE = (26, 'video_person', 'zdone Person ID', 'Name>Image')
+    CREDITS_TO_NAME = (27, 'video_person', 'zdone Person ID')
+    NAME_TO_VIDEO_LIST = (28, 'video_person', 'zdone Person ID')
+    NAME_AND_IMAGE_TO_COSTARS = (29, 'video_person', 'zdone Person ID')
 
     # Readwise Highlight model
     HIGHLIGHT_CLOZE_1 = (30, 'readwise_highlight_cloze')
+    # TODO: Add ID field for highlight cloze note
 
-    def __init__(self, unique_number, directory, name_override=None):
+    def __init__(self, unique_number: int, directory: str, id_field_name: str = None, name_override: str = None):
         self.unique_number = unique_number
         self.directory = directory
+        self.id_field_name = id_field_name
         self.name_override = name_override
 
     def get_template_name(self) -> str:
@@ -145,8 +147,8 @@ def get_template(card_type: AnkiCard, user: User) -> JsonDict:
     api_key: str = user.api_key
     return {
         'name': card_type.get_template_name(),
-        'qfmt': render_front(card_type, api_key, rs_anki_enabled),
-        'afmt': render_back(card_type, api_key, rs_anki_enabled),
+        'qfmt': render_template(card_type, True, api_key, rs_anki_enabled),
+        'afmt': render_template(card_type, False, api_key, rs_anki_enabled),
     }
 
 
@@ -159,6 +161,9 @@ def render_template(card_type: AnkiCard, is_front: bool, api_key: str, rs_anki_e
     if is_front and card_type in [AnkiCard.VIDEO_TO_NAME]:
         script_include += f"""<script type="text/javascript">{get_minified_js_for_youtube_video()}</script>"""
 
+    if not is_front:
+        script_include += f"""<script type="text/javascript">{get_minified_js_for_review_log(api_key, card_type)}</script>"""
+
     try:
         return env.get_template(f"{card_type.directory}/{card_type.name.lower()}.html") \
             .render(is_front=is_front, script_include=script_include)
@@ -167,14 +172,6 @@ def render_template(card_type: AnkiCard, is_front: bool, api_key: str, rs_anki_e
         if "extra" in card_type.name.lower():
             return ""
         raise e
-
-
-def render_back(card_type: AnkiCard, api_key: str, rs_anki_enabled: bool) -> str:
-    return render_template(card_type, False, api_key, rs_anki_enabled)
-
-
-def render_front(card_type: AnkiCard, api_key: str, rs_anki_enabled: bool) -> str:
-    return render_template(card_type, True, api_key, rs_anki_enabled)
 
 
 # see https://developers.google.com/youtube/iframe_api_reference for docs
@@ -209,6 +206,15 @@ def get_minified_js_for_youtube_video() -> str:
     event.target.mute();
     event.target.playVideo();
   }""")
+
+
+def get_minified_js_for_review_log(api_key: str, card_type: AnkiCard) -> str:
+    return jsmin(f"""
+function logReview() {{
+  $.get("https://www.zdone.co/api/{api_key}/log/{{{{{card_type.id_field_name}}}}}/{card_type.name}");
+}};
+logReview();
+""")
 
 
 def get_minified_js_for_song_jump(api_key: str) -> str:
