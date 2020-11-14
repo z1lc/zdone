@@ -35,12 +35,20 @@ def get_keywords(sentence):
     # nothing has worked, so just return whatever word is longest
     return max(sentence.split(" "), key=len)
 
+# Highlights will fairly regularly have the structure of
+# "One way to do..." or "Two things that differentiate..." etc
+# Often, the nlp will recognize "One" and "Two" as entities, which
+# can result in them being clozed out. Clozing out cardinal/ordainal entities
+# at the front of higlights is almost never useful, so this function helps filter them
+# out.
+def not_number_at_front(ent):
+    return ent.label_ not in ["ORDINAL", "CARDINAL"] and ent.start != 0
 
 # return the most interesting entities from a list of entities in a sentence
 # input: tuple of nlp-generated entities from a sentence
 # output: list of best entities (currently only ever returns 1 entity)
 def get_best_entities(ents):
-    if len(ents) == 0:
+    if not ents:
         return []
     # the best entity will likely be repeated many times or just be the first one
     max_count = 0
@@ -50,7 +58,7 @@ def get_best_entities(ents):
         # this will match the first entitiy that isn't something like "one"
         # also will deliberately not match any entities that are the first word in the sentence, as
         # that makes for a jarring cloze card
-        if ent_count > max_count and (ent.label_ not in ["ORDINAL", "CARDINAL"] and ent.start != 0):
+        if ent_count > max_count and not_number_at_front(ent):
             max_count = ent_count
             best_entity = ent.text
 
