@@ -33,7 +33,7 @@ def get_longest_word(no_punctuation_sentence) -> str:
     return max(no_punctuation_sentence.split(" ", key=len))
 
 
-def get_keywords(sentence):
+def get_keywords(sentence: str) -> List[str]:
     doc = NLP(sentence)
     # first see if we have some nice named entities for the cloze
     result = get_best_entities(doc.ents)
