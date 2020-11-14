@@ -22,7 +22,7 @@ Jinja2==2.11.2
 python-pushover==0.4
 python-youtube==0.6.4
 isodate==0.6.0
-marshmallow==3.9.0
+marshmallow==3.9.1
 sendgrid==6.4.7
 humanize==3.1.0
 tld==0.12.2
