@@ -1,4 +1,3 @@
-import datetime
 from typing import Optional
 
 from flask_login import UserMixin
@@ -74,17 +73,3 @@ class kv(BaseModel):
     id: int = db.Column(db.Integer, primary_key=True)
     k: str = db.Column(db.Text, unique=True)
     v: str = db.Column(db.Text)
-
-
-class ApkgGeneration(BaseModel):
-    __tablename__ = "apkg_generations"
-    id: int = db.Column(db.Integer, primary_key=True)
-    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    # always UTC
-    at: datetime.datetime = db.Column(db.DateTime, nullable=False)
-    b2_file_id: str = db.Column(db.Text, nullable=False)
-    b2_file_name: str = db.Column(db.Text, nullable=False)
-    # in bytes
-    file_size: int = db.Column(db.BigInteger, nullable=False)
-    # the number of notes in this package, used to notify users when their newly generated deck has new notes
-    notes: int = db.Column(db.Integer, nullable=False)

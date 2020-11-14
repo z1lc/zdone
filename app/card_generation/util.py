@@ -68,7 +68,10 @@ class AnkiCard(Enum):
         self.id_field_name = id_field_name
         self.name_override = name_override
 
-    def get_template_name(self) -> str:
+    def get_raw_template_name(self) -> str:
+        return self.name
+
+    def get_pretty_template_name(self) -> str:
         return self.name_override if self.name_override else self.name \
             .replace('_', ' ') \
             .title() \
@@ -146,7 +149,7 @@ def get_template(card_type: AnkiCard, user: User) -> JsonDict:
     rs_anki_enabled: bool = user.uses_rsAnki_javascript
     api_key: str = user.api_key
     return {
-        'name': card_type.get_template_name(),
+        'name': card_type.get_pretty_template_name(),
         'qfmt': render_template(card_type, True, api_key, rs_anki_enabled),
         'afmt': render_template(card_type, False, api_key, rs_anki_enabled),
     }

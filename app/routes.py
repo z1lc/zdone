@@ -17,6 +17,8 @@ from werkzeug.urls import url_parse
 
 from app.card_generation.anki import generate_full_apkg
 from app.models.base import User
+from app.card_generation.util import AnkiCard
+from app.models.anki import AnkiReviewLog
 from . import app, db, kv
 from .forms import LoginForm, RegistrationForm, ReminderForm, REMINDER_DEFAULT
 from .hn import get_unread_stories, get_total_and_average_reads_per_week
@@ -239,9 +241,28 @@ def api_log_review(api_key, zdone_id, raw_template_name):
     if not user:
         return api_key_failure()
 
-    print(api_key)
-    print(zdone_id)
-    print(raw_template_name)
+    ids_start_with = ['spotify:track:',
+                      'spotify:artist:',
+                      'zdone:video:',
+                      'zdone:person:',
+                      'zdone:highlight:']
+    if not list(filter(zdone_id.startswith, ids_start_with)):
+        error = f"Provided ID ({zdone_id}) does not seem to be a zdone ID."
+        capture_exception(ValueError(error))
+        return failure(error)
+
+    if raw_template_name not in [e.get_raw_template_name() for e in AnkiCard]:
+        error = f"Provided template name ({raw_template_name}) does not seem to be a zdone template."
+        capture_exception(ValueError(error))
+        return failure(error)
+
+    db.session.add(AnkiReviewLog(
+        user_id=user.id,
+        zdone_id=zdone_id,
+        template_name=raw_template_name,
+        at=datetime.datetime.utcnow(),
+    ))
+    db.session.commit()
     return success()
 
 
