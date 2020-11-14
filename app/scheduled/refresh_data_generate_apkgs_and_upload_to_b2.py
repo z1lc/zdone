@@ -10,7 +10,7 @@ from app.log import log
 from app.models.base import User, ApkgGeneration
 from app.readwise import refresh_highlights_and_books
 from app.themoviedb import refresh_videos
-from app.util import get_b2_api
+from app.util import get_b2_api, get_pushover_client
 
 if __name__ == '__main__':
     b2_api = get_b2_api()
@@ -66,6 +66,19 @@ if __name__ == '__main__':
                     db.session.commit()
 
                     log(f'Successfully completed apkg generation & upload for user {user.username}.')
+
+                    if user.username == 'will':
+                        log(f'Will send Pushover reminder to {user.username}.')
+                        args = {
+                            'title': 'Download new zdone apkg',
+                            'message': f'There are a total of <b>{notes}</b> available.',
+                            'priority': -1,
+                            'html': 1,
+                            'url_title': 'Download now!',
+                            'url': 'https://www.zdone.co/spotify/download_apkg',
+                        }
+                        get_pushover_client(user).send_message(**args)
+
         except Exception as e:
             log(f'Received unexpected exception for user {user.username}!')
             capture_exception(e)
