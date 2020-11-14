@@ -9,7 +9,7 @@ from app import kv, db
 from app.log import log
 from app.models.base import User
 from app.models.tasks import Reminder, ReminderNotification, TaskLog, Task
-from app.util import today
+from app.util import today, get_pushover_client
 
 
 def get_reminders(user: User) -> List[Reminder]:
@@ -76,7 +76,6 @@ def send_and_log_notification(user: User, reminder_id: int, should_log: bool = T
     reminder = Reminder.query.filter_by(id=reminder_id).one()
     if reminder.user_id != user.id:
         raise ValueError(f'User {user.username} does not own reminder with id {reminder.id}.')
-    client = Client(user.pushover_user_key, api_token=kv.get('PUSHOVER_API_TOKEN'))
     args = {
         'title': reminder.title,
         'message': reminder.message,
@@ -87,7 +86,7 @@ def send_and_log_notification(user: User, reminder_id: int, should_log: bool = T
         args['message'] = f"{reminder.message[:1000]}..."
         args['url_title'] = "Read more..."
         args['url'] = f"https://zdone.co/reminders/{reminder.id}"
-    client.send_message(**args)
+    get_pushover_client(user).send_message(**args)
     log(f'Sent notification {reminder.title}: {reminder.message}'
         f' to clients for user {user.username}.')
     if should_log:

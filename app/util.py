@@ -6,6 +6,7 @@ import pytz
 from b2sdk.account_info import InMemoryAccountInfo
 from b2sdk.api import B2Api
 from flask import jsonify, Response
+from pushover import Client
 
 from app import kv
 from app.models.base import User
@@ -83,3 +84,7 @@ def get_b2_api():
     b2_api = B2Api(info)
     b2_api.authorize_account("production", kv.get('B2_KEY_ID'), kv.get('B2_APPLICATION_KEY'))
     return b2_api
+
+
+def get_pushover_client(user: User):
+    return Client(user.pushover_user_key, api_token=kv.get('PUSHOVER_API_TOKEN'))
