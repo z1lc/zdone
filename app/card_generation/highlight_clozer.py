@@ -1,9 +1,11 @@
 import string
-from typing import List
+from typing import List, Tuple
 
 import spacy
 
 # initialize the model once when we import this script
+from spacy.tokens import Doc, Span
+
 NLP = spacy.load("en_core_web_sm")
 
 
@@ -60,7 +62,7 @@ def not_number_at_front(ent):
 # return the most interesting entities from a list of entities in a sentence
 # input: tuple of nlp-generated entities from a sentence
 # output: list of best entities (currently only ever returns 1 entity)
-def get_best_entities(ents):
+def get_best_entities(ents: Tuple[Span]):
     if not ents:
         return []
     # the best entity will likely be repeated many times or just be the first one
