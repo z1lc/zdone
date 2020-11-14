@@ -217,7 +217,8 @@ def spotify_download_apkg():
     os.makedirs(app.instance_path, exist_ok=True)
 
     maybe_generated_file_id = get_latest_file_id(current_user)
-    if maybe_generated_file_id:
+    # avoid using generated file if in local development
+    if "127.0.0.1" not in request.url and maybe_generated_file_id:
         log(f"Found pre-generated apkg on B2 for user {current_user.username}. Will download & return.")
         # we can't just give them a public link here because we're using a private bucket
         get_b2_api().download_file_by_id(
@@ -230,6 +231,18 @@ def spotify_download_apkg():
 
     log(f"before sendfile {today_datetime()}")
     return send_file(filename, as_attachment=True, add_etags=False, cache_timeout=0)
+
+
+@app.route("/api/<api_key>/log/<zdone_id>/<raw_template_name>/")
+def api_log_review(api_key, zdone_id, raw_template_name):
+    user = validate_api_key(api_key)
+    if not user:
+        return api_key_failure()
+
+    print(api_key)
+    print(zdone_id)
+    print(raw_template_name)
+    return success()
 
 
 @app.route("/api/<api_key>/play/<track_uri>/<callback_function_name>")
