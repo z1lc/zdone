@@ -29,6 +29,10 @@ def no_punc(word: str) -> str:
 # currently, the list only ever has a single item, because the input sentences are not intended for
 # super long term retention. This can be configured
 # Returned keywords should not have punctuation
+def get_longest_word(no_punctuation_sentence) -> str:
+    return max(no_punctuation_sentence.split(" ", key=len))
+
+
 def get_keywords(sentence):
     doc = NLP(sentence)
     # first see if we have some nice named entities for the cloze
@@ -45,8 +49,8 @@ def get_keywords(sentence):
             return list(no_punc(noun_chunk.root.text))
 
     # nothing has worked, so just return whatever word is longest
-    no_punctuation = no_punc(sentence)
-    return list(max(no_punctuation.split(" ", key=len)))
+    no_punctuation_sentence = no_punc(sentence)
+    return list(get_longest_word(no_punctuation_sentence))
 
 
 # Highlights will fairly regularly have the structure of
