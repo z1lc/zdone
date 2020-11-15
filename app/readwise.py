@@ -47,7 +47,17 @@ def upsert_highlight(user: User, highlight: JsonDict):
     maybe_highlight.id = id
     maybe_highlight.managed_readwise_book_id = corresponding_managed_book_id
     maybe_highlight.text = highlight["text"]
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        # If the exception is because of the unique constraint, it's fine, just rollback + skip.
+        # If it's not, though, we'd like to know.
+        if '_managed_readwise_book_id_and_text' in repr(e):
+            log(f'Highlight with text "{highlight["text"]}" appears to already be in the database for'
+                f' managed_readwise_book_id {corresponding_managed_book_id}. Will skip inserting duplicate.')
+            db.session.rollback()
+        else:
+            capture_exception(e)
 
 
 def get(user: User, endpoint: str, page: int = 1) -> Response:
