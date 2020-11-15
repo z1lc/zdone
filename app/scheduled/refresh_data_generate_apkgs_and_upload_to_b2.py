@@ -7,7 +7,8 @@ from sentry_sdk import capture_exception
 from app import app, db
 from app.card_generation.anki import generate_full_apkg
 from app.log import log
-from app.models.base import User, ApkgGeneration
+from app.models.base import User
+from app.models.anki import ApkgGeneration
 from app.readwise import refresh_highlights_and_books
 from app.themoviedb import refresh_videos
 from app.util import get_b2_api, get_pushover_client
