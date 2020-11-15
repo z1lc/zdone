@@ -33,6 +33,9 @@ class ReadwiseHighlight(BaseModel):
     id: str = db.Column(db.Text, primary_key=True)
     managed_readwise_book_id: int = db.Column(db.Integer, db.ForeignKey('managed_readwise_books.id'), nullable=False)
     text: str = db.Column(db.Text, nullable=False)
+    __table_args__ = (
+        UniqueConstraint('managed_readwise_book_id', 'text', name='_managed_readwise_book_id_and_text'),
+    )
 
     def get_bare_id(self):
         return self.id.split("zdone:highlight:readwise:")[1]

@@ -16,9 +16,9 @@ from sentry_sdk import last_event_id, capture_exception, configure_scope
 from werkzeug.urls import url_parse
 
 from app.card_generation.anki import generate_full_apkg
-from app.models.base import User
 from app.card_generation.util import AnkiCard
 from app.models.anki import AnkiReviewLog
+from app.models.base import User
 from . import app, db, kv
 from .forms import LoginForm, RegistrationForm, ReminderForm, REMINDER_DEFAULT
 from .hn import get_unread_stories, get_total_and_average_reads_per_week
