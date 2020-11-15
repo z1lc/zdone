@@ -5,7 +5,7 @@ from genanki import Deck
 
 from app.card_generation.spotify import generate_tracks, generate_artists
 from app.card_generation.videos import generate_videos
-from app.card_generation.readwise import generate_readwise_highlight_clozes
+from app.card_generation.readwise import generate_readwise_highlight_clozes, generate_readwise_people
 from app.log import log
 from app.models.base import User
 from app.util import today_datetime
@@ -58,6 +58,7 @@ def generate_full_apkg(user: User, filename: str) -> int:
     if user.id <= 2 and user.readwise_access_token is not None:
         log(f"Generating highlights... {today_datetime()}")
         generate_readwise_highlight_clozes(user, deck, tags)
+        generate_readwise_people(user, deck, tags)
 
     log(f"Packaging into file... {today_datetime()}")
     genanki.Package(deck).write_to_file(filename)
