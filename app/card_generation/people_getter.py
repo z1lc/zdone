@@ -1,20 +1,27 @@
 import re
-from typing import List, Optional
+from datetime import timedelta
+from typing import List, Optional, Dict
 
+import genanki
 import spacy
 from sentry_sdk import capture_exception
 from wikipedia import wikipedia, WikipediaPage, PageError, WikipediaException
 
+from app.card_generation.util import zdNote, get_template, AnkiCard, get_rs_anki_css, get_default_css
 from app.log import log
+from app.util import JsonDict
 
 NLP = spacy.load("en_core_web_sm")
+PERSON_MODEL_ID = 1605473000000
+wikipedia.set_rate_limiting(True, timedelta(seconds=1))
 
 
 class Person:
 
-    def __init__(self, name: str, seen_in: str):
+    def __init__(self, name: str, seen_in: str, selected_highlight: str):
         self.name = name
         self.seen_in = seen_in
+        self.selected_highlight = selected_highlight
 
     def __eq__(self, other):
         return isinstance(other, Person) and other.name == self.name
@@ -28,27 +35,76 @@ class Person:
 
 class WikipediaPerson(Person):
 
-    def __init__(self, name, seen_in, known_for_html, images):
-        super().__init__(name, seen_in)
+    def __init__(self, name: str, seen_in: str, selected_highlight: str, known_for_html: str, images: str):
+        super().__init__(name, seen_in, selected_highlight)
         self.known_for_html = known_for_html
         self.images = images
 
+    def __repr__(self):
+        return f"WikipediaPerson(name={self.name}, known_for_html={self.known_for_html}, highlight={self.selected_highlight})"
 
-def get_people(highlight_text: str, highlight_source_title: str) -> List[Person]:
-    doc = NLP(highlight_text)
-    return [Person(ent.text, highlight_source_title) for ent in doc.ents if ent.label_ == "PERSON"]
+
+def get_potential_people(highlight_data: Dict[str, str]) -> List[Person]:
+    doc = NLP(highlight_data['text'])
+    print(doc.ents)
+    print([ent.label_ for ent in doc.ents])
+    return [Person(ent.text, highlight_data['source_title'], highlight_data['text']) for ent in doc.ents if
+            ent.label_ in ["PERSON", "ORG"]] # Add ORG to catch uncommon names like "Jawaharal Nehru"
+
+
+def get_person_note(wikipedia_person: WikipediaPerson, tags, user):
+    return zdNote(
+        zdNote(
+            model=_get_person_model(user),
+            tags=tags,
+            fields=[
+                wikipedia_person.name,
+                wikipedia_person.known_for_html,
+                wikipedia_person.images,
+                wikipedia_person.seen_in,
+                wikipedia_person.selected_highlight
+            ])
+    )
+
+
+def _get_person_model(user):
+    templates: List[JsonDict] = [
+        get_template(AnkiCard.PERSON_NAME_TO_IMAGE, user),
+        get_template(AnkiCard.PERSON_IMAGE_TO_NAME, user),
+        get_template(AnkiCard.PERSON_KNOWN_FOR_TO_NAME_AND_IMAGE, user),
+    ]
+    return genanki.Model(
+        PERSON_MODEL_ID,
+        'Notable Person',
+        fields=[
+            {'name': 'Name'},
+            {'name': 'Known For'},
+            {'name': 'Image'},
+            {'name': 'Seen In'},
+            {'name': 'Selected Highlight'}
+            # TODO(rob/will): Add more fields before public release
+        ],
+        css=(get_rs_anki_css() if user.uses_rsAnki_javascript else get_default_css()),
+        templates=templates,
+    )
 
 
 def _get_wiki_page(name: str) -> Optional[WikipediaPage]:
     try:
-        if not wikipedia.search(name):
+        search_results = wikipedia.search(name)
+        print(f"wiki search results: {search_results}")
+        if not search_results:
             # probably a typo, try with auto-suggest
             return wikipedia.page(name, auto_suggest=True)
-        else:
-            # force no auto suggest
-            return wikipedia.page(name, auto_suggest=False)
-    except Exception as e:
-        log(f"Failed to find person in Wikipedia for: {Person.name}")
+        for result in search_results[:2]:
+            # return first result that works...?
+            try:
+                return wikipedia.page(result, auto_suggest=False)
+            except WikipediaException:
+                continue
+        return None
+    except WikipediaException as e:
+        log(f"Failed to find person in Wikipedia for: {name}")
         capture_exception(e)
         return None
 
@@ -104,9 +160,16 @@ def _get_known_for_html(summary_text: str, name: str) -> str:
            "\n".join(["<li>" + sentence.strip() + "</li>" for sentence in sentences]) + \
            "</ul>"
 
+
 def _get_images_with_persons_name(image_urls: List[str], name: str) -> List[str]:
     first_name = name.split(" ")[0]
     return list(filter(lambda url: first_name in url, image_urls))
+
+
+def _get_image_tags_with_persons_name(image_urls: List[str], name: str) -> str:
+    relevant_image_urls = _get_images_with_persons_name(image_urls, name)[0:3]
+    return "".join([f"<img src={url}>" for url in relevant_image_urls])
+
 
 def get_wikipedia_info(person: Person) -> Optional[WikipediaPerson]:
     wiki_page = _get_wiki_page(person.name)
@@ -114,9 +177,7 @@ def get_wikipedia_info(person: Person) -> Optional[WikipediaPerson]:
         return None
 
     name_on_wikipedia = wiki_page.title
-    return WikipediaPerson(
-        name=wiki_page.title,
-        seen_in=person.seen_in,
-        known_for_html=_get_known_for_html(wiki_page.summary, name_on_wikipedia),
-        images=_get_images_with_persons_name(wiki_page.images, name_on_wikipedia)
-    )
+    return WikipediaPerson(name=wiki_page.title, seen_in=person.seen_in,
+                                       selected_highlight=person.selected_highlight,
+                                       known_for_html=_get_known_for_html(wiki_page.summary, name_on_wikipedia),
+                                       images=_get_image_tags_with_persons_name(wiki_page.images, name_on_wikipedia))

@@ -2,28 +2,33 @@ import pytest
 
 from app.card_generation.people_getter import Person, get_wikipedia_info, _get_known_for_html
 
+class TestPerson(Person):
+
+    def __init__(self, name):
+        super().__init__(name, "Some Title", "Some Author")
 
 class TestGetPeople:
 
     def test_finds_all_famous_people(self):
-        famous_names = ["LeBron James",]
-                        # "Elon Musk",
-                        # "Abraham Lincoln",
-                        # "Gandhi",
-                        # "Martin Luther King",
-                        # "Michael Jordan",
-                        # "Donald Trump",
-                        # "Donald Trump Jr.",
-                        # "Lance Armstrong",
-                        # "George Boole",
-                        # "Oprah Winfrey"]
-        people = [Person(name) for name in famous_names]
+        famous_names = ["LeBron James",
+                        "Elon Musk",
+                        "Abraham Lincoln",
+                        "Gandhi",
+                        "Martin Luther King",
+                        "Michael Jordan",
+                        "Donald Trump",
+                        "Donald Trump Jr.",
+                        "Lance Armstrong",
+                        "George Boole",
+                        "Oprah Winfrey",
+                        "Nehru"]
+        people = [TestPerson(name) for name in famous_names]
         wikipedia_people = [get_wikipedia_info(person) for person in people]
         assert(len(list(filter(lambda person: person is None, wikipedia_people))) == 0)
 
     def test_corrects_basic_typo(self):
-        typo_name = Person("Lance Armstrog")
-        real_name = Person("Lance Armstrong")
+        typo_name = TestPerson("Lance Armstrog")
+        real_name = TestPerson("Lance Armstrong")
         assert(get_wikipedia_info(typo_name) == get_wikipedia_info(real_name))
 
     def test_known_for_html_sensible(self):
@@ -42,11 +47,11 @@ Off the court, James has accumulated additional wealth and fame from numerous en
 
     def test_elon_html_sensible(self):
         sample_summary_text = """
-        Elon Reeve Musk FRS (/ˈiːlɒn/; born June 28, 1971) is a business magnate, industrial designer, engineer, and philanthropist.[6] He is the founder, CEO, CTO and chief designer of SpaceX; early investor,[b] CEO and product architect of Tesla, Inc.; founder of The Boring Company; co-founder of Neuralink; and co-founder and initial co-chairman of OpenAI. He was elected a Fellow of the Royal Society (FRS) in 2018.[9][10] Also that year, he was ranked 25th on the Forbes list of The World's Most Powerful People,[11] and was ranked joint-first on the Forbes list of the Most Innovative Leaders of 2019.[12] As of November 15, 2020, his net worth is estimated by Forbes to be US$90.8 billion,[13][14] making him the 7th richest person in the world. He is also the longest tenured CEO of any automotive manufacturer globally.
+        Elon Reeve Musk FRS (/ˈiːlɒn/; born June 28, 1971) is a business magnate, industrial designer, engineer, and philanthropist. He is the founder, CEO, CTO and chief designer of SpaceX; early investor, CEO and product architect of Tesla, Inc.; founder of The Boring Company; co-founder of Neuralink; and co-founder and initial co-chairman of OpenAI. He was elected a Fellow of the Royal Society (FRS) in 2018. Also that year, he was ranked 25th on the Forbes list of The World's Most Powerful People, and was ranked joint-first on the Forbes list of the Most Innovative Leaders of 2019. As of November 15, 2020, his net worth is estimated by Forbes to be US$90.8 billion, making him the 7th richest person in the world. He is also the longest tenured CEO of any automotive manufacturer globally.
         """
         expected_known_for_html = "<ul>\n" + \
             "<li>business magnate, industrial designer, engineer, and philanthropist</li>\n" + \
             "<li>founder, CEO, CTO and chief designer of SpaceX; early investor, CEO and product architect of Tesla, Inc.; founder of The Boring Company; co-founder of Neuralink; and co-founder and initial co-chairman of OpenAI</li>\n" + \
             "<li>elected a Fellow of the Royal Society in 2018</li>" + \
             "</ul>"
-        assert(get_wikipedia_info(Person("Elon Musk")).known_for_html == expected_known_for_html)
+        assert(_get_known_for_html(sample_summary_text, "Elon Musk") == expected_known_for_html)
