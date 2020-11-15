@@ -26,13 +26,15 @@
       task = tasks.shift();
       fade('#countdownExample .name', task.name);
       fade('#countdownExample .note', task.note);
-      // Trello doesn't have defer behavior implemented
+      // Trello doesn't have defer behavior implemented; no concept of "move to" exsits for zdone
       if (task.service === "zdone") {
-        $("button.defer").fadeIn(200);
-        $("button#moveto").fadeOut(200);
+        $("button#moveto").fadeOut(200, function() {
+          $("button.defer").fadeIn(200);
+        });
       } else {
-        $("button.defer").fadeOut(200);
-        $("button#moveto").fadeIn(200);
+        $("button.defer").fadeOut(200, function() {
+          $("button#moveto").fadeIn(200);
+        });
       }
     } else {
       fade('#countdownExample .name', "All done!");
