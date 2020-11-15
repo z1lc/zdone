@@ -135,7 +135,7 @@ def create_html_unordered_list(input_list: List, min_length: int = 3, max_length
 def _sort_credit(credit):
     if " - Present" in credit:
         return -9999
-    maybe_year = re.findall("\d{4}", credit)
+    maybe_year = re.findall("\\d{4}", credit)
     maybe_year.sort()
     if maybe_year:
         return -int(maybe_year[-1])
