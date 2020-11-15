@@ -78,6 +78,14 @@ def group_highlights_by_book(all_highlights):
 
 def generate_readwise_highlight_clozes(user: User, deck: Deck, tags: List[str]):
     all_highlights = get_highlights(user)
+    clozed_highlight_notes = _generate_clozed_highlight_notes(all_highlights, tags, user)
+    for note in clozed_highlight_notes:
+        deck.add_note(note)
+
+# Given highlights from db, return cloze notes for those highlights
+# Useful as testing seam for entire cloze generation pipeline without hitting real db
+def _generate_clozed_highlight_notes(all_highlights, tags, user):
+    result = []
     grouped_highlights = group_highlights_by_book(all_highlights)
     for book, book_highlights in grouped_highlights:
         # convert to list to use indexing for prev/next highlight
@@ -107,4 +115,5 @@ def generate_readwise_highlight_clozes(user: User, deck: Deck, tags: List[str]):
                     highlight_i['prev_highlight'],
                     highlight_i['next_highlight']
                 ])
-            deck.add_note(highlight_as_note)
+            result += [highlight_as_note]
+    return result

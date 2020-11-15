@@ -4,6 +4,10 @@ from app.card_generation.highlight_clozer import cloze_out_keyword, no_punc
 # GIVEN keyword exists with punctuation in sentence
 # WHEN getting the cloze version of the sentence
 # THEN returns cloze that clozes the keyword and retains un-clozed punctuation
+from app.card_generation.readwise import _generate_clozed_highlight_notes
+from app.models.base import User
+
+
 def test_cloze_out_keyword_with_punctuation():
     relevant_sentence = "We could have green eggs and ham, if we had some ham."
     keyword = "ham"
@@ -39,3 +43,25 @@ def test_cloze_out_keyword_capitalization():
     keyword = "mountains"
     expected_cloze = "{{c1::Mountains}} that are tall are more interesting than {{c1::mountains}} that are short."
     assert (expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence))
+
+# Verify that given some test highlights, the whole pipeline works
+def test_end_to_end_cloze_generation():
+    test_highlights = [
+        {
+            'id': "zdone:something:12345",
+            'text': "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife",
+            'source_title': "Pride and Prejudice",
+            'source_author': "Jane Austen"
+        },
+        {
+            'id': "zdone:something:1542415",
+            'text': "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness, it was the spring of hope, it was the winter of despair.",
+            'source_title': "A Tale of Two Cities",
+            'source_author': "Charles Dickens"
+        }
+    ]
+    fake_user = User()
+    fake_user.uses_rsAnki_javascript = True
+    fake_user.api_key = "some-api-key-12345"
+    first_cloze_sentence = _generate_clozed_highlight_notes(test_highlights, [], fake_user)[0].fields[2] # This will break if/when cloze field is moved to diff relevant position
+    assert("{{c1::" in first_cloze_sentence)
