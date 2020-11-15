@@ -21,9 +21,15 @@ https://hckrnews.com/"""))
 
     # Useful for developing templates and getting quick feedback on what the HTML will actually look like
     def test_render_template_html(self):
+        enable_logging = False
         fake_user = User()
         fake_user.api_key = "ASf23452nxSFS"
         fake_user.uses_rsAnki_javascript = True
-        print(get_template(AnkiCard.READWISE_PERSON_NAME_TO_IMAGE, fake_user)['qfmt'])
-        print("----------")
-        print(get_template(AnkiCard.READWISE_PERSON_NAME_TO_IMAGE, fake_user)['afmt'])
+        for card in AnkiCard: # make this more specific when developing new card type
+            # Verify each template renders correctly
+            qfmt_ = get_template(card, fake_user)['qfmt']
+            afmt_ = get_template(card, fake_user)['afmt']
+            if enable_logging:
+                print(qfmt_)
+                print("----------")
+                print(afmt_)

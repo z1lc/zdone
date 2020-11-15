@@ -62,9 +62,9 @@ class AnkiCard(Enum):
     HIGHLIGHT_CLOZE_1 = (30, 'readwise_highlight_cloze', 'zdone Highlight ID')
 
     # Person cards from readwise highlights
-    READWISE_PERSON_IMAGE_TO_NAME = (31, 'readwise_person')
-    READWISE_PERSON_KNOWN_FOR_TO_NAME_AND_IMAGE = (32, 'readwise_person')
-    READWISE_PERSON_NAME_TO_IMAGE = (33, 'readwise_person')
+    PERSON_IMAGE_TO_NAME = (31, 'person')
+    PERSON_KNOWN_FOR_TO_NAME_AND_IMAGE = (32, 'person')
+    PERSON_NAME_TO_IMAGE = (33, 'person')
 
     def __init__(self, unique_number: int, directory: str, id_field_name: str = None, name_override: str = None):
         self.unique_number = unique_number
@@ -160,7 +160,7 @@ def get_template(card_type: AnkiCard, user: User) -> JsonDict:
 
 
 def render_template(card_type: AnkiCard, is_front: bool, api_key: str, rs_anki_enabled: bool) -> str:
-    script_include = get_rs_anki_custom_script() if rs_anki_enabled else get_default_script()
+    script_include = get_rs_anki_custom_script(is_front) if rs_anki_enabled else get_default_script()
 
     if is_front and card_type in [AnkiCard.AUDIO_TO_ARTIST, AnkiCard.AUDIO_AND_ALBUM_ART_TO_ALBUM]:
         script_include += f"""<script type="text/javascript">{get_minified_js_for_song_jump(api_key)}</script>"""
@@ -247,10 +247,10 @@ $(document).keypress(function(e) {{
 """)
 
 
-def get_rs_anki_custom_script() -> str:
-    return """<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML"></script>
+def get_rs_anki_custom_script(is_front) -> str:
+    return f"""<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML"></script>
 <script type="text/javascript" src="_jquery-1.11.2.min.js"></script>
-<div id="categoryIdentifierFront">{{Tags}}</div>
+<div id="categoryIdentifier{"Front" if is_front else "Back"}">{{Tags}}</div>
 <script type="text/javascript" src="_AnkiLibrary.js"></script>
 <script type="text/javascript">if (typeof rsAnki !== 'undefined') rsAnki.defaultUnified();</script>"""
 
