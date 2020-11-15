@@ -1,4 +1,5 @@
-from app.card_generation.util import _sort_credit, AnkiCard, get_minified_js_for_review_log
+from app.card_generation.util import _sort_credit, AnkiCard, get_minified_js_for_review_log, \
+    get_minified_js_for_song_jump, get_minified_js_for_youtube_video
 
 
 def test__sort_credit():
@@ -11,3 +12,12 @@ def test__sort_credit():
 def test_get_minified_js_for_review_log():
     generated_js = get_minified_js_for_review_log('api-key-123', AnkiCard.CREDITS_TO_NAME)
     assert "https://www.zdone.co/api/api-key-123/log/{{zdone Person ID}}/CREDITS_TO_NAME" in generated_js
+
+
+def test_get_minified_js_for_song_jump():
+    generated_js = get_minified_js_for_song_jump('api-key-123')
+    assert "https://www.zdone.co/api/api-key-123/play/{{Track URI}}/" in generated_js
+
+
+def test_get_minified_js_for_youtube_video():
+    assert "{{YouTube Trailer Duration}}" in get_minified_js_for_youtube_video()
