@@ -30,7 +30,7 @@ def no_punc(word: str) -> str:
 # super long term retention. This can be configured
 # Returned keywords should not have punctuation
 def get_longest_word(no_punctuation_sentence) -> str:
-    return max(no_punctuation_sentence.split(" ", key=len))
+    return max(no_punctuation_sentence.split(" "), key=len)
 
 
 def get_keywords(sentence: str) -> List[str]:
