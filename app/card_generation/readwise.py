@@ -20,7 +20,7 @@ def generate_readwise_people(user: User, deck: Deck, tags: List[str]):
     all_people: Set[Person] = set()
     for highlight in highlights:
         people_in_highlight = get_people(highlight['text'])
-        all_people.union(set(people_in_highlight))
+        all_people.update(people_in_highlight)
     for person in all_people:
         wikipedia_person = get_wikipedia_info(person)
         # TODO: add wikipedia person to deck
