@@ -15,6 +15,7 @@
   let tasks;
   let num_tasks_completed;
 
+  // fade out what the existing selector has, replace it with HTML, and fade in the new stuff
   function fade(selector, html) {
     $(selector).fadeOut(150, function () {
       $(this).html(html);
@@ -26,13 +27,14 @@
       task = tasks.shift();
       fade('#countdownExample .name', task.name);
       fade('#countdownExample .note', task.note);
+      if (task.last_completion) fade('#lastCompletion', `last completed ${task.last_completion}`);
       // Trello doesn't have defer behavior implemented; no concept of "move to" exsits for zdone
       if (task.service === "zdone") {
-        $("button#moveto").fadeOut(200, function() {
+        $("button#moveto").fadeOut(200, function () {
           $("button.defer").fadeIn(200);
         });
       } else {
-        $("button.defer").fadeOut(200, function() {
+        $("button.defer").fadeOut(200, function () {
           $("button#moveto").fadeIn(200);
         });
       }
@@ -78,7 +80,7 @@
         if (data["latest_reminder"] !== undefined) {
           $('div.reminder').html(`<b><a href="/reminders/${data["latest_reminder"]["id"]}">${data["latest_reminder"]["title"]}</a></b>`);
         }
-        data["trello_lists"].forEach(function(list) {
+        data["trello_lists"].forEach(function (list) {
           $("div#move_to_selection").append(`<button onclick="moveCurrentItemToList('${list.id}')">${list.name}</button>&nbsp;`)
         })
 
@@ -195,6 +197,10 @@
     display: none;
     font-size: 20px;
   }
+
+  #lastCompletion {
+    font-size: 15px;
+  }
 </style>
 {% endblock %}
 
@@ -212,6 +218,7 @@
             <button id="nocare">I don't care</button>
         </div>
         <div class="button">
+            <span id="lastCompletion"></span><br>
             <button id="complete">Complete</button>
             <br>
             <button id="later">Later</button>
