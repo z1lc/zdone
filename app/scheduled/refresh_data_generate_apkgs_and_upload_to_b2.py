@@ -81,5 +81,6 @@ if __name__ == '__main__':
                         get_pushover_client(user).send_message(**args)
 
         except Exception as e:
-            log(f'Received unexpected exception for user {user.username}!')
+            log(f'Received unexpected exception for user {user.username}:')
+            log(repr(e))
             capture_exception(e)
