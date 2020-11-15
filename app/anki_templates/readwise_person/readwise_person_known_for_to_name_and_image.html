@@ -1,0 +1,17 @@
+{{ '{{#Known For}}' }}
+<div id="textPart">
+    {% if is_front %}
+    Who {{ '{{#Died️}}' }}was{{ '{{/Died️}}' }}{{ '{{^Died️}}' }}is {{ '{{/Died️}}' }} known for:<br>
+    {% else %}
+    <span class="rsAnswer rsAnkiBold">{{ '{{Name}}' }}</span><span id="rsA_insertPersonAge"></span><br>
+    {% endif %}
+    {{ '{{Known For}}' }}
+</div>
+{%  if not is_front %}
+<div id="imagePart">
+    <span id="insertPersonImageHere">{{ '{{Image}}' }}</span>
+</div>
+{%  endif %}
+
+{{ script_include|safe }}
+{{ '{{/Known For}}'}}

@@ -61,6 +61,11 @@ class AnkiCard(Enum):
     # Readwise Highlight model
     HIGHLIGHT_CLOZE_1 = (30, 'readwise_highlight_cloze', 'zdone Highlight ID')
 
+    # Person cards from readwise highlights
+    READWISE_PERSON_IMAGE_TO_NAME = (31, 'readwise_person')
+    READWISE_PERSON_KNOWN_FOR_TO_NAME_AND_IMAGE = (32, 'readwise_person')
+    READWISE_PERSON_NAME_TO_IMAGE = (33, 'readwise_person')
+
     def __init__(self, unique_number: int, directory: str, id_field_name: str = None, name_override: str = None):
         self.unique_number = unique_number
         self.directory = directory
