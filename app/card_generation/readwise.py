@@ -8,13 +8,18 @@ from app import db
 from app.card_generation.highlight_clozer import get_clozed_highlight
 from app.card_generation.people_getter import get_people, get_wikipedia_info, Person
 from app.card_generation.util import zdNote, get_rs_anki_css, get_default_css, get_template, AnkiCard
+from app.log import log
 from app.models.base import User
 from app.util import JsonDict
 
 READWISE_HIGHLIGHT_CLOZE_MODEL_ID = 1604800000000
 
-
+GENERATE_READWISE_PEOPLE_ENABLED = False
 def generate_readwise_people(user: User, deck: Deck, tags: List[str]):
+    if not GENERATE_READWISE_PEOPLE_ENABLED:
+        log("Generating people cards from highlights is not enabled yet")
+        return
+
     highlights = get_highlights(user)
     all_people: Set[Person] = set()
     for highlight in highlights:
