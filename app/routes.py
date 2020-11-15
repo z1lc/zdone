@@ -17,6 +17,8 @@ from werkzeug.urls import url_parse
 
 from app.card_generation.anki import generate_full_apkg
 from app.models.base import User
+from app.card_generation.util import AnkiCard
+from app.models.anki import AnkiReviewLog
 from . import app, db, kv
 from .forms import LoginForm, RegistrationForm, ReminderForm, REMINDER_DEFAULT
 from .hn import get_unread_stories, get_total_and_average_reads_per_week
@@ -217,7 +219,8 @@ def spotify_download_apkg():
     os.makedirs(app.instance_path, exist_ok=True)
 
     maybe_generated_file_id = get_latest_file_id(current_user)
-    if maybe_generated_file_id:
+    # avoid using generated file if in local development
+    if "127.0.0.1" not in request.url and maybe_generated_file_id:
         log(f"Found pre-generated apkg on B2 for user {current_user.username}. Will download & return.")
         # we can't just give them a public link here because we're using a private bucket
         get_b2_api().download_file_by_id(
@@ -230,6 +233,37 @@ def spotify_download_apkg():
 
     log(f"before sendfile {today_datetime()}")
     return send_file(filename, as_attachment=True, add_etags=False, cache_timeout=0)
+
+
+@app.route("/api/<api_key>/log/<zdone_id>/<raw_template_name>/")
+def api_log_review(api_key, zdone_id, raw_template_name):
+    user = validate_api_key(api_key)
+    if not user:
+        return api_key_failure()
+
+    ids_start_with = ['spotify:track:',
+                      'spotify:artist:',
+                      'zdone:video:',
+                      'zdone:person:',
+                      'zdone:highlight:']
+    if not list(filter(zdone_id.startswith, ids_start_with)):
+        error = f"Provided ID ({zdone_id}) does not seem to be a zdone ID."
+        capture_exception(ValueError(error))
+        return failure(error)
+
+    if raw_template_name not in [e.get_raw_template_name() for e in AnkiCard]:
+        error = f"Provided template name ({raw_template_name}) does not seem to be a zdone template."
+        capture_exception(ValueError(error))
+        return failure(error)
+
+    db.session.add(AnkiReviewLog(
+        user_id=user.id,
+        zdone_id=zdone_id,
+        template_name=raw_template_name,
+        at=datetime.datetime.utcnow(),
+    ))
+    db.session.commit()
+    return success()
 
 
 @app.route("/api/<api_key>/play/<track_uri>/<callback_function_name>")

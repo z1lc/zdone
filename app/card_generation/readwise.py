@@ -1,9 +1,8 @@
 from itertools import groupby
-
-from genanki import Deck
 from typing import List, Set
 
 import genanki
+from genanki import Deck
 
 from app import db
 from app.card_generation.highlight_clozer import get_clozed_highlight
@@ -34,6 +33,7 @@ def get_highlight_model(user: User):
         READWISE_HIGHLIGHT_CLOZE_MODEL_ID,
         'Readwise Highlight',
         fields=[
+            {'name': 'zdone Highlight ID'},
             {'name': 'Original Highlight'},
             {'name': 'Clozed Highlight'},
             {'name': 'Source Title'},
@@ -51,7 +51,7 @@ def get_highlight_model(user: User):
 
 def get_highlights(user: User):
     prepared_sql = f"""
-        select text, title, author
+        select rh.id, text, title, author
         from readwise_books b
             join managed_readwise_books mrb on b.id = mrb.readwise_book_id
             join readwise_highlights rh on mrb.id = rh.managed_readwise_book_id
@@ -59,9 +59,10 @@ def get_highlights(user: User):
     """
     highlights = list(db.engine.execute(prepared_sql))
     return [{
-        'text': highlight[0],
-        'source_title': highlight[1],
-        'source_author': highlight[2]} for highlight in highlights]
+        'id': highlight[0],
+        'text': highlight[1],
+        'source_title': highlight[2],
+        'source_author': highlight[3]} for highlight in highlights]
 
 
 def group_highlights_by_book(all_highlights):
@@ -92,6 +93,7 @@ def generate_readwise_highlight_clozes(user: User, deck: Deck, tags: List[str]):
                 model=get_highlight_model(user),
                 tags=tags,
                 fields=[
+                    highlight_i['id'],
                     highlight_i['text'],
                     highlight_i['clozed_highlight'],
                     highlight_i['source_title'],
