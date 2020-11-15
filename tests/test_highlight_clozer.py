@@ -64,4 +64,4 @@ def test_end_to_end_cloze_generation():
     fake_user.uses_rsAnki_javascript = True
     fake_user.api_key = "some-api-key-12345"
     first_cloze_sentence = _generate_clozed_highlight_notes(test_highlights, [], fake_user)[0].fields[2] # This will break if/when cloze field is moved to diff relevant position
-    assert("{{c1::" in first_cloze_sentence)
+    assert("{{c1::Darkness}}" in first_cloze_sentence) # clozes should be deterministic given same version of spacy and same model used
