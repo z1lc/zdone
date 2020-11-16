@@ -12,7 +12,7 @@ from app.log import log
 from app.util import JsonDict
 
 NLP = spacy.load("en_core_web_sm")
-PERSON_MODEL_ID = 1605473000000
+PERSON_MODEL_ID = 1605000000000
 wikipedia.set_rate_limiting(True, timedelta(seconds=1))
 
 
@@ -22,12 +22,6 @@ class Person:
         self.name = name
         self.seen_in = seen_in
         self.selected_highlight = selected_highlight
-
-    def __eq__(self, other):
-        return isinstance(other, Person) and other.name == self.name
-
-    def __hash__(self):
-        return hash(self.name)
 
     def __repr__(self):
         return "Person(" + self.name + ")"
@@ -44,16 +38,14 @@ class WikipediaPerson(Person):
         return f"WikipediaPerson(name={self.name}, known_for_html={self.known_for_html}, highlight={self.selected_highlight})"
 
 
-def looks_like_name(text: str) -> bool:
-    parts = text.split(" ")
-    return len(parts) == 2 and \
-            parts[0][0].isupper() and \
-            parts[1][0].isupper()
+def _looks_like_name(text: str) -> bool:
+    return re.fullmatch(r"([A-Z]([\.a-z])+[ ]?)+", text) is not None
 
 
 def get_people(highlight_data: Dict[str, str]) -> List[Person]:
     doc = NLP(highlight_data['text'])
-    return [Person(ent.text, highlight_data['source_title'], highlight_data['text']) for ent in doc.ents if looks_like_name(ent.text) and
+    return [Person(ent.text, highlight_data['source_title'], highlight_data['text']) for ent in doc.ents if
+            _looks_like_name(ent.text) and
             ent.label_ in ["PERSON"]]
 
 
@@ -163,7 +155,7 @@ def _get_images_with_persons_name(image_urls: List[str], name: str) -> List[str]
 
 def _get_image_html(image_urls: List[str], name: str) -> str:
     relevant_image_urls = _get_images_with_persons_name(image_urls, name)[0:3]
-    return "".join([f"<img src={url}>" for url in relevant_image_urls])
+    return "".join([f"<img src=\"{url}\">" for url in relevant_image_urls])
 
 
 def get_wikipedia_info(person: Person) -> Optional[WikipediaPerson]:
@@ -172,7 +164,9 @@ def get_wikipedia_info(person: Person) -> Optional[WikipediaPerson]:
         return None
 
     name_on_wikipedia = wiki_page.title
-    return WikipediaPerson(name=wiki_page.title, seen_in=person.seen_in,
-                           selected_highlight=person.selected_highlight,
-                           known_for_html=_get_known_for_html(wiki_page.summary, name_on_wikipedia),
-                           images=_get_image_html(wiki_page.images, name_on_wikipedia))
+    return WikipediaPerson(
+        name=wiki_page.title,
+        seen_in=person.seen_in,
+        selected_highlight=person.selected_highlight,
+        known_for_html=_get_known_for_html(wiki_page.summary, name_on_wikipedia),
+        images=_get_image_html(wiki_page.images, name_on_wikipedia))

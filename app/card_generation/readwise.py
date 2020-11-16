@@ -23,7 +23,7 @@ def generate_readwise_people(user: User, deck: Deck, tags: List[str]):
     notes = _get_person_notes_from_highlight(highlights, tags, user)
     for note in notes:
         deck.add_note(note)
-    log(f"Completed person generation for {user}. Found {len(notes)} people in highlights")
+    log(f"Completed person generation for {user.username}. Found {len(notes)} people in highlights")
 
 
 def _get_person_notes_from_highlight(highlights, tags, user):

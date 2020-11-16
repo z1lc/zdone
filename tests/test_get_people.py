@@ -1,6 +1,7 @@
 import pytest
 
-from app.card_generation.people_getter import Person, get_wikipedia_info, _get_known_for_html
+from app.card_generation.people_getter import Person, get_wikipedia_info, _get_known_for_html, _looks_like_name
+
 
 class TestPerson(Person):
 
@@ -50,3 +51,11 @@ Off the court, James has accumulated additional wealth and fame from numerous en
             "<li>elected a Fellow of the Royal Society in 2018</li>" + \
             "</ul>"
         assert(_get_known_for_html(sample_summary_text, "Elon Musk") == expected_known_for_html)
+
+    def test_looks_like_name(self):
+        assert(_looks_like_name("Martin Luther King Jr."))
+        assert(_looks_like_name("J. P. Beauregard"))
+        assert(_looks_like_name("John Smith"))
+        assert(_looks_like_name("LeBron Raymone James Sr."))
+        assert(not _looks_like_name("NBA"))
+        assert(not _looks_like_name("a cool car"))
