@@ -44,10 +44,8 @@ class WikipediaPerson(Person):
         return f"WikipediaPerson(name={self.name}, known_for_html={self.known_for_html}, highlight={self.selected_highlight})"
 
 
-def get_potential_people(highlight_data: Dict[str, str]) -> List[Person]:
+def get_people(highlight_data: Dict[str, str]) -> List[Person]:
     doc = NLP(highlight_data['text'])
-    print(doc.ents)
-    print([ent.label_ for ent in doc.ents])
     return [Person(ent.text, highlight_data['source_title'], highlight_data['text']) for ent in doc.ents if
             ent.label_ in ["PERSON", "ORG"]] # Add ORG to catch uncommon names like "Jawaharal Nehru"
 
@@ -92,16 +90,18 @@ def _get_person_model(user):
 def _get_wiki_page(name: str) -> Optional[WikipediaPage]:
     try:
         search_results = wikipedia.search(name)
-        print(f"wiki search results: {search_results}")
         if not search_results:
             # probably a typo, try with auto-suggest
             return wikipedia.page(name, auto_suggest=True)
         for result in search_results[:2]:
-            # return first result that works...?
             try:
+                # The first result seems to just be the search term, try that first and
+                # fallback to top recommended result, search_results[1]
                 return wikipedia.page(result, auto_suggest=False)
             except WikipediaException:
                 continue
+        # didn't find anything when looping through list
+        log(f"Failed to find person in Wikipedia for: {name}")
         return None
     except WikipediaException as e:
         log(f"Failed to find person in Wikipedia for: {name}")
@@ -166,7 +166,7 @@ def _get_images_with_persons_name(image_urls: List[str], name: str) -> List[str]
     return list(filter(lambda url: first_name in url, image_urls))
 
 
-def _get_image_tags_with_persons_name(image_urls: List[str], name: str) -> str:
+def _get_image_html(image_urls: List[str], name: str) -> str:
     relevant_image_urls = _get_images_with_persons_name(image_urls, name)[0:3]
     return "".join([f"<img src={url}>" for url in relevant_image_urls])
 
@@ -178,6 +178,6 @@ def get_wikipedia_info(person: Person) -> Optional[WikipediaPerson]:
 
     name_on_wikipedia = wiki_page.title
     return WikipediaPerson(name=wiki_page.title, seen_in=person.seen_in,
-                                       selected_highlight=person.selected_highlight,
-                                       known_for_html=_get_known_for_html(wiki_page.summary, name_on_wikipedia),
-                                       images=_get_image_tags_with_persons_name(wiki_page.images, name_on_wikipedia))
+                           selected_highlight=person.selected_highlight,
+                           known_for_html=_get_known_for_html(wiki_page.summary, name_on_wikipedia),
+                           images=_get_image_html(wiki_page.images, name_on_wikipedia))
