@@ -44,25 +44,30 @@ class WikipediaPerson(Person):
         return f"WikipediaPerson(name={self.name}, known_for_html={self.known_for_html}, highlight={self.selected_highlight})"
 
 
+def looks_like_name(text: str) -> bool:
+    parts = text.split(" ")
+    return len(parts) == 2 and \
+            parts[0][0].isupper() and \
+            parts[1][0].isupper()
+
+
 def get_people(highlight_data: Dict[str, str]) -> List[Person]:
     doc = NLP(highlight_data['text'])
-    return [Person(ent.text, highlight_data['source_title'], highlight_data['text']) for ent in doc.ents if
-            ent.label_ in ["PERSON", "ORG"]] # Add ORG to catch uncommon names like "Jawaharal Nehru"
+    return [Person(ent.text, highlight_data['source_title'], highlight_data['text']) for ent in doc.ents if looks_like_name(ent.text) and
+            ent.label_ in ["PERSON"]]
 
 
 def get_person_note(wikipedia_person: WikipediaPerson, tags, user):
     return zdNote(
-        zdNote(
-            model=_get_person_model(user),
-            tags=tags,
-            fields=[
-                wikipedia_person.name,
-                wikipedia_person.known_for_html,
-                wikipedia_person.images,
-                wikipedia_person.seen_in,
-                wikipedia_person.selected_highlight
-            ])
-    )
+        model=_get_person_model(user),
+        tags=tags,
+        fields=[
+            wikipedia_person.name,
+            wikipedia_person.known_for_html,
+            wikipedia_person.images,
+            wikipedia_person.seen_in,
+            wikipedia_person.selected_highlight
+        ])
 
 
 def _get_person_model(user):
@@ -89,20 +94,10 @@ def _get_person_model(user):
 
 def _get_wiki_page(name: str) -> Optional[WikipediaPage]:
     try:
-        search_results = wikipedia.search(name)
-        if not search_results:
-            # probably a typo, try with auto-suggest
-            return wikipedia.page(name, auto_suggest=True)
-        for result in search_results[:2]:
-            try:
-                # The first result seems to just be the search term, try that first and
-                # fallback to top recommended result, search_results[1]
-                return wikipedia.page(result, auto_suggest=False)
-            except WikipediaException:
-                continue
-        # didn't find anything when looping through list
-        log(f"Failed to find person in Wikipedia for: {name}")
-        return None
+        if not wikipedia.search(name):
+            # no pages with this name
+            return None
+        return wikipedia.page(name, auto_suggest=False)
     except WikipediaException as e:
         log(f"Failed to find person in Wikipedia for: {name}")
         capture_exception(e)
@@ -163,7 +158,7 @@ def _get_known_for_html(summary_text: str, name: str) -> str:
 
 def _get_images_with_persons_name(image_urls: List[str], name: str) -> List[str]:
     first_name = name.split(" ")[0]
-    return list(filter(lambda url: first_name in url, image_urls))
+    return list(filter(lambda url: first_name.lower() in url.lower(), image_urls))
 
 
 def _get_image_html(image_urls: List[str], name: str) -> str:
