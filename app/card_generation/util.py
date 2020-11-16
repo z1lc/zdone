@@ -218,7 +218,7 @@ def get_minified_js_for_youtube_video() -> str:
 def get_minified_js_for_review_log(api_key: str, card_type: AnkiCard) -> str:
     return jsmin(f"""
 function logReview() {{
-  $.get("https://www.zdone.co/api/{api_key}/log/{{{{{card_type.id_field_name}}}}}/{card_type.name}");
+  $.getScript("https://www.zdone.co/api/{api_key}/log/{{{{{card_type.id_field_name}}}}}/{card_type.name}");
 }};
 logReview();
 """)
