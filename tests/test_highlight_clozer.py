@@ -67,7 +67,39 @@ def test_end_to_end_cloze_generation():
     fake_user = User()
     fake_user.uses_rsAnki_javascript = True
     fake_user.api_key = "some-api-key-12345"
-    first_cloze_sentence = _generate_clozed_highlight_notes(test_highlights, [], fake_user)[0].fields[
-        2]  # This will break if/when cloze field is moved to diff relevant position
-    assert (
-                "{{c1::Darkness}}" in first_cloze_sentence)  # clozes should be deterministic given same version of spacy and same model used
+    # This will break if/when cloze field is moved to diff relevant position
+    first_cloze_sentence = _generate_clozed_highlight_notes(test_highlights, [], fake_user)[0].fields[2]
+    # clozes should be deterministic given same version of spacy and same model used
+    assert("{{c1::Darkness}}" in first_cloze_sentence)
+
+# Verify that given some test highlights, the whole pipeline works
+def test_clozes_not_generated_for_very_short_highlight():
+    short_highlight_id = "zdone:something:988243"
+    test_highlights = [
+        {
+            'id': "zdone:something:12345",
+            'text': "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife",
+            'source_title': "Pride and Prejudice",
+            'source_author': "Jane Austen"
+        },
+        {
+            'id': "zdone:something:1542415",
+            'text': "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness, it was the spring of hope, it was the winter of despair.",
+            'source_title': "A Tale of Two Cities",
+            'source_author': "Charles Dickens"
+        },
+        {
+            'id': short_highlight_id,
+            'text': "Abraham Lincoln", # short highlight that should be filtered
+            'source_title': "Team of Rivals",
+            'source_author': "Doris Kearns Goodwin"
+        }
+    ]
+    fake_user = User()
+    fake_user.uses_rsAnki_javascript = True
+    fake_user.api_key = "some-api-key-12345"
+    # This will break if/when cloze field is moved to diff relevant position
+    generated_notes = _generate_clozed_highlight_notes(test_highlights, [], fake_user)
+    assert(len(generated_notes) == 2)
+    for note in generated_notes:
+        assert(not note.fields[0] == short_highlight_id)
