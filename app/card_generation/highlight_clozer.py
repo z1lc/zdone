@@ -41,16 +41,16 @@ def get_keywords(sentence: str) -> List[str]:
         # return the first named entity just because multiple clozes in a highlight ends up being a lot of reviewing
         # for a card that probably isn't ideal (even if the cloze's are good, the volume of highlights should be
         # pretty high)
-        return list(no_punc(result[0]))
+        return [no_punc(result[0])]
     # we didn't find any good entities, so let's just return a core noun from a noun phrase
     for noun_chunk in doc.noun_chunks:
         # don't return bad nouns like "they"
         if is_interesting_noun(noun_chunk.root.text):
-            return list(no_punc(noun_chunk.root.text))
+            return [no_punc(noun_chunk.root.text)]
 
     # nothing has worked, so just return whatever word is longest
     no_punctuation_sentence = no_punc(sentence)
-    return list(get_longest_word(no_punctuation_sentence))
+    return [get_longest_word(no_punctuation_sentence)]
 
 
 # Highlights will fairly regularly have the structure of
