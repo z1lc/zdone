@@ -6,7 +6,7 @@ from genanki import Deck
 
 from app import db
 from app.card_generation.highlight_clozer import get_clozed_highlight
-from app.card_generation.people_getter import get_people, get_wikipedia_info, Person
+from app.card_generation.people_getter import get_people, get_wikipedia_info, Person, get_person_note
 from app.card_generation.util import zdNote, get_rs_anki_css, get_default_css, get_template, AnkiCard
 from app.log import log
 from app.models.base import User
@@ -14,21 +14,29 @@ from app.util import JsonDict
 
 READWISE_HIGHLIGHT_CLOZE_MODEL_ID = 1604800000000
 
-GENERATE_READWISE_PEOPLE_ENABLED = False
 def generate_readwise_people(user: User, deck: Deck, tags: List[str]):
-    if not GENERATE_READWISE_PEOPLE_ENABLED:
-        log("Generating people cards from highlights is not enabled yet")
+    if not user.id == 2:
+        log("Generating people cards from highlights is not enabled for this user yet")
         return
 
     highlights = get_highlights(user)
-    all_people: Set[Person] = set()
+    notes = _get_person_notes_from_highlight(highlights, tags, user)
+    for note in notes:
+        deck.add_note(note)
+    log(f"Completed person generation for {user.username}. Found {len(notes)} people in highlights")
+
+
+def _get_person_notes_from_highlight(highlights, tags, user):
+    all_people = []
     for highlight in highlights:
-        people_in_highlight = get_people(highlight['text'])
-        all_people.update(people_in_highlight)
-    for person in all_people:
-        wikipedia_person = get_wikipedia_info(person)
-        # TODO: add wikipedia person to deck
-    return None
+        people_in_highlight = get_people(highlight)
+        all_people += people_in_highlight
+    # use set here to deduplicate people after searching through wikipedia. Will ensure that
+    # Person(Lincoln) and Person(Abraham Lincoln) result in one copy of WikipediaPerson(Abraham Lincoln)
+    maybe_wikipedia_people = set([get_wikipedia_info(person) for person in all_people])
+    return [get_person_note(wikipedia_person, tags, user) for wikipedia_person in maybe_wikipedia_people if
+            wikipedia_person]
+
 
 def get_highlight_model(user: User):
     templates: List[JsonDict] = [
