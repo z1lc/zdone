@@ -6,6 +6,7 @@ import uuid
 from typing import Optional
 
 import flask
+import humanize
 import pytz
 from b2sdk.download_dest import DownloadDestLocalFile
 from flask import render_template, request, make_response, redirect, send_file
@@ -403,6 +404,8 @@ def api():
                         "note": task.description,
                         "subtask_id": None,
                         "length_minutes": None,
+                        "last_completion": humanize.naturaltime(
+                            datetime.datetime.now(pytz.timezone(user.current_time_zone)).date() - task.last_completion),
                     })
 
         if average_daily_load >= 3.0:
