@@ -92,7 +92,6 @@ def _remove_double_spaces(sentence):
 
 
 def _get_known_for_html(summary_text: str, name: str) -> str:
-    print(summary_text)
     summary_no_jr_sr = _remove_jr_sr(summary_text)  # Jr. and Sr. cause problems when splitting on "."
     sentences = summary_no_jr_sr.split(". ")[0:3]
     sentences = [_remove_name_refs(sentence, name) for sentence in sentences]

@@ -125,25 +125,31 @@ having sum(case when mv.watched
         has_actor_credit, has_director_credit, has_film_credit, has_tv_credit = False, False, False, False
         credits_with_role, credits_without_role = set(), set()
         for credit in VideoCredit.query.filter_by(person_id=video_person.id).all():
-            # b and sb represent <b> and </b>
-            b, sb = "", ""
-            if credit.video_id in films:
-                has_film_credit = True
-            elif credit.video_id in tvs:
-                has_tv_credit = True
-            if credit.video_id in watched_uris:
-                b, sb = "<b>", "</b>"
+            # based on the above query, we will receive all credits for a top person, even for films that we haven't
+            # added at all. Here we add an if statement to make sure that the credit falls into one of our managed
+            # videos. There is an option here to consider adding these videos anyway, though -- it would be good to have
+            # some awareness of even non-managed videos for a given actor. Perhaps something to tackle in the future.
+            if credit.video_id in [v.id for mv, v in managed_video_pair]:
+                if credit.video_id in films:
+                    has_film_credit = True
+                elif credit.video_id in tvs:
+                    has_tv_credit = True
 
-            if credit.character and "uncredited" not in credit.character:
-                has_actor_credit = True
-                credits_with_role.add(
-                    f"{b}{credit.character} in {video_id_to_html_formatted_name_and_year[credit.video_id]}{sb}")
-                credits_without_role.add(f"{b}{video_id_to_html_formatted_name_and_year[credit.video_id]}{sb}")
-            elif credit.job:
-                has_director_credit = True
-                credits_with_role.add(
-                    f"{b}{credit.job} of {video_id_to_html_formatted_name_and_year[credit.video_id]}{sb}")
-                credits_without_role.add(f"{b}{video_id_to_html_formatted_name_and_year[credit.video_id]}{sb}")
+                # b and sb represent <b> and </b>, to highlight films we've watched in the unordered list
+                b, sb = "", ""
+                if credit.video_id in watched_uris:
+                    b, sb = "<b>", "</b>"
+
+                video_formatted_name_and_year = video_id_to_html_formatted_name_and_year[credit.video_id]
+
+                if credit.character and "uncredited" not in credit.character:
+                    has_actor_credit = True
+                    credits_with_role.add(f"{b}{credit.character} in {video_formatted_name_and_year}{sb}")
+                    credits_without_role.add(f"{b}{video_formatted_name_and_year}{sb}")
+                elif credit.job:
+                    has_director_credit = True
+                    credits_with_role.add(f"{b}{credit.job} of {video_formatted_name_and_year}{sb}")
+                    credits_without_role.add(f"{b}{video_formatted_name_and_year}{sb}")
 
         co_stars_sql = f"""
 with credits as (select * from video_credits where person_id = '{video_person.id}')

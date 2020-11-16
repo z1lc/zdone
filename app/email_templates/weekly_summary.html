@@ -9,17 +9,19 @@ Your weekly summary of activity on <a href="https://www.zdone.co/">zdone</a>.
         {% endfor %}
     </ul>
 {% endif %}
-{% if tasks %}
+{% if tasks or skew %}
     <h2><a href="https://www.zdone.co/">Tasks</a></h2>
-        {% if skew %}Your median skew is currently
-            <span style="font-weight: bold; color: {% if skew <= 100 %}green{% else %}darkorange{% endif %}">{{ skew }}%</span>.
-        {% endif %}
-    You completed {{ num_tasks }} tasks:
-    <ul>
-        {% for task in tasks %}
-            <li>{{ task|safe }}</li>
-        {% endfor %}
-    </ul>
+    {% if skew %}Your median skew is currently
+        <span style="font-weight: bold; color: {% if skew <= 100 %}green{% else %}darkorange{% endif %}">{{ skew }}%</span>.
+    {% endif %}
+    {% if tasks %}
+        You completed {{ num_tasks }} tasks:
+        <ul>
+            {% for task in tasks %}
+                <li>{{ task|safe }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 {% endif %}
 {% if reminders %}
     <h2><a href="https://www.zdone.co/reminders/">Reminders</a></h2>
