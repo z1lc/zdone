@@ -26,11 +26,6 @@ class TestGetPeople:
         wikipedia_people = [get_wikipedia_info(person) for person in people]
         assert(len(list(filter(lambda person: person is None, wikipedia_people))) == 0)
 
-    def test_corrects_basic_typo(self):
-        typo_name = TestPerson("Lance Armstrog")
-        real_name = TestPerson("Lance Armstrong")
-        assert(get_wikipedia_info(typo_name) == get_wikipedia_info(real_name))
-
     def test_known_for_html_sensible(self):
         sample_summary_text = """
         LeBron Raymone James Sr. ( lə-BRON; born December 30, 1984) is an American professional basketball player for the Los Angeles Lakers of the National Basketball Association (NBA). Widely considered one of the greatest NBA players, James is frequently compared to Michael Jordan in debates over the greatest basketball player of all time. Playing on the Cleveland Cavaliers, Miami Heat, and Los Angeles Lakers, James is the only player in NBA history to have brought NBA championships to three franchises as Finals MVP.  He has competed in ten NBA Finals, including eight consecutive with the Heat and Cavaliers from 2011 through 2018. His accomplishments include four NBA championships, four NBA Most Valuable Player (MVP) Awards, four Finals MVP Awards, and two Olympic gold medals.  During his 17-year career, James holds the record for all-time playoffs points, is third in all-time points, and eighth in career assists. James has been selected to the All-NBA First Team a record thirteen times, made the All-Defensive First Team five times, and has played in sixteen All-Star Games, in which he was selected All-Star MVP three times.
