@@ -6,6 +6,9 @@ from app.models.base import User
 # GIVEN keyword exists with punctuation in sentence
 # WHEN getting the cloze version of the sentence
 # THEN returns cloze that clozes the keyword and retains un-clozed punctuation
+from tests.utils import TEST_USER
+
+
 def test_cloze_out_keyword_with_punctuation():
     relevant_sentence = "We could have green eggs and ham, if we had some ham."
     keyword = "ham"
@@ -95,11 +98,8 @@ def test_clozes_not_generated_for_very_short_highlight():
             'source_author': "Doris Kearns Goodwin"
         }
     ]
-    fake_user = User()
-    fake_user.uses_rsAnki_javascript = True
-    fake_user.api_key = "some-api-key-12345"
     # This will break if/when cloze field is moved to diff relevant position
-    generated_notes = _generate_clozed_highlight_notes(test_highlights, [], fake_user)
+    generated_notes = _generate_clozed_highlight_notes(test_highlights, [], TEST_USER)
     assert(len(generated_notes) == 2)
     for note in generated_notes:
         assert(not note.fields[0] == short_highlight_id)
