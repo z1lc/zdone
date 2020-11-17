@@ -48,6 +48,16 @@ def test_cloze_out_keyword_capitalization():
     assert (expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence))
 
 
+# GIVEN keyword contains multiple words
+# WHEN clozing out the keyword
+# THEN clozes out only full occurrences of all words in keyword
+def test_cloze_out_multiword_keyword():
+    relevant_sentence = "LeBron James is the greatest basketball player of all time. James is much better than the other players."
+    keyword = "LeBron James"
+    expected_cloze = "{{c1::LeBron James}} is the greatest basketball player of all time. James is much better than the other players."
+    assert (expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence))
+
+
 # Verify that given some test highlights, the whole pipeline works
 def test_end_to_end_cloze_generation():
     test_highlights = [
@@ -70,4 +80,4 @@ def test_end_to_end_cloze_generation():
     first_cloze_sentence = _generate_clozed_highlight_notes(test_highlights, [], fake_user)[0].fields[
         2]  # This will break if/when cloze field is moved to diff relevant position
     assert (
-                "{{c1::Darkness}}" in first_cloze_sentence)  # clozes should be deterministic given same version of spacy and same model used
+            "{{c1::Darkness}}" in first_cloze_sentence)  # clozes should be deterministic given same version of spacy and same model used
