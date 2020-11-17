@@ -64,7 +64,7 @@ def not_number_at_front(ent):
 
 # Sometimes the keyword will be something like "the United Kingdom".
 # This method takes keywords like that and transforms them into "United Kingdom"
-def _clean_keyword(best_entity: str):
+def _clean_keyword(best_entity: str) -> str:
     bad_starting_words = [
         "the",
         "a",
