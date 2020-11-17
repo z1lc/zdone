@@ -168,7 +168,8 @@ def render_template(card_type: AnkiCard, is_front: bool, api_key: str, rs_anki_e
     if is_front and card_type in [AnkiCard.VIDEO_TO_NAME]:
         script_include += f"""<script type="text/javascript">{get_minified_js_for_youtube_video()}</script>"""
 
-    if not is_front:
+    # TODO(will/rob) once we have a proper ID field for Person cards, re-introduce logging here.
+    if not is_front and card_type.directory != AnkiCard.PERSON_IMAGE_TO_NAME.directory:
         script_include += f"""<script type="text/javascript">{get_minified_js_for_review_log(api_key, card_type)}</script>"""
 
     try:
