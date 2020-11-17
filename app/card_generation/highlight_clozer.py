@@ -62,6 +62,26 @@ def get_keywords(sentence: str) -> List[str]:
 def not_number_at_front(ent):
     return ent.label_ not in ["ORDINAL", "CARDINAL"] and ent.start != 0
 
+# Sometimes the keyword will be something like "the United Kingdom".
+# This method takes keywords like that and transforms them into "United Kingdom"
+def _clean_keyword(best_entity: str):
+    bad_starting_words = [
+        "the",
+        "a",
+        "an",
+        "of",
+        "on",
+        "in"
+    ]
+    stripped_best_entity = best_entity.strip()
+    best_entity_words = stripped_best_entity.split(" ")
+    if bad_starting_words[0] in bad_starting_words:
+        best_entity_words = best_entity_words[1:]
+
+    # handle any whitespace issues
+    result = " ".join(best_entity_words)
+    result = result.strip()
+    return result
 
 # return the most interesting entities from a list of entities in a sentence
 # input: tuple of nlp-generated entities from a sentence
@@ -84,7 +104,7 @@ def get_best_entities(ents: Tuple[Span]):
     if best_entity is None:
         # make sure to return empty list here
         return []
-    return [best_entity]
+    return [_clean_keyword(best_entity)]
 
 
 def is_interesting_noun(text: str) -> bool:
