@@ -23,6 +23,12 @@ class Person:
         self.seen_in = seen_in
         self.selected_highlight = selected_highlight
 
+    def __eq__(self, other):
+        return isinstance(other, Person) and other.name == self.name
+
+    def __hash__(self):
+        return hash(self.name)
+
     def __repr__(self):
         return "Person(" + self.name + ")"
 
