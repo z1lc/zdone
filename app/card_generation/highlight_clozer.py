@@ -75,7 +75,7 @@ def _clean_keyword(best_entity: str) -> str:
     ]
     stripped_best_entity = best_entity.strip()
     best_entity_words = stripped_best_entity.split(" ")
-    if bad_starting_words[0] in bad_starting_words:
+    if best_entity_words[0] in bad_starting_words:
         best_entity_words = best_entity_words[1:]
 
     # handle any whitespace issues

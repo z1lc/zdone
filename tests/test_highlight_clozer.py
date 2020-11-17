@@ -42,13 +42,15 @@ def test_clean_keyword():
         "the United Kingdom",
         "a grasshopper",
         " an ugly duckling ",
-        "the Duchess of Cambridge"
+        "the Duchess of Cambridge",
+        "LeBron James", # Ensure doesn't strip first word when not needed
                         ]
     expected_cleaned_keywords = [
         "United Kingdom",
         "grasshopper",
         "ugly duckling",
-        "Duchess of Cambridge"
+        "Duchess of Cambridge",
+        "LeBron James"
     ]
     assert len(unclean_keywords) == len(expected_cleaned_keywords)
     for i in range(len(unclean_keywords)):
