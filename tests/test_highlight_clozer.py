@@ -1,4 +1,4 @@
-from app.card_generation.highlight_clozer import cloze_out_keyword, no_punc
+from app.card_generation.highlight_clozer import cloze_out_keyword, no_punc, _clean_keyword
 from app.card_generation.readwise import _generate_clozed_highlight_notes
 from app.models.base import User
 
@@ -40,6 +40,24 @@ def test_no_punc_removes_prefix():
     expected_no_punc_result = "something"
     assert (no_punc(word_with_starting_punctuation) == expected_no_punc_result)
 
+def test_clean_keyword():
+    unclean_keywords = [
+        "the United Kingdom",
+        "a grasshopper",
+        " an ugly duckling ",
+        "the Duchess of Cambridge",
+        "LeBron James", # Ensure doesn't strip first word when not needed
+                        ]
+    expected_cleaned_keywords = [
+        "United Kingdom",
+        "grasshopper",
+        "ugly duckling",
+        "Duchess of Cambridge",
+        "LeBron James"
+    ]
+    assert len(unclean_keywords) == len(expected_cleaned_keywords)
+    for i in range(len(unclean_keywords)):
+        assert expected_cleaned_keywords[i] == _clean_keyword(unclean_keywords[i])
 
 # GIVEN keyword appears multiple times with different capitalization
 # WHEN clozing out the keyword
