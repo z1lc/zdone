@@ -112,29 +112,34 @@ def is_interesting_noun(text: str) -> bool:
     return no_punc(text.lower()) not in boring_words
 
 
-# returns sentence with all occurrences of keyword clozed out
-# this is case-sensitive for now
+# returns sentence with all occurrences of keyword clozed out.
+# In the case where a keyword contains multiple words ("LeBron James"),
+# for simplicity, just remove full instances of the keyword. In case where keyword
+# is single word, replaces all occurrences regardless of punctuation/capitalization of word
 def cloze_out_keyword(keyword: str, idx: int, sentence: str):
     sentence_words = sentence.split(" ")
+    num_words_in_keywords = len(keyword.split(" "))
+    if num_words_in_keywords > 1:
+        return sentence.replace(keyword, cloze_word_with_punc(idx, keyword))
     return " ".join(map(lambda word: cloze_word_with_punc(idx, word) if no_punc(word.lower()) == keyword.lower() else word,
                         sentence_words))
 
 
-def get_prefix_punc(word):
+def get_prefix_punc(word: str) -> str:
     prefix_punc_end_idx = 0
     while prefix_punc_end_idx < len(word) and word[prefix_punc_end_idx] in string.punctuation:
         prefix_punc_end_idx += 1
     return word[:prefix_punc_end_idx]
 
 
-def get_suffix_punc(word):
+def get_suffix_punc(word: str) -> str:
     suffix_punc_start_idx = len(word) - 1
     while suffix_punc_start_idx >= 0 and word[suffix_punc_start_idx] in string.punctuation:
         suffix_punc_start_idx -= 1
     return word[suffix_punc_start_idx + 1:]
 
 
-def cloze_word_with_punc(idx, word):
+def cloze_word_with_punc(idx: int, word: str) -> str:
     prefix_punc = get_prefix_punc(word)
     suffix_punc = get_suffix_punc(word)
     return prefix_punc + '{{c' + str(idx + 1) + '::' + no_punc(word) + "}}" + suffix_punc
