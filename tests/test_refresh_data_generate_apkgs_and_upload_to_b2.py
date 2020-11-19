@@ -3,7 +3,7 @@ from unittest import TestCase
 import pytest
 
 from app.models.base import User
-from scheduled.refresh_data_generate_apkgs_and_upload_to_b2 import refresh_user
+from app.scheduled.refresh_data_generate_apkgs_and_upload_to_b2 import refresh_user
 
 
 class Test(TestCase):
