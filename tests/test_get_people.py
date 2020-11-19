@@ -10,6 +10,7 @@ class TestPerson(Person):
 
 class TestGetPeople:
 
+    @pytest.mark.skip(reason="integration")
     def test_finds_all_famous_people(self):
         famous_names = ["LeBron James",
                         "Elon Musk",
