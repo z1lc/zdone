@@ -103,7 +103,7 @@ def _get_wiki_page(name: str) -> Optional[WikipediaPage]:
 
 
 def _remove_parens_content_except_dates(sentence: str) -> str:
-    return re.sub("\(([\w\d \"\-]{1,3}|[\w\d \"]{5,}?)\)", "", sentence)
+    return re.sub(r"\(([\w\d \"\-]{1,3}|[\w\d \"]{5,}?)\)", "", sentence)
 
 
 def _remove_sentence_starters(sentence):

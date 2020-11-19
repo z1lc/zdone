@@ -10,9 +10,9 @@ from sqlalchemy import and_
 from app import db
 from app.card_generation.util import zdNote, create_html_unordered_list, AnkiCard, get_template, get_rs_anki_css, \
     get_default_css
+from app.log import log
 from app.models.base import User
 from app.models.videos import Video, YouTubeVideoOverride, YouTubeVideo, VideoPerson, VideoCredit, ManagedVideo
-from log import log
 
 VIDEO_MODEL_ID: int = 1588000000000
 VIDEO_PERSON_MODEL_ID: int = 1589000000000
