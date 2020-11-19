@@ -2,7 +2,6 @@ from app.card_generation.highlight_clozer import cloze_out_keyword, no_punc, _cl
 from app.card_generation.readwise import _generate_clozed_highlight_notes
 from app.models.base import User
 
-
 # GIVEN keyword exists with punctuation in sentence
 # WHEN getting the cloze version of the sentence
 # THEN returns cloze that clozes the keyword and retains un-clozed punctuation
@@ -40,14 +39,15 @@ def test_no_punc_removes_prefix():
     expected_no_punc_result = "something"
     assert (no_punc(word_with_starting_punctuation) == expected_no_punc_result)
 
+
 def test_clean_keyword():
     unclean_keywords = [
         "the United Kingdom",
         "a grasshopper",
         " an ugly duckling ",
         "the Duchess of Cambridge",
-        "LeBron James", # Ensure doesn't strip first word when not needed
-                        ]
+        "LeBron James",  # Ensure doesn't strip first word when not needed
+    ]
     expected_cleaned_keywords = [
         "United Kingdom",
         "grasshopper",
@@ -58,6 +58,7 @@ def test_clean_keyword():
     assert len(unclean_keywords) == len(expected_cleaned_keywords)
     for i in range(len(unclean_keywords)):
         assert expected_cleaned_keywords[i] == _clean_keyword(unclean_keywords[i])
+
 
 # GIVEN keyword appears multiple times with different capitalization
 # WHEN clozing out the keyword
@@ -93,15 +94,24 @@ def test_end_to_end_cloze_generation():
             'text': "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness, it was the spring of hope, it was the winter of despair.",
             'source_title': "A Tale of Two Cities",
             'source_author': "Charles Dickens"
+        },
+        {
+            'id': "zdone:something:123456",
+            'text': "",
+            'source_title': "A Tale of Two Cities",
+            'source_author': "Charles Dickens"
         }
     ]
     fake_user = User()
     fake_user.uses_rsAnki_javascript = True
     fake_user.api_key = "some-api-key-12345"
     # This will break if/when cloze field is moved to diff relevant position
-    first_cloze_sentence = _generate_clozed_highlight_notes(test_highlights, [], fake_user)[0].fields[2]
+    generated_notes = _generate_clozed_highlight_notes(test_highlights, [], fake_user)
+    first_cloze_sentence = generated_notes[0].fields[2]
     # clozes should be deterministic given same version of spacy and same model used
-    assert("{{c1::Darkness}}" in first_cloze_sentence)
+    assert ("{{c1::Darkness}}" in first_cloze_sentence)
+    assert len(generated_notes) == 2
+
 
 # Verify that given some test highlights, the whole pipeline works
 def test_clozes_not_generated_for_very_short_highlight():
@@ -121,13 +131,13 @@ def test_clozes_not_generated_for_very_short_highlight():
         },
         {
             'id': short_highlight_id,
-            'text': "Abraham Lincoln", # short highlight that should be filtered
+            'text': "Abraham Lincoln",  # short highlight that should be filtered
             'source_title': "Team of Rivals",
             'source_author': "Doris Kearns Goodwin"
         }
     ]
     # This will break if/when cloze field is moved to diff relevant position
     generated_notes = _generate_clozed_highlight_notes(test_highlights, [], TEST_USER)
-    assert(len(generated_notes) == 2)
+    assert (len(generated_notes) == 2)
     for note in generated_notes:
-        assert(not note.fields[0] == short_highlight_id)
+        assert (not note.fields[0] == short_highlight_id)

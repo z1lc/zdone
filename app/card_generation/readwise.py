@@ -103,28 +103,30 @@ def _generate_clozed_highlight_notes(all_highlights, tags, user):
         book_highlights_list = list(book_highlights)
         for i in range(len(book_highlights_list)):
             highlight_i = book_highlights_list[i]
-            highlight_i['clozed_highlight'] = get_clozed_highlight(highlight_i['text'])
-            if i > 0:
-                highlight_i['prev_highlight'] = book_highlights_list[i - 1]['text']
-            else:
-                highlight_i['prev_highlight'] = ""
-            if i < len(book_highlights_list) - 1:
-                highlight_i['next_highlight'] = book_highlights_list[i + 1]['text']
-            else:
-                highlight_i['next_highlight'] = ""
-            highlight_i['image'] = ""
-            highlight_as_note = zdNote(
-                model=get_highlight_model(user),
-                tags=tags,
-                fields=[
-                    highlight_i['id'],
-                    highlight_i['text'],
-                    highlight_i['clozed_highlight'],
-                    highlight_i['source_title'],
-                    highlight_i['source_author'],
-                    "",  # Image field, blank for now
-                    highlight_i['prev_highlight'],
-                    highlight_i['next_highlight']
-                ])
-            result += [highlight_as_note]
+            maybe_clozed_highlight = get_clozed_highlight(highlight_i['text'])
+            if '{{c1::' in maybe_clozed_highlight:
+                highlight_i['clozed_highlight'] = maybe_clozed_highlight
+                if i > 0:
+                    highlight_i['prev_highlight'] = book_highlights_list[i - 1]['text']
+                else:
+                    highlight_i['prev_highlight'] = ""
+                if i < len(book_highlights_list) - 1:
+                    highlight_i['next_highlight'] = book_highlights_list[i + 1]['text']
+                else:
+                    highlight_i['next_highlight'] = ""
+                highlight_i['image'] = ""
+                highlight_as_note = zdNote(
+                    model=get_highlight_model(user),
+                    tags=tags,
+                    fields=[
+                        highlight_i['id'],
+                        highlight_i['text'],
+                        highlight_i['clozed_highlight'],
+                        highlight_i['source_title'],
+                        highlight_i['source_author'],
+                        "",  # Image field, blank for now
+                        highlight_i['prev_highlight'],
+                        highlight_i['next_highlight']
+                    ])
+                result += [highlight_as_note]
     return result
