@@ -87,6 +87,7 @@ def get_paginated(user: User, endpoint: str):
         results.extend(returned['results'])
         page += 1
         done = returned['next'] is None
+    log(f"Got {len(results)} results for user {user.username} on Readwise endpoint {endpoint}.")
     return results
 
 
@@ -97,8 +98,10 @@ def refresh_highlights_and_books(user: User) -> None:
         capture_exception(ValueError(error))
         return
 
+    log(f"Refreshing all books...")
     for book in get_paginated(user, "books"):
         upsert_book(user, book)
 
+    log(f"Refreshing all highlights...")
     for highlight in get_paginated(user, "highlights"):
         upsert_highlight(user, highlight)

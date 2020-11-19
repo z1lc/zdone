@@ -51,32 +51,35 @@ def refresh_videos(user: User):
     acct.info()  # wild that you have to call this to avoid exceptions...
 
     result = ''
+    tvs = ([(True, rtv) for rtv in _get_full_paginated(acct.rated_tv)] +
+           [(True, ftv) for ftv in _get_full_paginated(acct.favorite_tv)] +
+           [(False, wtv) for wtv in _get_full_paginated(acct.watchlist_tv)])
+    movies = ([(True, rm) for rm in _get_full_paginated(acct.rated_movies)] +
+              [(True, fm) for fm in _get_full_paginated(acct.favorite_movies)] +
+              [(False, wm) for wm in _get_full_paginated(acct.watchlist_movies)])
+    current_item, total_items = 0, len(tvs) + len(movies)
 
-    for watched, tv in (
-            [(True, rtv) for rtv in _get_full_paginated(acct.rated_tv)] +
-            [(True, ftv) for ftv in _get_full_paginated(acct.favorite_tv)] +
-            [(False, wtv) for wtv in _get_full_paginated(acct.watchlist_tv)]):
+    for watched, tv in tvs:
+        current_item += 1
         try:
             video_id = f"zdone:video:tmdb:{tv['id']}"
             if video_id not in IGNORED_VIDEO_IDS:
                 get_or_add_tv(video_id, tv, user, watched)
                 name_and_year = f"{tv['name']} ({tv['first_air_date'][:4]})"
-                log(f"Successfully added {name_and_year}")
+                log(f"[{round(current_item / total_items * 100)}%] Successfully added {name_and_year}")
                 result += f"{name_and_year}<br>"
         except Exception as e:
             log(f"Received exception when trying to add TV show https://www.themoviedb.org/tv/{tv['id']}")
             capture_exception(e)
 
-    for watched, movie in (
-            [(True, rm) for rm in _get_full_paginated(acct.rated_movies)] +
-            [(True, fm) for fm in _get_full_paginated(acct.favorite_movies)] +
-            [(False, wm) for wm in _get_full_paginated(acct.watchlist_movies)]):
+    for watched, movie in movies:
+        current_item += 1
         try:
             video_id = f"zdone:video:tmdb:{movie['id']}"
             if video_id not in IGNORED_VIDEO_IDS:
                 get_or_add_movie(video_id, movie, user, watched)
                 name_and_year = f"{movie['original_title']} ({movie.get('release_date', '9999')[:4]})"
-                log(f"Successfully added {name_and_year}")
+                log(f"[{round(current_item / total_items * 100)}%] Successfully added {name_and_year}")
                 result += f"{name_and_year}<br>"
         except Exception as e:
             log(f"Received exception when trying to add movie https://www.themoviedb.org/movie/{movie['id']}")

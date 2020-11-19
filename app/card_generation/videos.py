@@ -12,6 +12,7 @@ from app.card_generation.util import zdNote, create_html_unordered_list, AnkiCar
     get_default_css
 from app.models.base import User
 from app.models.videos import Video, YouTubeVideoOverride, YouTubeVideo, VideoPerson, VideoCredit, ManagedVideo
+from log import log
 
 VIDEO_MODEL_ID: int = 1588000000000
 VIDEO_PERSON_MODEL_ID: int = 1589000000000
@@ -56,6 +57,7 @@ having sum(case when mv.watched
     top_people = [row[0] for row in list(db.engine.execute(top_people_sql))]
     top_people_string = "'" + "','".join(top_people) + "'"
 
+    log("Generating video notes...")
     for managed_video, video in managed_video_pair:
         trailer_key = youtube_overrides.get(video.id, video.youtube_trailer_key) or ''
 
@@ -110,6 +112,9 @@ having sum(case when mv.watched
                 trailer_key,
                 str(youtube_durations.get(trailer_key, '')),
                 f"<img src='{video.poster_image_url}'>" if video.poster_image_url else '',
+                "".join([f"<img src='{d.image_url}'>" for d in directors]) if video.is_film() else '',
+                "".join([f"<img src='{c.image_url}'>" for c in creators]) if video.is_tv() else '',
+                "".join([f"<img src='{a.image_url}'>" for a in top_actors]),
             ])
         deck.add_note(video_as_note)
 
@@ -120,6 +125,7 @@ having sum(case when mv.watched
         "Production": "producer",
     }
 
+    log("Generating video person notes...")
     for video_person in VideoPerson.query.filter(
             and_(VideoPerson.image_url.isnot(None), VideoPerson.id.in_(top_people))).all():  # type: ignore
         has_actor_credit, has_director_credit, has_film_credit, has_tv_credit = False, False, False, False
@@ -214,6 +220,9 @@ def get_video_model(user: User) -> Model:
             {'name': 'YouTube Trailer Key'},
             {'name': 'YouTube Trailer Duration'},
             {'name': 'Poster Image'},
+            {'name': 'Director Image'},
+            {'name': 'Creator Image'},
+            {'name': 'Top Actor Images'},
             # TODO: add extra fields before public release
         ],
         css=(get_rs_anki_css() if user.uses_rsAnki_javascript else get_default_css()) + get_youtube_css(),
