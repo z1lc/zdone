@@ -2,22 +2,16 @@ from app.card_generation.readwise import get_highlight_model
 from app.card_generation.spotify import get_track_model, get_artist_model
 from app.card_generation.util import AnkiCard
 from app.card_generation.videos import get_video_person_model, get_video_model
-from app.models.base import User
-
-rsanek_user = User(id=1,
-                   username="rsanek",
-                   email="rsanek@gmail.com",
-                   api_key='api-key-rsanek-1234',
-                   uses_rsAnki_javascript=True)
+from tests.utils import TEST_USER
 
 
 def test_models_reasonable():
     models_and_names = [
-        (get_track_model(rsanek_user), 'spotify_track'),
-        (get_artist_model(rsanek_user), 'spotify_artist'),
-        (get_video_model(rsanek_user), 'video'),
-        (get_video_person_model(rsanek_user), 'video_person'),
-        (get_highlight_model(rsanek_user), 'readwise_highlight_cloze'),
+        (get_track_model(TEST_USER), 'spotify_track'),
+        (get_artist_model(TEST_USER), 'spotify_artist'),
+        (get_video_model(TEST_USER), 'video'),
+        (get_video_person_model(TEST_USER), 'video_person'),
+        (get_highlight_model(TEST_USER), 'readwise_highlight_cloze'),
     ]
 
     for model, name in models_and_names:
