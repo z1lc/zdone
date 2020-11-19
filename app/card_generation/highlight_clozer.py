@@ -1,3 +1,4 @@
+import re
 import string
 from typing import List, Tuple
 
@@ -22,7 +23,8 @@ def get_clozed_highlight(highlight):
 # ham, -> ham
 # extra-crispy -> extra-crispy
 def no_punc(word: str) -> str:
-    return word.strip(string.punctuation)
+    word_apostrophe_removed = re.sub(r"""'.""", '', word)
+    return word_apostrophe_removed.strip(string.punctuation)
 
 
 # returns a list of keywords for a given sentence
@@ -127,11 +129,16 @@ def get_prefix_punc(word):
     return word[:prefix_punc_end_idx]
 
 
-def get_suffix_punc(word):
-    suffix_punc_start_idx = len(word) - 1
-    while suffix_punc_start_idx >= 0 and word[suffix_punc_start_idx] in string.punctuation:
-        suffix_punc_start_idx -= 1
-    return word[suffix_punc_start_idx + 1:]
+def get_suffix_punc(word: str) -> str:
+    last_non_punc_idx = len(word) - 1
+    while last_non_punc_idx >= 0 and word[last_non_punc_idx] in string.punctuation:
+        last_non_punc_idx -= 1
+    # check for apostrophes in possessive/plurals prior to other punctuation
+    # e.g. catch things like "The house is LeBron's."
+    trimmed_ending_punctuation_word = word[:last_non_punc_idx + 1]
+    if trimmed_ending_punctuation_word.endswith("\'s"):
+        last_non_punc_idx -= 2 # trim 's
+    return word[last_non_punc_idx + 1:]
 
 
 def cloze_word_with_punc(idx, word):
