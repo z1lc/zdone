@@ -80,6 +80,16 @@ def test_cloze_out_keyword_with_apostrophe_followed_by_period():
     expected_cloze = "Amdahl's law applies only to the cases where the problem size is fixed. In practice, as more computing resources become available, they tend to get used on larger problems (larger datasets), and the time spent in the parallelizable part often grows much faster than the inherently serial work. In this case, {{c1::Gustafson}}'s law gives a less pessimistic and more realistic assessment of the parallel performance. The good idea is {{c1::Gustafson}}'s."
     assert (expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence))
 
+# GIVEN keyword contains multiple words
+# WHEN clozing out the keyword
+# THEN clozes out only full occurrences of all words in keyword
+def test_cloze_out_multiword_keyword():
+    relevant_sentence = "LeBron James is the greatest basketball player of all time. James is much better than the other players."
+    keyword = "LeBron James"
+    expected_cloze = "{{c1::LeBron James}} is the greatest basketball player of all time. James is much better than the other players."
+    assert (expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence))
+
+
 # Verify that given some test highlights, the whole pipeline works
 def test_end_to_end_cloze_generation():
     test_highlights = [

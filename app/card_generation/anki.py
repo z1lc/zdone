@@ -51,7 +51,7 @@ def generate_full_apkg(user: User, filename: str) -> int:
         generate_artists(user, deck, tags)
 
     # videos not released yet
-    if user.id <= 1:
+    if user.username in ['rsanek', 'demo']:
         log(f"Generating videos... {today_datetime()}")
         generate_videos(user, deck, tags)
 

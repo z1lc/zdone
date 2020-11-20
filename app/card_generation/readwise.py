@@ -69,6 +69,7 @@ def get_highlights(user: User):
             join managed_readwise_books mrb on b.id = mrb.readwise_book_id
             join readwise_highlights rh on mrb.id = rh.managed_readwise_book_id
         where mrb.user_id = {user.id}
+        order by mrb.id asc, rh.id asc
     """
     highlights = list(db.engine.execute(prepared_sql))
     return [{
