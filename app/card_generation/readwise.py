@@ -1,18 +1,19 @@
 from itertools import groupby
-from typing import List, Set
+from typing import List
 
 import genanki
 from genanki import Deck
 
 from app import db
 from app.card_generation.highlight_clozer import get_clozed_highlight
-from app.card_generation.people_getter import get_people, get_wikipedia_info, Person, get_person_note
+from app.card_generation.people_getter import get_people, get_wikipedia_info, get_person_note
 from app.card_generation.util import zdNote, get_rs_anki_css, get_default_css, get_template, AnkiCard
 from app.log import log
 from app.models.base import User
 from app.util import JsonDict
 
 READWISE_HIGHLIGHT_CLOZE_MODEL_ID = 1604800000000
+
 
 def generate_readwise_people(user: User, deck: Deck, tags: List[str]):
     if not user.id == 2:
@@ -64,7 +65,7 @@ def get_highlight_model(user: User):
 
 def get_highlights(user: User):
     prepared_sql = f"""
-        select rh.id, text, title, author
+        select rh.id, text, title, author, cover_image_url
         from readwise_books b
             join managed_readwise_books mrb on b.id = mrb.readwise_book_id
             join readwise_highlights rh on mrb.id = rh.managed_readwise_book_id
@@ -76,7 +77,8 @@ def get_highlights(user: User):
         'id': highlight[0],
         'text': highlight[1],
         'source_title': highlight[2],
-        'source_author': highlight[3]} for highlight in highlights]
+        'source_author': highlight[3],
+        'cover_image_url': highlight[4]} for highlight in highlights]
 
 
 def group_highlights_by_book(all_highlights):
@@ -90,6 +92,7 @@ def generate_readwise_highlight_clozes(user: User, deck: Deck, tags: List[str]):
     clozed_highlight_notes = _generate_clozed_highlight_notes(all_highlights, tags, user)
     for note in clozed_highlight_notes:
         deck.add_note(note)
+
 
 # Given highlights from db, return cloze notes for those highlights
 # Useful as testing seam for entire cloze generation pipeline without hitting real db
@@ -114,7 +117,7 @@ def _generate_clozed_highlight_notes(all_highlights, tags, user):
                     highlight_i['next_highlight'] = book_highlights_list[i + 1]['text']
                 else:
                     highlight_i['next_highlight'] = ""
-                highlight_i['image'] = ""
+                highlight_i['image'] = f"<img src='{highlight_i['cover_image_url']}'>"
                 highlight_as_note = zdNote(
                     model=get_highlight_model(user),
                     tags=tags,
@@ -124,7 +127,7 @@ def _generate_clozed_highlight_notes(all_highlights, tags, user):
                         highlight_i['clozed_highlight'],
                         highlight_i['source_title'],
                         highlight_i['source_author'],
-                        "",  # Image field, blank for now
+                        highlight_i['image'],
                         highlight_i['prev_highlight'],
                         highlight_i['next_highlight']
                     ])
