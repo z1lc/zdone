@@ -22,6 +22,7 @@ A few dependencies have been forked from their public versions to integrate addi
 To develop zdone locally, clone the repository, `pip install -r requirements.txt` and set environment variables:
  * `DATABASE_URL` to a postgres database, of the style `postgres://user:password@host:port/database`. Once connected, you can get a blank database into the right state by running `flask db upgrade` from the repo root.
  * `SECRET_KEY` to a long, random string
+ * `ZDONE_ENVIRONMENT` to `development`
 
 You are least likely to run into compabitility issues if you match your Python version to what is defined in [runtime.txt](runtime.txt). It may also be useful to install pre-commit to avoid common issues that will fail the build: `pip install pre-commit`; `pre-commit install`; then `pre-commit run --all-files` from the repo root. Read more in [their documentation](https://pre-commit.com/).
 
