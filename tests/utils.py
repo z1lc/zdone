@@ -1,5 +1,5 @@
 from app.models.base import User
-from util import JsonDict
+from app.util import JsonDict
 
 TEST_USER = User(id=1,
                  username="rsanek",
