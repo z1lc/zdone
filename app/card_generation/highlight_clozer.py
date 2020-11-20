@@ -23,7 +23,7 @@ def get_clozed_highlight(highlight):
 # ham, -> ham
 # extra-crispy -> extra-crispy
 def no_punc(word: str) -> str:
-    word_apostrophe_removed = re.sub(r"""'.""", '', word)
+    word_apostrophe_removed = re.sub(r"'.", '', word)
     return word_apostrophe_removed.strip(string.punctuation)
 
 
