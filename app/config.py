@@ -4,6 +4,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 PRODUCTION_ENV = "production"
 DEVELOPMENT_ENV = "development"
+CONTINUOUS_INTEGRATION_ENV = "ci"
 
 
 class Config(object):
@@ -19,7 +20,7 @@ def filter_non_prod(event, hint):
 
 
 def get_environment_from_environment_variable():
-    valid_environments = [PRODUCTION_ENV, DEVELOPMENT_ENV]
+    valid_environments = [PRODUCTION_ENV, DEVELOPMENT_ENV, CONTINUOUS_INTEGRATION_ENV]
     maybe_environment = os.environ.get('ZDONE_ENVIRONMENT')
     if maybe_environment not in valid_environments:
         raise ValueError(f"You need to set environment variable ZDONE_ENVIRONMENT to one of {valid_environments}!")
