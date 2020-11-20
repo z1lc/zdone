@@ -2,7 +2,7 @@ from app.card_generation.readwise import get_highlight_model
 from app.card_generation.spotify import get_track_model, get_artist_model
 from app.card_generation.util import AnkiCard
 from app.card_generation.videos import get_video_person_model, get_video_model
-from utils import TEST_USER
+from tests.utils import TEST_USER
 
 
 def test_models_reasonable():
