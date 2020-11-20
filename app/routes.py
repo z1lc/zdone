@@ -36,9 +36,10 @@ from .util import today_datetime, failure, success, api_key_failure, jsonp, vali
     htmlize_note, get_b2_api
 
 
+@app.route('/error')
 @app.errorhandler(500)
 def server_error_handler(error):
-    return render_template("500.html", sentry_event_id=last_event_id()), 500
+    raise ValueError("testing sentry")
 
 
 @app.route('/login', methods=['GET', 'POST'])
