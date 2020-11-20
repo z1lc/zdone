@@ -1,4 +1,4 @@
-from app.card_generation.highlight_clozer import cloze_out_keyword, no_punc, _clean_keyword
+from app.card_generation.highlight_clozer import cloze_out_keyword, no_punc, _clean_keyword, get_keywords
 from app.card_generation.readwise import _generate_clozed_highlight_notes
 from app.models.base import User
 
@@ -69,6 +69,17 @@ def test_cloze_out_keyword_capitalization():
     expected_cloze = "{{c1::Mountains}} that are tall are more interesting than {{c1::mountains}} that are short."
     assert (expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence))
 
+def test_cloze_out_keyword_with_apostrophe():
+    relevant_sentence = "Amdahl's law applies only to the cases where the problem size is fixed. In practice, as more computing resources become available, they tend to get used on larger problems (larger datasets), and the time spent in the parallelizable part often grows much faster than the inherently serial work. In this case, Gustafson's law gives a less pessimistic and more realistic assessment of the parallel performance."
+    keyword="Gustafson"
+    expected_cloze = "Amdahl's law applies only to the cases where the problem size is fixed. In practice, as more computing resources become available, they tend to get used on larger problems (larger datasets), and the time spent in the parallelizable part often grows much faster than the inherently serial work. In this case, {{c1::Gustafson}}'s law gives a less pessimistic and more realistic assessment of the parallel performance."
+    assert (expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence))
+
+def test_cloze_out_keyword_with_apostrophe_followed_by_period():
+    relevant_sentence = "Amdahl's law applies only to the cases where the problem size is fixed. In practice, as more computing resources become available, they tend to get used on larger problems (larger datasets), and the time spent in the parallelizable part often grows much faster than the inherently serial work. In this case, Gustafson's law gives a less pessimistic and more realistic assessment of the parallel performance. The good idea is Gustafson's."
+    keyword="Gustafson"
+    expected_cloze = "Amdahl's law applies only to the cases where the problem size is fixed. In practice, as more computing resources become available, they tend to get used on larger problems (larger datasets), and the time spent in the parallelizable part often grows much faster than the inherently serial work. In this case, {{c1::Gustafson}}'s law gives a less pessimistic and more realistic assessment of the parallel performance. The good idea is {{c1::Gustafson}}'s."
+    assert (expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence))
 
 # GIVEN keyword contains multiple words
 # WHEN clozing out the keyword
