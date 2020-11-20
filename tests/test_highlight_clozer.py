@@ -110,6 +110,8 @@ def test_end_to_end_cloze_generation():
     first_cloze_sentence = generated_notes[0].fields[2]
     # clozes should be deterministic given same version of spacy and same model used
     assert ("{{c1::Darkness}}" in first_cloze_sentence)
+
+    # we shouldn't generate a cloze note if we can't cloze out anything in the text
     assert len(generated_notes) == 2
 
 
