@@ -1,5 +1,3 @@
-from unittest import TestCase
-
 from app.card_generation.highlight_clozer import cloze_out_keyword, no_punc, _clean_keyword
 from app.card_generation.readwise import _generate_clozed_highlight_notes
 from utils import TEST_USER, get_test_highlight, BECOMING_IMAGE_URL
