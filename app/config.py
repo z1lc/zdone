@@ -19,7 +19,7 @@ class Config(object):
 
 
 def filter_non_prod(event, hint):
-    if event.environment == "production":
+    if ENV_TO_SENTRY_REPORT_MAP.get(event['environment'], False):
         return event
     return None
 
