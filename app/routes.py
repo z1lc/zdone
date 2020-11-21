@@ -42,7 +42,7 @@ def server_error_handler(error):
 
 
 @app.route('/error')
-def error_example(error):
+def error_example():
     raise ValueError("testing sentry")
 
 
