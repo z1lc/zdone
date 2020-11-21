@@ -71,35 +71,31 @@
   }
 
   $(function () {
-    $.get(
-      "/api?zdone",
-      function (data) {
-        tasks = data["tasks_to_do"];
-        const serverTimeZone = data["time_zone"]
-        const deviceTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (data["latest_reminder"] !== undefined) {
-          $('div.reminder').html(`<b><a href="/reminders/${data["latest_reminder"]["id"]}">${data["latest_reminder"]["title"]}</a></b>`);
-        }
-        data["trello_lists"].forEach(function (list) {
-          $("div#move_to_selection").append(`<button onclick="moveCurrentItemToList('${list.id}')">${list.name}</button>&nbsp;`)
-        })
+    data = {{ tasks_api_get|tojson|safe }}
+    tasks = data["tasks_to_do"];
+    const serverTimeZone = data["time_zone"]
+    const deviceTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (data["latest_reminder"] !== undefined) {
+      $('div.reminder').html(`<b><a href="/reminders/${data["latest_reminder"]["id"]}">${data["latest_reminder"]["title"]}</a></b>`);
+    }
+    data["trello_lists"].forEach(function (list) {
+      $("div#move_to_selection").append(`<button onclick="moveCurrentItemToList('${list.id}')">${list.name}</button>&nbsp;`)
+    })
 
-        $('div.reminder').fadeIn(1000);
-        num_tasks_completed = data["num_tasks_completed"]
-        updateFire()
+    $('div.reminder').fadeIn(1000);
+    num_tasks_completed = data["num_tasks_completed"]
+    updateFire()
 
-        if (serverTimeZone !== deviceTimeZone) {
-          fade('#countdownExample .name', "Time zone mismatch!");
-          fade('#countdownExample .note',
-            `Your device's time zone is set to '${deviceTimeZone}' but the server setting is '${serverTimeZone}'.<br>` +
-            `Please update the server time zone to avoid inaccurate data.`);
-          $('div.button2').fadeIn(500);
-        } else {
-          $('div.button').fadeIn(500);
-          nextTask();
-        }
-      }
-    );
+    if (serverTimeZone !== deviceTimeZone) {
+      fade('#countdownExample .name', "Time zone mismatch!");
+      fade('#countdownExample .note',
+        `Your device's time zone is set to '${deviceTimeZone}' but the server setting is '${serverTimeZone}'.<br>` +
+        `Please update the server time zone to avoid inaccurate data.`);
+      $('div.button2').fadeIn(500);
+    } else {
+      $('div.button').fadeIn(500);
+      nextTask();
+    }
     $("button#complete").click(function (event) {
       completeItem(task.service, task.id, task.raw_name);
       num_tasks_completed++;

@@ -3,6 +3,7 @@ import json
 import re
 from typing import List, Tuple, Optional
 
+import humanize
 import pytz
 from flask import Response
 from flask_login import current_user
@@ -13,7 +14,77 @@ from trello import TrelloClient, trellolist
 from app import db
 from app.models.base import User
 from app.models.tasks import TaskLog, Task
-from app.util import failure, success
+from app.util import failure, success, JsonDict
+from reminders import get_most_recent_reminder, get_recent_task_completions
+
+
+def api_get(user: User) -> JsonDict:
+    user_time_zone = pytz.timezone(user.current_time_zone) if user.current_time_zone \
+        else pytz.timezone('America/Los_Angeles')
+    tasks = Task.query.filter_by(user_id=int(user.id)).all()
+    ret_tasks = []
+    user_local_date = datetime.datetime.now(user_time_zone).date()
+    tasks.sort(key=lambda t: t.calculate_skew(user_local_date), reverse=True)
+    average_daily_load = 0
+
+    for task in tasks:
+        due = task.calculate_skew(user_local_date) >= 1
+        if task.is_after_delay(user_local_date):
+            average_daily_load += 1 / task.ideal_interval
+            if due:
+                ret_tasks.append({
+                    "id": task.id,
+                    "service": "zdone",
+                    "raw_name": task.title,
+                    "name": task.title,
+                    "note": task.description,
+                    "subtask_id": None,
+                    "length_minutes": None,
+                    "last_completion": humanize.naturaltime(
+                        datetime.datetime.now(user_time_zone).date() - task.last_completion),
+                })
+
+    if average_daily_load >= 3.0:
+        ret_tasks.insert(0, {
+            "id": None,
+            "service": "zdone",
+            "raw_name": "Reconfigure tasks",
+            "name": "Reconfigure tasks",
+            "note": f"Average daily task load is {round(average_daily_load, 2)}, which is ≥3. Remove tasks or "
+                    f"schedule them less frequently to avoid feeling overwhelmed.",
+            "subtask_id": None,
+            "length_minutes": None,
+        })
+
+    i = 0
+    for tcard in get_updated_trello_cards(user):
+        if tcard["list_name"] == "P0":
+            ret_tasks.insert(i, tcard)
+            i += 1
+        else:
+            ret_tasks.append(tcard)
+
+    lists = [{"id": l.id, "name": l.name} for l in get_open_trello_lists(user) if l.name != 'Completed via zdone']
+
+    current_date = datetime.datetime.now(user_time_zone).date()
+    this_sunday = current_date - datetime.timedelta(days=current_date.weekday() + 1)
+
+    r = {
+        "average_daily_load": round(average_daily_load, 2),
+        "num_tasks_completed": len(get_recent_task_completions(user, date_start=this_sunday)),
+        "tasks_to_do": ret_tasks[:2],
+        "time_zone": user.current_time_zone,
+        "trello_lists": lists[:2],
+    }
+
+    latest_reminder = get_most_recent_reminder(user)
+    if latest_reminder:
+        r["latest_reminder"] = {
+            "title": latest_reminder.title,
+            "message": latest_reminder.message,
+            "id": latest_reminder.id,
+        }
+    return r
 
 
 def do_update_task(update: str,
