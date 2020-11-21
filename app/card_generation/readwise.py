@@ -39,10 +39,10 @@ def _get_person_notes_from_highlight(highlights, tags, user):
     person_notes = []
     for i, person in enumerate(all_people):
         if wiki_person := maybe_get_wikipedia_info(person):
+            log(f"[{round(i / len(all_people) * 100)}%] Found person {person.name}")
             if wiki_person not in unique_people:
                 unique_people.add(wiki_person)
                 person_notes.append(get_person_note(wiki_person, tags, user))
-        log(f"[{round(i / len(all_people) * 100)}%] Processed person {person.name}")
     return person_notes
 
 
