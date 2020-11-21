@@ -63,11 +63,12 @@ Potential services:
  * ~~Name~~
  * ~~Description~~
  * ~~Year released~~
- * Actors & roles
- * Director
+ * ~~Actors & roles~~
+ * ~~Director~~
+ * ~~Creator~~
  * ~~Poster image~~
  * ~~YouTube trailer video~~
- * Watched?
+ * ~~Watched?~~
    * field that differentiates between things you've already watched vs. things that you've flagged as want to see. If you haven't seen it yet, you probably have less knowledge of the item.
 
 #### Cards
@@ -76,26 +77,44 @@ Potential services:
  * ~~Video>Name~~
  * ~~Description>Name~~
  * ~~Name>Description~~
- * Name>Actors+Roles (if watched)
+ * ~~Name>Actors+Roles (if watched)~~
  * Actors+Roles>Name (if watched)
- * Name>Director (if watched and have 3+ films under management with same director)
+ * ~~Name>Director (if watched and have 3+ films under management with same director)~~
+ * ~~Name>Creator (if watched and have 3+ films under management with same creator)~~
 
 
 ### Actor
 #### Fields
  * ~~Name~~
- * Birthday
- * ~~Photo~~
+ * ~~Age~~
+ * ~~Image (photo)~~
  * ~~Films they've been in~~
    * that you've seen + top ~2 from 'well known'? include role?)
- * Co-stars (maybe? to promote more linkages between people)
+ * ~~Co-stars~~
 
 #### Cards
- * ~~Photo>Name~~
- * ~~Name>Photo~~
- * ~~Name>Films~~
- * ~~Films>Name~~
- * Name>Co-star
+ * ~~Image>Name~~
+ * ~~Name>Image~~
+ * ~~Name>Videos~~
+ * ~~Credits>Name~~
+ * ~~Name>Co-star~~
+
+
+## Books
+Potential services:
+* [Goodreads](https://www.goodreads.com/)
+* [Readwise](https://readwise.io/)
+
+###Highlight
+####Fields
+ * ~~Clozed highlight~~
+ * ~~Source Title~~
+ * ~~Source Author~~
+ * ~~Source Image~~
+ * ~~Previous / next highlights~~
+
+####Cards
+ * ~~Cloze~~
 
 ## Art
 Potential services:
@@ -107,7 +126,3 @@ Potential services:
 Potential services:
 * [Steam](https://store.steampowered.com/) (some big titles & most indie games, public API)
 * [TheGamesDB](https://thegamesdb.net/) (all titles, public API)
-
-## Books
-Potential services:
-* [Goodreads](https://www.goodreads.com/)
