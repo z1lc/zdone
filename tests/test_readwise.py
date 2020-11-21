@@ -22,4 +22,4 @@ def test_get_person_notes_from_highlight():
         get_test_highlight(text="Abraham Lincoln was an American president in the 19th century"),
         get_test_highlight(text="As a president, Lincoln was an interesting person"),
     ]
-    assert (len(_get_person_notes_from_highlight(fake_highlights, [], TEST_USER)) == 1)
+    assert len(_get_person_notes_from_highlight(fake_highlights, [], TEST_USER)) == 1

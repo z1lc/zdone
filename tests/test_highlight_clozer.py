@@ -10,32 +10,32 @@ def test_cloze_out_keyword_with_punctuation():
     relevant_sentence = "We could have green eggs and ham, if we had some ham."
     keyword = "ham"
     expected_cloze = "We could have green eggs and {{c1::ham}}, if we had some {{c1::ham}}."
-    assert (expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence))
+    assert expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence)
 
 
 def test_cloze_out_keyword_with_hyphen():
     relevant_sentence = "My mother-in-law keeps telling me about her mother-in-law."
     keyword = "mother-in-law"
     expected_cloze = "My {{c1::mother-in-law}} keeps telling me about her {{c1::mother-in-law}}."
-    assert (expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence))
+    assert expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence)
 
 
 def test_no_punc_keeps_hyphens_in_middle():
     word_with_hypen = "mother-in-law"
     expected_no_punc_result = "mother-in-law"
-    assert (no_punc(word_with_hypen) == expected_no_punc_result)
+    assert no_punc(word_with_hypen) == expected_no_punc_result
 
 
 def test_no_punc_removes_hyphens_at_end():
     word_with_hypen = "mother-in-law-"
     expected_no_punc_result = "mother-in-law"
-    assert (no_punc(word_with_hypen) == expected_no_punc_result)
+    assert no_punc(word_with_hypen) == expected_no_punc_result
 
 
 def test_no_punc_removes_prefix():
     word_with_starting_punctuation = "?something?"
     expected_no_punc_result = "something"
-    assert (no_punc(word_with_starting_punctuation) == expected_no_punc_result)
+    assert no_punc(word_with_starting_punctuation) == expected_no_punc_result
 
 
 def test_clean_keyword():
@@ -65,21 +65,21 @@ def test_cloze_out_keyword_capitalization():
     relevant_sentence = "Mountains that are tall are more interesting than mountains that are short."
     keyword = "mountains"
     expected_cloze = "{{c1::Mountains}} that are tall are more interesting than {{c1::mountains}} that are short."
-    assert (expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence))
+    assert expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence)
 
 
 def test_cloze_out_keyword_with_apostrophe():
     relevant_sentence = "Amdahl's law applies only to the cases where the problem size is fixed. In practice, as more computing resources become available, they tend to get used on larger problems (larger datasets), and the time spent in the parallelizable part often grows much faster than the inherently serial work. In this case, Gustafson's law gives a less pessimistic and more realistic assessment of the parallel performance."
     keyword = "Gustafson"
     expected_cloze = "Amdahl's law applies only to the cases where the problem size is fixed. In practice, as more computing resources become available, they tend to get used on larger problems (larger datasets), and the time spent in the parallelizable part often grows much faster than the inherently serial work. In this case, {{c1::Gustafson}}'s law gives a less pessimistic and more realistic assessment of the parallel performance."
-    assert (expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence))
+    assert expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence)
 
 
 def test_cloze_out_keyword_with_apostrophe_followed_by_period():
     relevant_sentence = "Amdahl's law applies only to the cases where the problem size is fixed. In practice, as more computing resources become available, they tend to get used on larger problems (larger datasets), and the time spent in the parallelizable part often grows much faster than the inherently serial work. In this case, Gustafson's law gives a less pessimistic and more realistic assessment of the parallel performance. The good idea is Gustafson's."
     keyword = "Gustafson"
     expected_cloze = "Amdahl's law applies only to the cases where the problem size is fixed. In practice, as more computing resources become available, they tend to get used on larger problems (larger datasets), and the time spent in the parallelizable part often grows much faster than the inherently serial work. In this case, {{c1::Gustafson}}'s law gives a less pessimistic and more realistic assessment of the parallel performance. The good idea is {{c1::Gustafson}}'s."
-    assert (expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence))
+    assert expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence)
 
 
 # GIVEN keyword contains multiple words
@@ -89,7 +89,7 @@ def test_cloze_out_multiword_keyword():
     relevant_sentence = "LeBron James is the greatest basketball player of all time. James is much better than the other players."
     keyword = "LeBron James"
     expected_cloze = "{{c1::LeBron James}} is the greatest basketball player of all time. James is much better than the other players."
-    assert (expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence))
+    assert expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence)
 
 
 # Verify that given some test highlights, the whole pipeline works
@@ -121,7 +121,7 @@ def test_end_to_end_cloze_generation():
 
     first_cloze_sentence = generated_notes[0].fields[2]
     # clozes should be deterministic given same version of spacy and same model used
-    assert ("{{c1::Darkness}}" in first_cloze_sentence)
+    assert "{{c1::Darkness}}" in first_cloze_sentence
 
     # avoids closing out denylist word
     assert "{{c1::What" not in generated_notes[2].fields[2]
@@ -148,6 +148,6 @@ def test_clozes_not_generated_for_very_short_highlight():
     ]
     # This will break if/when cloze field is moved to diff relevant position
     generated_notes = _generate_clozed_highlight_notes(test_highlights, [], TEST_USER)
-    assert (len(generated_notes) == 2)
+    assert len(generated_notes) == 2
     for note in generated_notes:
-        assert (not note.fields[0] == short_highlight_id)
+        assert not note.fields[0] == short_highlight_id
