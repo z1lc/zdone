@@ -236,6 +236,7 @@ def get_video_model(user: User) -> Model:
             get_template(AnkiCard.NAME_TO_DESCRIPTION, user),
             get_template(AnkiCard.NAME_TO_ACTORS, user),
             get_template(AnkiCard.NAME_TO_DIRECTOR, user),
+            get_template(AnkiCard.NAME_TO_CREATOR, user),
             # TODO: add extra templates before public release
         ]
     )
