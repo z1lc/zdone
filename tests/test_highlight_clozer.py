@@ -1,3 +1,5 @@
+from unittest import TestCase
+
 from app.card_generation.highlight_clozer import cloze_out_keyword, no_punc, _clean_keyword
 from app.card_generation.readwise import _generate_clozed_highlight_notes
 from utils import TEST_USER, get_test_highlight, BECOMING_IMAGE_URL
@@ -97,9 +99,16 @@ def test_end_to_end_cloze_generation():
     test_highlights = [
         get_test_highlight(),
         get_test_highlight(
-            text="It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness, it was the spring of hope, it was the winter of despair.",
+            text="It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of "
+                 "foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light,"
+                 " it was the season of Darkness, it was the spring of hope, it was the winter of despair.",
             source_title="A Tale of Two Cities",
             source_author="Charles Dickens",
+        ),
+        get_test_highlight(
+            text="What differentiates the success stories from the failures is that the successful entrepreneurs had "
+                 "the foresight, the ability, and the tools to discover which parts of their plans were working "
+                 "brilliantly and which were misguided, and adapt their strategies accordingly."
         ),
         get_test_highlight(text=""),
     ]
@@ -107,7 +116,7 @@ def test_end_to_end_cloze_generation():
     generated_notes = _generate_clozed_highlight_notes(test_highlights, [], TEST_USER)
 
     # we shouldn't generate a cloze note if we can't cloze out anything in the text
-    assert len(generated_notes) == 2
+    assert len(generated_notes) == 3
 
     for note in generated_notes:
         assert BECOMING_IMAGE_URL in note.fields[5]
@@ -116,6 +125,9 @@ def test_end_to_end_cloze_generation():
     # clozes should be deterministic given same version of spacy and same model used
     assert ("{{c1::Darkness}}" in first_cloze_sentence)
 
+    # avoids closing out denylist word
+    assert "{{c1::What" not in generated_notes[2].fields[2]
+
 
 # Verify that given some test highlights, the whole pipeline works
 def test_clozes_not_generated_for_very_short_highlight():
@@ -123,7 +135,9 @@ def test_clozes_not_generated_for_very_short_highlight():
     test_highlights = [
         get_test_highlight(),
         get_test_highlight(
-            text="It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness, it was the spring of hope, it was the winter of despair.",
+            text="It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of "
+                 "foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light,"
+                 " it was the season of Darkness, it was the spring of hope, it was the winter of despair.",
             source_title="A Tale of Two Cities",
             source_author="Charles Dickens",
         ),

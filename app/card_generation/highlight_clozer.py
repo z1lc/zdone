@@ -7,6 +7,20 @@ from spacy.tokens import Span
 
 # initialize the model once when we import this script
 NLP = spacy.load("en_core_web_sm")
+BORING_WORDS = [
+    'they',
+    'them',
+    'one',
+    'two',
+    'it',
+    'we',
+    'you',
+    'i',
+    'me',
+    'what',
+    'people',
+    'person'
+]
 
 
 def get_clozed_highlight(highlight):
@@ -46,7 +60,7 @@ def get_keywords(sentence: str) -> List[str]:
     # we didn't find any good entities, so let's just return a core noun from a noun phrase
     for noun_chunk in doc.noun_chunks:
         # don't return bad nouns like "they"
-        if is_interesting_noun(noun_chunk.root.text):
+        if no_punc(noun_chunk.root.text.lower()) not in BORING_WORDS:
             return [no_punc(noun_chunk.root.text)]
 
     # nothing has worked, so just return whatever word is longest
@@ -108,11 +122,6 @@ def get_best_entities(ents: Tuple[Span]):
         # make sure to return empty list here
         return []
     return [_clean_keyword(best_entity)]
-
-
-def is_interesting_noun(text: str) -> bool:
-    boring_words = ['they', 'them', 'one', 'two', 'it', 'we', 'you', 'i', 'me']
-    return no_punc(text.lower()) not in boring_words
 
 
 # returns sentence with all occurrences of keyword clozed out.
