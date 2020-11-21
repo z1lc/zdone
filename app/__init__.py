@@ -36,6 +36,9 @@ Talisman(app, content_security_policy={
         '*.tmdb.org',
         '*.youtube.com',
         '*.ytimg.com',
+    ],
+    'script-src': [
+        '*.sentry-cdn.com',
     ]
 })
 app.config.from_object(Config)
