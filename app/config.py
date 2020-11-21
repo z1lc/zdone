@@ -1,10 +1,15 @@
 import os
 
+from app.log import log
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-PRODUCTION_ENV = "production"
-DEVELOPMENT_ENV = "development"
-CONTINUOUS_INTEGRATION_ENV = "ci"
+ENV_TO_SENTRY_REPORT_MAP = {
+    "production": True,
+    "qa": False,
+    "development": False,
+    "ci": False
+}
 
 
 class Config(object):
@@ -14,14 +19,18 @@ class Config(object):
 
 
 def filter_non_prod(event, hint):
-    if event.environment == PRODUCTION_ENV:
+    if event.environment == "production":
         return event
     return None
 
 
 def get_environment_from_environment_variable():
-    valid_environments = [PRODUCTION_ENV, DEVELOPMENT_ENV, CONTINUOUS_INTEGRATION_ENV]
+    valid_environments = ENV_TO_SENTRY_REPORT_MAP.keys()
     maybe_environment = os.environ.get('ZDONE_ENVIRONMENT')
     if maybe_environment not in valid_environments:
         raise ValueError(f"You need to set environment variable ZDONE_ENVIRONMENT to one of {valid_environments}!")
+    else:
+        will_or_will_not = "WILL" if ENV_TO_SENTRY_REPORT_MAP[maybe_environment] else "WILL NOT"
+        log(f"zdone is running in the '{maybe_environment}' environment. "
+            f"Exceptions {will_or_will_not} be reported to Sentry.")
     return maybe_environment
