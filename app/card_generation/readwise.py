@@ -6,7 +6,7 @@ from genanki import Deck
 
 from app import db
 from app.card_generation.highlight_clozer import get_clozed_highlight
-from app.card_generation.people_getter import get_people, get_wikipedia_info, get_person_note
+from app.card_generation.people_getter import get_people, maybe_get_wikipedia_info, get_person_note
 from app.card_generation.util import zdNote, get_rs_anki_css, get_default_css, get_template, AnkiCard
 from app.log import log
 from app.models.base import User
@@ -28,15 +28,22 @@ def generate_readwise_people(user: User, deck: Deck, tags: List[str]):
 
 
 def _get_person_notes_from_highlight(highlights, tags, user):
-    all_people = []
+    all_people = set()
     for highlight in highlights:
         people_in_highlight = get_people(highlight)
-        all_people += people_in_highlight
+        all_people.update(people_in_highlight)
+
     # use set here to deduplicate people after searching through wikipedia. Will ensure that
     # Person(Lincoln) and Person(Abraham Lincoln) result in one copy of WikipediaPerson(Abraham Lincoln)
-    maybe_wikipedia_people = set([get_wikipedia_info(person) for person in all_people])
-    return [get_person_note(wikipedia_person, tags, user) for wikipedia_person in maybe_wikipedia_people if
-            wikipedia_person]
+    unique_people = set()
+    person_notes = []
+    for i, person in enumerate(all_people):
+        if wiki_person := maybe_get_wikipedia_info(person):
+            if wiki_person not in unique_people:
+                unique_people.add(wiki_person)
+                person_notes.append(get_person_note(wiki_person, tags, user))
+        log(f"[{round(i / len(all_people) * 100)}%] Processed person {person.name}")
+    return person_notes
 
 
 def get_highlight_model(user: User):

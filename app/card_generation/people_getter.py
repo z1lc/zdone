@@ -164,7 +164,7 @@ def _get_image_html(image_urls: List[str], name: str) -> str:
     return "".join([f"<img src=\"{url}\">" for url in relevant_image_urls])
 
 
-def get_wikipedia_info(person: Person) -> Optional[WikipediaPerson]:
+def maybe_get_wikipedia_info(person: Person) -> Optional[WikipediaPerson]:
     wiki_page = _get_wiki_page(person.name)
     if not wiki_page:
         return None
