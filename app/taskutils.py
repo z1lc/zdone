@@ -15,7 +15,7 @@ from app import db
 from app.models.base import User
 from app.models.tasks import TaskLog, Task
 from app.util import failure, success, JsonDict
-from reminders import get_most_recent_reminder, get_recent_task_completions
+from app.reminders import get_most_recent_reminder, get_recent_task_completions
 
 
 def api_get(user: User) -> JsonDict:
