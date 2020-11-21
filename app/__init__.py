@@ -7,14 +7,15 @@ from flask_talisman import Talisman
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
-from app import make_json_serializable
-from app.config import Config
+from app.config import Config, filter_non_prod, get_environment_from_environment_variable
 
 app = Flask(__name__)
 if not app.debug:
     sentry_sdk.init(
         dsn="https://4dbd095718e34cb7bc4f7d64ecf488c4@sentry.io/1678958",
         integrations=[FlaskIntegration(), SqlalchemyIntegration()],
+        before_send=filter_non_prod,
+        environment=get_environment_from_environment_variable(),
         send_default_pii=True
     )
 Talisman(app, content_security_policy={
