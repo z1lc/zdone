@@ -13,7 +13,7 @@ from flask import render_template, request, make_response, redirect, send_file
 from flask import url_for, flash
 from flask_login import current_user, login_user, logout_user
 from flask_login import login_required
-from sentry_sdk import capture_exception, configure_scope
+from sentry_sdk import capture_exception, configure_scope, last_event_id
 from werkzeug.urls import url_parse
 
 from app.card_generation.anki import generate_full_apkg
@@ -36,9 +36,13 @@ from .util import today_datetime, failure, success, api_key_failure, jsonp, vali
     htmlize_note, get_b2_api
 
 
-@app.route('/error')
 @app.errorhandler(500)
 def server_error_handler(error):
+    return render_template("500.html", sentry_event_id=last_event_id()), 500
+
+
+@app.route('/error')
+def error_example(error):
     raise ValueError("testing sentry")
 
 
