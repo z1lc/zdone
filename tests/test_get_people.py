@@ -1,6 +1,6 @@
 import pytest
 
-from app.card_generation.people_getter import Person, get_wikipedia_info, _get_known_for_html, _looks_like_name
+from app.card_generation.people_getter import Person, maybe_get_wikipedia_info, _get_known_for_html, _looks_like_name
 
 
 class TestPerson(Person):
@@ -25,7 +25,7 @@ class TestGetPeople:
                         "Oprah Winfrey",
                         "Nehru"]
         people = [TestPerson(name) for name in famous_names]
-        wikipedia_people = [get_wikipedia_info(person) for person in people]
+        wikipedia_people = [maybe_get_wikipedia_info(person) for person in people]
         assert(len(list(filter(lambda person: person is None, wikipedia_people))) == 0)
 
     def test_known_for_html_sensible(self):
