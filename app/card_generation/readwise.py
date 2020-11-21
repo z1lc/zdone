@@ -117,7 +117,11 @@ def _generate_clozed_highlight_notes(all_highlights, tags, user):
                     highlight_i['next_highlight'] = book_highlights_list[i + 1]['text']
                 else:
                     highlight_i['next_highlight'] = ""
-                highlight_i['image'] = f"<img src='{highlight_i['cover_image_url']}'>"
+
+                highlight_i['image'] = ""
+                # image sources that are on Readwise's S3 bucket are generally not useful
+                if 'readwise-assets' not in highlight_i['cover_image_url']:
+                    highlight_i['image'] = f"<img src='{highlight_i['cover_image_url']}'>"
                 highlight_as_note = zdNote(
                     model=get_highlight_model(user),
                     tags=tags,
