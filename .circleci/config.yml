@@ -14,22 +14,22 @@ jobs: # A basic unit of work in a run
       - run: sudo chown -R circleci:circleci /usr/local/bin
       - run: sudo chown -R circleci:circleci /usr/local/lib/python3.8/site-packages
       - restore_cache:
-      # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
-          key: deps9-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: python-requirements-{{ checksum "requirements.txt" }}
       - run:
-          command: |
-            sudo pip install pipenv
-            pipenv install
-      - save_cache: # cache Python dependencies using checksum of requirements as the cache-key
-          key: deps9-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          name: Install Python dependencies
+          command: pip install -r requirements.txt
+      - save_cache:
+          key: python-requirements-{{ checksum "requirements.txt" }}
           paths:
-            - "venv"
+            - "~/.cache/pip"
+            - "/usr/local/bin"
+            - "/usr/local/lib/python3.8/site-packages"
       - run:
           command: |
-            pipenv run python -m mypy app/ tests/
+            python -m mypy app/ tests/
       - run:
           command: |
-            pipenv run python -m pytest
+            python -m pytest
       - store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
           path: test-results
       - store_artifacts: # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
