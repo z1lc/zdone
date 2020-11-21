@@ -1,12 +1,11 @@
 from app.card_generation.highlight_clozer import cloze_out_keyword, no_punc, _clean_keyword
 from app.card_generation.readwise import _generate_clozed_highlight_notes
+from utils import TEST_USER, get_test_highlight, BECOMING_IMAGE_URL
+
 
 # GIVEN keyword exists with punctuation in sentence
 # WHEN getting the cloze version of the sentence
 # THEN returns cloze that clozes the keyword and retains un-clozed punctuation
-from utils import TEST_USER, get_test_highlight, BECOMING_IMAGE_URL
-
-
 def test_cloze_out_keyword_with_punctuation():
     relevant_sentence = "We could have green eggs and ham, if we had some ham."
     keyword = "ham"

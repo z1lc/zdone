@@ -67,7 +67,8 @@ def failure(reason: str = "", code: int = 400) -> Tuple[Response, int]:
 
 
 def api_key_failure() -> Tuple[Response, int]:
-    return failure("Make sure you are passing a valid API key in the x-api-key header (POSTs) or within the URL (GETs).", 401)
+    return failure(
+        "Make sure you are passing a valid API key in the x-api-key header (POSTs) or within the URL (GETs).", 401)
 
 
 def jsonp(function_name: str, payload: Union[str, Tuple]) -> Response:

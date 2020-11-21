@@ -13,7 +13,7 @@ from flask import render_template, request, make_response, redirect, send_file
 from flask import url_for, flash
 from flask_login import current_user, login_user, logout_user
 from flask_login import login_required
-from sentry_sdk import last_event_id, capture_exception, configure_scope
+from sentry_sdk import capture_exception, configure_scope
 from werkzeug.urls import url_parse
 
 from app.card_generation.anki import generate_full_apkg

@@ -3,10 +3,9 @@ import string
 from typing import List, Tuple
 
 import spacy
+from spacy.tokens import Span
 
 # initialize the model once when we import this script
-from spacy.tokens import Doc, Span
-
 NLP = spacy.load("en_core_web_sm")
 
 
@@ -64,6 +63,7 @@ def get_keywords(sentence: str) -> List[str]:
 def not_number_at_front(ent):
     return ent.label_ not in ["ORDINAL", "CARDINAL"] and ent.start != 0
 
+
 # Sometimes the keyword will be something like "the United Kingdom".
 # This method takes keywords like that and transforms them into "United Kingdom"
 def _clean_keyword(best_entity: str) -> str:
@@ -84,6 +84,7 @@ def _clean_keyword(best_entity: str) -> str:
     result = " ".join(best_entity_words)
     result = result.strip()
     return result
+
 
 # return the most interesting entities from a list of entities in a sentence
 # input: tuple of nlp-generated entities from a sentence
@@ -123,8 +124,9 @@ def cloze_out_keyword(keyword: str, idx: int, sentence: str):
     num_words_in_keywords = len(keyword.split(" "))
     if num_words_in_keywords > 1:
         return sentence.replace(keyword, cloze_word_with_punc(idx, keyword))
-    return " ".join(map(lambda word: cloze_word_with_punc(idx, word) if no_punc(word.lower()) == keyword.lower() else word,
-                        sentence_words))
+    return " ".join(
+        map(lambda word: cloze_word_with_punc(idx, word) if no_punc(word.lower()) == keyword.lower() else word,
+            sentence_words))
 
 
 def get_prefix_punc(word: str) -> str:
@@ -142,7 +144,7 @@ def get_suffix_punc(word: str) -> str:
     # e.g. catch things like "The house is LeBron's."
     trimmed_ending_punctuation_word = word[:last_non_punc_idx + 1]
     if trimmed_ending_punctuation_word.endswith("\'s"):
-        last_non_punc_idx -= 2 # trim 's
+        last_non_punc_idx -= 2  # trim 's
     return word[last_non_punc_idx + 1:]
 
 
