@@ -113,9 +113,9 @@ having sum(case when mv.watched
                 trailer_key,
                 str(youtube_durations.get(trailer_key, '')),
                 f"<img src='{video.poster_image_url}'>" if video.poster_image_url else '',
-                "".join([f"<img src='{d.image_url}'>" for d in directors]) if video.is_film() else '',
-                "".join([f"<img src='{c.image_url}'>" for c in creators]) if video.is_tv() else '',
-                "".join([f"<img src='{a.image_url}'>" for a in top_actors]),
+                "".join([f"<img src='{d.image_url}'>" for d in directors if d.image_url]) if video.is_film() else '',
+                "".join([f"<img src='{c.image_url}'>" for c in creators if c.image_url]) if video.is_tv() else '',
+                "".join([f"<img src='{a.image_url}'>" for a in top_actors if a.image_url]),
             ])
         deck.add_note(video_as_note)
 
