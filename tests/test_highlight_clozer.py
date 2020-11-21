@@ -92,53 +92,57 @@ def test_cloze_out_multiword_keyword():
     assert expected_cloze == cloze_out_keyword(keyword, 0, relevant_sentence)
 
 
-# Verify that given some test highlights, the whole pipeline works
-def test_end_to_end_cloze_generation():
-    test_highlights = [
-        get_test_highlight(),
-        get_test_highlight(
-            text="It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of "
-                 "foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light,"
-                 " it was the season of Darkness, it was the spring of hope, it was the winter of despair.",
-            source_title="A Tale of Two Cities",
-            source_author="Charles Dickens",
-        ),
-        get_test_highlight(
-            text="What differentiates the success stories from the failures is that the successful entrepreneurs had "
-                 "the foresight, the ability, and the tools to discover which parts of their plans were working "
-                 "brilliantly and which were misguided, and adapt their strategies accordingly."
-        ),
-        get_test_highlight(text=""),
-    ]
-    # This will break if/when cloze field is moved to diff relevant position
-    generated_notes = _generate_clozed_highlight_notes(test_highlights, [], TEST_USER)
+def test_does_not_use_bad_images():
+    highlights = [get_test_highlight(
+        cover_image_url="https://readwise-assets.s3.amazonaws.com/static/images/article1.be68295a7e40.png")]
+    for note in _generate_clozed_highlight_notes(highlights, [], TEST_USER):
+        assert "" == note.fields[5]
 
-    # we shouldn't generate a cloze note if we can't cloze out anything in the text
-    assert len(generated_notes) == 3
 
-    for note in generated_notes:
-        assert BECOMING_IMAGE_URL in note.fields[5]
+def test_does_not_generate_empty_cloze():
+    highlights = [get_test_highlight(text="")]
+    assert 0 == len(_generate_clozed_highlight_notes(highlights, [], TEST_USER))
 
-    first_cloze_sentence = generated_notes[0].fields[2]
+
+def test_cloze_deterministic():
+    highlights = [get_test_highlight(
+        text="It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of "
+             "foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light,"
+             " it was the season of Darkness, it was the spring of hope, it was the winter of despair.",
+        source_title="A Tale of Two Cities",
+        source_author="Charles Dickens",
+    )]
+    generated_notes = _generate_clozed_highlight_notes(highlights, [], TEST_USER)
+    assert len(generated_notes) == 1
+
     # clozes should be deterministic given same version of spacy and same model used
+    first_cloze_sentence = generated_notes[0].fields[2]
     assert "{{c1::Darkness}}" in first_cloze_sentence
 
-    # avoids closing out denylist word
-    assert "{{c1::What" not in generated_notes[2].fields[2]
+
+def test_avoid_clozing_denylist_word():
+    highlights = [get_test_highlight(
+        text="What differentiates the success stories from the failures is that the successful entrepreneurs had "
+             "the foresight, the ability, and the tools to discover which parts of their plans were working "
+             "brilliantly and which were misguided, and adapt their strategies accordingly."
+    )]
+    generated_notes = _generate_clozed_highlight_notes(highlights, [], TEST_USER)
+    assert len(generated_notes) == 1
+    for note in generated_notes:
+        assert "{{c1::What" not in note.fields[2]
+
+
+def test_image_url():
+    generated_notes = _generate_clozed_highlight_notes([get_test_highlight()], [], TEST_USER)
+    assert len(generated_notes) == 1
+    for note in generated_notes:
+        assert BECOMING_IMAGE_URL in note.fields[5]
 
 
 # Verify that given some test highlights, the whole pipeline works
 def test_clozes_not_generated_for_very_short_highlight():
     short_highlight_id = "zdone:something:988243"
     test_highlights = [
-        get_test_highlight(),
-        get_test_highlight(
-            text="It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of "
-                 "foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light,"
-                 " it was the season of Darkness, it was the spring of hope, it was the winter of despair.",
-            source_title="A Tale of Two Cities",
-            source_author="Charles Dickens",
-        ),
         get_test_highlight(
             id=short_highlight_id,
             text="Abraham Lincoln",  # short highlight that should be filtered
@@ -148,6 +152,6 @@ def test_clozes_not_generated_for_very_short_highlight():
     ]
     # This will break if/when cloze field is moved to diff relevant position
     generated_notes = _generate_clozed_highlight_notes(test_highlights, [], TEST_USER)
-    assert len(generated_notes) == 2
+    assert len(generated_notes) == 0
     for note in generated_notes:
         assert not note.fields[0] == short_highlight_id
