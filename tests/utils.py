@@ -12,11 +12,11 @@ BECOMING_IMAGE_URL = "https://images-na.ssl-images-amazon.com/images/I/41eRuKxPb
 
 def get_test_highlight(
         id: str = 'zdone:highlight:12345',
-        text: str = 'It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.',
+        text: str = 'It is a truth universally acknowledged, that a single man in possession of a good fortune, '
+                    'must be in want of a wife.',
         source_title: str = 'Pride and Prejudice',
         source_author: str = 'Jane Austen',
-        cover_image_url: str = BECOMING_IMAGE_URL,
-) -> JsonDict:
+        cover_image_url: str = BECOMING_IMAGE_URL) -> JsonDict:
     return {
         'id': id,
         'text': text,
