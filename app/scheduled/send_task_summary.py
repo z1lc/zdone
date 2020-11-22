@@ -11,7 +11,7 @@ from app.models.base import User
 from app.reminders import get_reminders_from_this_week, get_recent_task_completions, get_current_median_skew, \
     get_reminders, get_unseen_reminders
 from app.spotify import get_distinct_songs_this_week, get_new_songs_this_week, get_new_this_week
-from util import get_distinct_users_in_last_week
+from app.util import get_distinct_users_in_last_week
 
 env: Environment = Environment(
     loader=PackageLoader('app', 'email_templates'),
