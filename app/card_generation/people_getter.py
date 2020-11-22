@@ -35,17 +35,17 @@ class Person:
 
 class WikipediaPerson(Person):
 
-    def __init__(self, name: str, seen_in: str, selected_highlight: str, known_for_html: str, images: str):
+    def __init__(self, name: str, seen_in: str, selected_highlight: str, known_for_html: str, images_html: str):
         super().__init__(name, seen_in, selected_highlight)
         self.known_for_html = known_for_html
-        self.images = images
+        self.images_html = images_html
 
     def __repr__(self):
         return f"WikipediaPerson(name={self.name}, known_for_html={self.known_for_html}, highlight={self.selected_highlight})"
 
 
 def _looks_like_name(text: str) -> bool:
-    return re.fullmatch(r"([A-Z]([\.a-z])+[ ]?)+", text) is not None
+    return re.fullmatch(r"([A-Z]([.a-z])+[ ]?)+", text) is not None
 
 
 def get_people(highlight_data: Dict[str, str]) -> List[Person]:
@@ -62,7 +62,7 @@ def get_person_note(wikipedia_person: WikipediaPerson, tags, user):
         fields=[
             wikipedia_person.name,
             wikipedia_person.known_for_html,
-            wikipedia_person.images,
+            wikipedia_person.images_html,
             wikipedia_person.seen_in,
             wikipedia_person.selected_highlight
         ])
@@ -175,4 +175,4 @@ def maybe_get_wikipedia_info(person: Person) -> Optional[WikipediaPerson]:
         seen_in=person.seen_in,
         selected_highlight=person.selected_highlight,
         known_for_html=_get_known_for_html(wiki_page.summary, name_on_wikipedia),
-        images=_get_image_html(wiki_page.images, name_on_wikipedia))
+        images_html=_get_image_html(wiki_page.images, name_on_wikipedia))
