@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import Dict, Any, Optional, Tuple, Union
+from typing import Dict, Any, Optional, Tuple, Union, List
 
 import pytz
 from b2sdk.account_info import InMemoryAccountInfo
@@ -8,7 +8,7 @@ from b2sdk.api import B2Api
 from flask import jsonify, Response
 from pushover import Client
 
-from app import kv
+from app import kv, db
 from app.models.base import User
 
 JsonDict = Dict[str, Any]
@@ -89,3 +89,35 @@ def get_b2_api():
 
 def get_pushover_client(user: User):
     return Client(user.pushover_user_key, api_token=kv.get('PUSHOVER_API_TOKEN'))
+
+
+def get_distinct_users_in_last_week() -> List[str]:
+    sql = f"""
+with review_logs as (select user_id, at from anki_review_logs),
+    song_logs as (select user_id, created_at as at from spotify_plays),
+    tasks_logs as (select user_id, at from task_logs),
+    hn_logs as (select user_id, at from hn_read_logs),
+    reminder_logs as (select user_id, sent_at
+                      from reminder_notifications
+                               join reminders r on r.id = reminder_notifications.reminder_id),
+    all_logs as (select *
+                 from review_logs
+                 union
+                 select *
+                 from song_logs
+                 union
+                 select *
+                 from tasks_logs
+                 union
+                 select *
+                 from hn_logs
+                 union
+                 select *
+                 from reminder_logs)
+select distinct username, max(id)
+from all_logs l
+         join users u on u.id = l.user_id
+where at >= current_date - interval '7 days' and username <> 'demo'
+group by username
+order by max(id) asc"""
+    return [t[0] for t in list(db.engine.execute(sql))]
