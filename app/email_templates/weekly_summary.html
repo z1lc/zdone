@@ -41,3 +41,7 @@ Your weekly summary of activity on <a href="https://www.zdone.co/">zdone</a>.
         {% endfor %}
     </ul>
 {% endif %}
+{% if num_distinct_users %}
+    <h2>App Popularity</h2>
+    <b>{{ num_distinct_users }}</b> distinct users were active this week! They include {{ distinct_user_string }}.
+{% endif %}

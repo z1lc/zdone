@@ -25,7 +25,6 @@ def get_unread_stories(user: User) -> List[HnStory]:
 
 def get_total_and_average_reads_per_week(user: User) -> Tuple[float, float]:
     sql = f"""
-
 select count(*), count(*) / extract(days from (current_date - min(at))) * 7
 from hn_read_logs
 where user_id = {user.id}"""
