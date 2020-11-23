@@ -1,3 +1,4 @@
+import random
 import re
 import string
 from typing import List, Tuple
@@ -26,10 +27,9 @@ BORING_WORDS = [
 def get_clozed_highlight(highlight):
     # use basic nlp to identify keyword in sentence to cloze
     keywords = get_keywords(highlight)
+    random_keyword = random.choice(keywords)
     result = highlight  # start with un-clozed sentence as result
-    for idx, keyword in enumerate(keywords):
-        result = cloze_out_keyword(keyword, idx, result)
-    return result
+    return cloze_out_keyword(random_keyword, result)
 
 
 # Returns a word with punctuation chars removed, except dashes in middle of word
@@ -50,22 +50,14 @@ def get_longest_word(no_punctuation_sentence) -> str:
 
 def get_keywords(sentence: str) -> List[str]:
     doc = NLP(sentence)
-    # first see if we have some nice named entities for the cloze
-    result = get_best_entities(doc.ents)
-    if result:
-        # return the first named entity just because multiple clozes in a highlight ends up being a lot of reviewing
-        # for a card that probably isn't ideal (even if the cloze's are good, the volume of highlights should be
-        # pretty high)
-        return [no_punc(result[0])]
-    # we didn't find any good entities, so let's just return a core noun from a noun phrase
-    for noun_chunk in doc.noun_chunks:
-        # don't return bad nouns like "they"
-        if no_punc(noun_chunk.root.text.lower()) not in BORING_WORDS:
-            return [no_punc(noun_chunk.root.text)]
-
-    # nothing has worked, so just return whatever word is longest
-    no_punctuation_sentence = no_punc(sentence)
-    return [get_longest_word(no_punctuation_sentence)]
+    result = set()
+    # first, grab interesting entities. will include things like "LeBron James", "Google", and "1865" (year)
+    result.update(get_interesting_entities(doc.ents))
+    # next, add worthwhile nouns like "dog", "fox"
+    result.update([no_punc(noun_chunk.root.text) for noun_chunk in doc.noun_chunks if no_punc(noun_chunk.root.text).lower() not in BORING_WORDS])
+    # finally, let's add the longest word
+    result.update([get_longest_word(no_punc(sentence))])
+    return list(result)
 
 
 # Highlights will fairly regularly have the structure of
@@ -75,7 +67,7 @@ def get_keywords(sentence: str) -> List[str]:
 # at the front of higlights is almost never useful, so this function helps filter them
 # out.
 def not_number_at_front(ent):
-    return ent.label_ not in ["ORDINAL", "CARDINAL"] and ent.start != 0
+    return ent.label_ not in ["ORDINAL", "CARDINAL"] or ent.start > 3
 
 
 # Sometimes the keyword will be something like "the United Kingdom".
@@ -91,7 +83,7 @@ def _clean_keyword(best_entity: str) -> str:
     ]
     stripped_best_entity = best_entity.strip()
     best_entity_words = stripped_best_entity.split(" ")
-    if best_entity_words[0] in bad_starting_words:
+    if best_entity_words[0].lower() in bad_starting_words:
         best_entity_words = best_entity_words[1:]
 
     # handle any whitespace issues
@@ -103,38 +95,25 @@ def _clean_keyword(best_entity: str) -> str:
 # return the most interesting entities from a list of entities in a sentence
 # input: tuple of nlp-generated entities from a sentence
 # output: list of best entities (currently only ever returns 1 entity)
-def get_best_entities(ents: Tuple[Span]):
-    if not ents:
+def get_interesting_entities(all_entities: Tuple[Span]) -> List[str]:
+    if not all_entities:
         return []
-    # the best entity will likely be repeated many times or just be the first one
-    max_count = 0
-    best_entity = None
-    for ent in ents:
-        ent_count = ents.count(ent)
-        # this will match the first entitiy that isn't something like "one"
-        # also will deliberately not match any entities that are the first word in the sentence, as
-        # that makes for a jarring cloze card
-        if ent_count > max_count and not_number_at_front(ent):
-            max_count = ent_count
-            best_entity = ent.text
-
-    if best_entity is None:
-        # make sure to return empty list here
-        return []
-    return [_clean_keyword(best_entity)]
+    interesting_entities = filter(lambda ent: not_number_at_front(ent), all_entities)
+    cleaned_interesting_ents = map(lambda ent: _clean_keyword(ent.text), interesting_entities)
+    return list(cleaned_interesting_ents)
 
 
 # returns sentence with all occurrences of keyword clozed out.
 # In the case where a keyword contains multiple words ("LeBron James"),
 # for simplicity, just remove full instances of the keyword. In case where keyword
 # is single word, replaces all occurrences regardless of punctuation/capitalization of word
-def cloze_out_keyword(keyword: str, idx: int, sentence: str):
+def cloze_out_keyword(keyword: str, sentence: str) -> str:
     sentence_words = sentence.split(" ")
     num_words_in_keywords = len(keyword.split(" "))
     if num_words_in_keywords > 1:
-        return sentence.replace(keyword, cloze_word_with_punc(idx, keyword))
+        return sentence.replace(keyword, cloze_word_with_punc(keyword))
     return " ".join(
-        map(lambda word: cloze_word_with_punc(idx, word) if no_punc(word.lower()) == keyword.lower() else word,
+        map(lambda word: cloze_word_with_punc(word) if no_punc(word.lower()) == keyword.lower() else word,
             sentence_words))
 
 
@@ -157,7 +136,7 @@ def get_suffix_punc(word: str) -> str:
     return word[last_non_punc_idx + 1:]
 
 
-def cloze_word_with_punc(idx: int, word: str) -> str:
+def cloze_word_with_punc(word: str, idx: int = 0) -> str:
     prefix_punc = get_prefix_punc(word)
     suffix_punc = get_suffix_punc(word)
     return prefix_punc + '{{c' + str(idx + 1) + '::' + no_punc(word) + "}}" + suffix_punc
