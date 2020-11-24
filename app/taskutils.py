@@ -1,5 +1,6 @@
 import datetime
 import json
+import random
 import re
 from typing import List, Tuple, Optional
 
@@ -14,8 +15,8 @@ from trello import TrelloClient, trellolist
 from app import db
 from app.models.base import User
 from app.models.tasks import TaskLog, Task
-from app.util import failure, success, JsonDict
 from app.reminders import get_most_recent_reminder, get_recent_task_completions
+from app.util import failure, success, JsonDict
 
 
 def api_get(user: User) -> JsonDict:
@@ -72,9 +73,9 @@ def api_get(user: User) -> JsonDict:
     r = {
         "average_daily_load": round(average_daily_load, 2),
         "num_tasks_completed": len(get_recent_task_completions(user, date_start=this_sunday)),
-        "tasks_to_do": ret_tasks[:2],
+        "tasks_to_do": ret_tasks,
         "time_zone": user.current_time_zone,
-        "trello_lists": lists[:2],
+        "trello_lists": lists,
     }
 
     latest_reminder = get_most_recent_reminder(user)
@@ -98,7 +99,7 @@ def do_update_task(update: str,
         return failure(f"Must pass a valid task_id.")
     if service not in ["trello", "zdone"]:
         return failure(f"Must pass a valid service.")
-    if update not in ["complete", "defer", "move"]:
+    if update not in ["complete", "partial_complete", "defer", "move"]:
         return failure(f"Must pass a valid update type.")
     if user.current_time_zone is None:
         return failure(f"User {user.username} does not have a time zone setting.")
@@ -115,6 +116,12 @@ def do_update_task(update: str,
         db.session.add(log)
         if update == "complete":
             task.last_completion = datetime.datetime.now(pytz.timezone(user.current_time_zone))
+        elif update == "partial_complete":
+            # Partial completions allow us to get credit for doing at least *some* work in pursuit of a goal.
+            # We aren't actually done with the task, though, so we need to make sure to get to it soon again.
+            # Here, we defer by ~2-5 days.
+            task.defer_until = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date() \
+                               + datetime.timedelta(days=random.choice(range(2, 6)))
         elif update == "defer":
             if days is None:
                 return failure(f"Need to pass number of days to defer by.")
