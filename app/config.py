@@ -4,8 +4,9 @@ from app.log import log
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+PRODUCTION = "production"
 ENV_TO_SENTRY_REPORT_MAP = {
-    "production": True,
+    PRODUCTION: True,
     "qa": False,
     "development": False,
     "ci": False
@@ -23,6 +24,8 @@ def filter_non_prod(event, hint):
         return event
     return None
 
+def is_prod():
+    return get_environment_from_environment_variable() == PRODUCTION
 
 def get_environment_from_environment_variable():
     valid_environments = ENV_TO_SENTRY_REPORT_MAP.keys()

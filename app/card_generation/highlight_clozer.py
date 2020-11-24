@@ -6,6 +6,8 @@ from typing import List, Tuple
 import spacy
 from spacy.tokens import Span
 
+from app.config import is_prod
+
 # initialize the model once when we import this script
 NLP = spacy.load("en_core_web_sm")
 BORING_WORDS = [
@@ -27,7 +29,7 @@ BORING_WORDS = [
 def get_clozed_highlight(highlight):
     # use basic nlp to identify keyword in sentence to cloze
     keywords = get_keywords(highlight)
-    random_keyword = random.choice(keywords)
+    random_keyword = random.choice(keywords) if is_prod() else keywords[0]
     result = highlight  # start with un-clozed sentence as result
     return cloze_out_keyword(random_keyword, result)
 

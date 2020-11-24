@@ -1,3 +1,5 @@
+import pytest
+
 from app.card_generation.highlight_clozer import cloze_out_keyword, no_punc, _clean_keyword
 from app.card_generation.readwise import _generate_clozed_highlight_notes
 from utils import TEST_USER, get_test_highlight, BECOMING_IMAGE_URL
@@ -103,7 +105,9 @@ def test_does_not_generate_empty_cloze():
     highlights = [get_test_highlight(text="")]
     assert 0 == len(_generate_clozed_highlight_notes(highlights, [], TEST_USER))
 
-
+# Can be useful to have around, so just skipping in CI/normal development
+# To make this test work, you need to set `maybe_environment` to PRODUCTION value
+@pytest.mark.skip(reason="nondeterministic")
 def test_cloze_randomness():
     highlights = [get_test_highlight(
         text="It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of "
