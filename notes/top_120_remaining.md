@@ -5,7 +5,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * ~~Elvis Presley~~
 * ~~Michael Jackson~~
 * ~~Elton John~~
-* Madonna
+* ~~Madonna~~
 * ~~Led Zeppelin~~
 * ~~Rihanna~~
 * ~~Pink Floyd~~
@@ -13,7 +13,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * ~~Eminem~~
 * ~~Taylor Swift~~
 * ~~Mariah Carey~~
-* Eagles
+* ~~Eagles~~
 * Queen
 * ~~Whitney Houston~~
 * Celine Dion
