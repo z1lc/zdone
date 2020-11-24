@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block within_head %}
+    <title>HN</title>
+    <link rel="stylesheet" href="//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
+    <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <script>
+      let table;
+      $(document).ready(function () {
+        table = $('#highlights_table').DataTable({
+          "pageLength": 10,
+          "lengthChange": true,
+          "lengthMenu": [10, 25, 50, 100],
+          "searching": true,
+          "ordering": true,
+          "language": {
+            "info": "Showing _START_ to _END_ of _TOTAL_ highlights"
+          },
+          "columns": [
+            {"width": "60%"},
+            {"width": "20%"},
+            {"width": "20%"},
+          ],
+        });
+      });
+    </script>
+    <style>
+      body {
+        max-width: 1500px;
+        margin: auto;
+        padding: 20px;
+      }
+
+      a {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {{ navigation|safe }}<br><br>
+    <table id="highlights_table">
+        <thead>
+        <tr>
+            <th>Highlight</th>
+            <th>Source</th>
+            <th>Author</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in highlight_items %}
+            <tr id="{{ item['id'] }}">
+                <td>{{ item['text'] }}</td>
+                <td>{{ item['source_title'] }}</td>
+                <td>{{ item['source_author'] }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
