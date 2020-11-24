@@ -15,10 +15,10 @@ from sentry_sdk import capture_exception, configure_scope, last_event_id
 from werkzeug.urls import url_parse
 
 from app.card_generation.anki import generate_full_apkg
+from app.card_generation.readwise import get_highlights
 from app.card_generation.util import AnkiCard
 from app.models.anki import AnkiReviewLog
 from app.models.base import User
-from card_generation.readwise import get_highlights
 from . import app, db, kv
 from .forms import LoginForm, RegistrationForm, ReminderForm, REMINDER_DEFAULT
 from .hn import get_unread_stories, get_total_and_average_reads_per_week
