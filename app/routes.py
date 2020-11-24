@@ -404,7 +404,11 @@ def trello_webhook():
         maybe_member = req.get("action", {}).get("idMemberCreator", None)
         user = User.query.filter_by(trello_member_id=maybe_member).one_or_none()
         if user:
-            get_updated_trello_cards(user, force_refresh=True)
+            # clear out cache so we force a refresh in case we don't receive the webhook from Trello
+            # previously, we used to fetch the new cards right away. But this can easily cause Rate limit exceeded to
+            # be returned by Trello (eg if I move a bunch of cards)
+            user.cached_trello_data = None
+            db.session.commit()
         else:
             with configure_scope() as scope:
                 scope.set_tag("request", json.dumps(req))
