@@ -31,10 +31,10 @@
       // Trello doesn't have defer behavior implemented; no concept of "move to" exsits for zdone
       if (task.service === "zdone") {
         $("button#moveto").fadeOut(200, function () {
-          $("button.defer").fadeIn(200);
+          $("button#complete_5m, button.defer").fadeIn(200);
         });
       } else {
-        $("button.defer").fadeOut(200, function () {
+        $("button#complete_5m, button.defer").fadeOut(200, function () {
           $("button#moveto").fadeIn(200);
         });
       }
@@ -99,6 +99,11 @@
     $("button#complete").click(function (event) {
       completeItem(task.service, task.id, task.raw_name);
       num_tasks_completed++;
+      nextTask();
+      event.preventDefault();
+    });
+    $("button#complete_5m").click(function (event) {
+      partiallyCompleteItem(task.service, task.id, task.raw_name);
       nextTask();
       event.preventDefault();
     });
@@ -174,7 +179,7 @@
     font-size: 15px;
   }
 
-  button#later, button.defer, button#moveto {
+  button#later, button#complete_5m, button.defer, button#moveto {
     font-size: 20px;
   }
 
@@ -218,6 +223,7 @@
             <button id="complete">Complete</button>
             <br>
             <button id="later">Later</button>
+            <button id="complete_5m">Complete 5m</button>
             <button class="defer">Defer...</button>
             <button id="moveto">Move to...</button>
         </div>

@@ -1,3 +1,7 @@
+function partiallyCompleteItem(service, id, rawName) {
+  updateItem(service, id, null, rawName, "partial_complete", null);
+}
+
 function completeItem(service, id, rawName) {
   updateItem(service, id, null, rawName, "complete", null);
 }
