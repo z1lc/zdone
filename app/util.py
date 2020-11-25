@@ -36,6 +36,8 @@ def get_navigation(user: User, current_page: str) -> str:
         pages.append('<a href="/video" target="_self">Video</a>' if current_page != "Video" else "Video")
     if user.username in ['rsanek', 'vsanek', 'will']:
         pages.append('<a href="/hn" target="_self">HN</a>' if current_page != "HN" else "HN")
+    if user.username in ['rsanek', 'will']:
+        pages.append('<a href="/highlights" target="_self">Highlights</a>' if current_page != "Highlights" else "Highlights")
     if user.username in ['rsanek']:
         pages.append('<a href="/logout" target="_self">Log out</a>')
     return " | ".join(pages)

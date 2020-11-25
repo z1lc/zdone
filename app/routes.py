@@ -15,6 +15,7 @@ from sentry_sdk import capture_exception, configure_scope, last_event_id
 from werkzeug.urls import url_parse
 
 from app.card_generation.anki import generate_full_apkg
+from app.card_generation.readwise import get_highlights
 from app.card_generation.util import AnkiCard
 from app.models.anki import AnkiReviewLog
 from app.models.base import User
@@ -338,6 +339,14 @@ def reminders(reminder_id):
                            reminders=get_reminders(current_user),
                            form=form,
                            reminder_default=REMINDER_DEFAULT.replace('\n', ''))
+
+
+@app.route('/highlights/')
+@login_required
+def books():
+    return render_template("highlights.html",
+                           navigation=get_navigation(current_user, "Highlights"),
+                           highlight_items=get_highlights(current_user))
 
 
 @app.route('/hn/', defaults={'item_id': None}, methods=['GET'])
