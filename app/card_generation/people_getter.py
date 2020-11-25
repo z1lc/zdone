@@ -4,7 +4,6 @@ from typing import List, Optional, Dict
 
 import genanki
 import spacy
-from sentry_sdk import capture_exception
 from wikipedia import wikipedia, WikipediaPage, PageError, WikipediaException
 
 from app.card_generation.util import zdNote, get_template, AnkiCard, get_rs_anki_css, get_default_css
@@ -98,7 +97,6 @@ def _get_wiki_page(name: str) -> Optional[WikipediaPage]:
         return wikipedia.page(name, auto_suggest=False)
     except WikipediaException as e:
         log(f"Failed to find person in Wikipedia for: {name}")
-        capture_exception(e)
         return None
 
 
