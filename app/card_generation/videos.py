@@ -81,7 +81,10 @@ having sum(case when mv.watched
 
         # seems like order is sometimes 0-based and other times 1-based?
         top_actors = (
-            VideoPerson.query.join(VideoCredit).filter_by(video_id=video.id).filter(VideoCredit.order <= 3).all()[:3]  # type: ignore
+            VideoPerson.query.join(VideoCredit)
+            .filter_by(video_id=video.id)
+            .filter(VideoCredit.order <= 3)  # type: ignore
+            .all()[:3]
         )
 
         top_actors_and_roles = list()

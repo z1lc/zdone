@@ -13,7 +13,6 @@ import spotipy
 from dateutil import parser
 from flask import redirect
 from spotipy import oauth2
-from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
 from app import kv, db
@@ -126,9 +125,10 @@ def update_last_fm_scrobble_counts(user: User):
     if user.last_fm_username is None:
         log(f"User {user.username} does not have a last.fm username set. Nothing to refresh.")
         return
-    elif user.last_fm_last_refresh_time is None or pytz.timezone("US/Pacific").localize(
-        user.last_fm_last_refresh_time
-    ) < (today_datetime() - timedelta(days=7)):
+
+    last_refresh_time = user.last_fm_last_refresh_time
+    week_ago = today_datetime() - timedelta(days=7)
+    if last_refresh_time is None or pytz.timezone("US/Pacific").localize(last_refresh_time) < week_ago:
         done = False
         page = 1
         name_to_plays = {}
@@ -569,9 +569,9 @@ def get_artists_images() -> str:
     to_ret = ""
     for artist_uri in db.engine.execute(
         """select uri
-from spotify_artists
-where uri in (select spotify_artist_uri from managed_spotify_artists where user_id in (1, 2, 3, 4, 5, 6))
-and not ((good_image and spotify_image_url is not null) or image_override_name is not null)"""
+            from spotify_artists
+            where uri in (select spotify_artist_uri from managed_spotify_artists where user_id in (1, 2, 3, 4, 5, 6))
+            and not ((good_image and spotify_image_url is not null) or image_override_name is not null)"""
     ):
         artist = sp.artist(artist_uri[0])
         src = artist["images"][0]["url"] if artist["images"] else ""

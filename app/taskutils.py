@@ -58,8 +58,10 @@ def api_get(user: User) -> JsonDict:
                 "service": "zdone",
                 "raw_name": "Reconfigure tasks",
                 "name": "Reconfigure tasks",
-                "note": f"Average daily task load is {round(average_daily_load, 2)}, which is ≥3. Remove tasks or "
-                f"schedule them less frequently to avoid feeling overwhelmed.",
+                "note": (
+                    f"Average daily task load is {round(average_daily_load, 2)}, which is ≥3. "
+                    f"Remove tasks or schedule them less frequently to avoid feeling overwhelmed."
+                ),
                 "subtask_id": None,
                 "length_minutes": None,
             },

@@ -11,16 +11,15 @@ from app.util import today
 
 def get_unread_stories(user: User) -> List[HnStory]:
     read_logs = db.session.query(HnReadLog).filter_by(user_id=user.id).subquery()
-    stories = [
-        s
-        for s in db.session.query(HnStory)
+    stories = (
+        db.session.query(HnStory)
         .outerjoin(read_logs)
         .filter(read_logs.c.id == None)
         .filter(HnStory.score >= 100)
         .order_by(HnStory.score.desc())  # type: ignore
         .limit(100)
         .all()
-    ]
+    )
     for story in stories:
         story.posted_at = humanize.naturaltime(datetime.datetime.now() - story.posted_at)
     return stories

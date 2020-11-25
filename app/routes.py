@@ -39,7 +39,7 @@ from .spotify import (
     get_artists_images,
     populate_null,
 )
-from .taskutils import do_update_task, get_updated_trello_cards, ensure_trello_setup_idempotent, api_get
+from .taskutils import do_update_task, ensure_trello_setup_idempotent, api_get
 from .util import (
     today_datetime,
     failure,
