@@ -26,6 +26,9 @@ jobs: # A basic unit of work in a run
             - "/usr/local/lib/python3.8/site-packages"
       - run:
           command: |
+            black --check .
+      - run:
+          command: |
             python -m mypy app/ tests/
       - run:
           command: |

@@ -37,9 +37,7 @@ versions of the code (edited it multiple times & tried importing to test functio
 
 # returns number of notes generated
 def generate_full_apkg(user: User, filename: str) -> int:
-    deck: Deck = Deck(
-        SPOTIFY_TRACK_DECK_ID,
-        'Spotify Tracks')
+    deck: Deck = Deck(SPOTIFY_TRACK_DECK_ID, "Spotify Tracks")
     tags: List[str] = [] if user.default_spotify_anki_tag is None else [user.default_spotify_anki_tag]
 
     log(f"Generating tracks... {today_datetime()}")
@@ -51,7 +49,7 @@ def generate_full_apkg(user: User, filename: str) -> int:
         generate_artists(user, deck, tags)
 
     # videos not released yet
-    if user.username in ['rsanek', 'demo']:
+    if user.username in ["rsanek", "demo"]:
         log(f"Generating videos... {today_datetime()}")
         generate_videos(user, deck, tags)
 

@@ -5,19 +5,21 @@ from app.card_generation.people_getter import Person, maybe_get_wikipedia_info, 
 
 @pytest.mark.skip(reason="integration")
 def test_finds_all_famous_people():
-    famous_names = ["LeBron James",
-                    "Elon Musk",
-                    "Abraham Lincoln",
-                    "Gandhi",
-                    "Martin Luther King",
-                    "Michael Jordan",
-                    "Donald Trump",
-                    "Donald Trump Jr.",
-                    "Lance Armstrong",
-                    "George Boole",
-                    "Oprah Winfrey",
-                    "Tim Duncan",
-                    "Nehru"]
+    famous_names = [
+        "LeBron James",
+        "Elon Musk",
+        "Abraham Lincoln",
+        "Gandhi",
+        "Martin Luther King",
+        "Michael Jordan",
+        "Donald Trump",
+        "Donald Trump Jr.",
+        "Lance Armstrong",
+        "George Boole",
+        "Oprah Winfrey",
+        "Tim Duncan",
+        "Nehru",
+    ]
     people = [Person(name, "Some Title", "Some Highlight") for name in famous_names]
     wikipedia_people = [maybe_get_wikipedia_info(person) for person in people]
     assert len(wikipedia_people) == len(famous_names)

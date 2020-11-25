@@ -1,6 +1,7 @@
 from typing import Optional
 
 from flask_login import UserMixin
+
 # see https://github.com/dropbox/sqlalchemy-stubs/issues/76#issuecomment-595839159
 from flask_sqlalchemy.model import DefaultMeta
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -23,7 +24,7 @@ class User(UserMixin, BaseModel):
     # one of https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
     current_time_zone: Optional[str] = db.Column(db.String(128), nullable=True)
 
-    maximum_minutes_per_day: int = db.Column(db.Integer, nullable=False, server_default='120')
+    maximum_minutes_per_day: int = db.Column(db.Integer, nullable=False, server_default="120")
 
     api_key: str = db.Column(db.String(128), unique=True, nullable=False)
 
@@ -37,13 +38,13 @@ class User(UserMixin, BaseModel):
 
     spotify_token_json: str = db.Column(db.String(1024))
     spotify_playlist_uri: Optional[str] = db.Column(db.String(128), unique=True, nullable=True)
-    last_spotify_track: Optional[str] = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=True)
+    last_spotify_track: Optional[str] = db.Column(db.String(128), db.ForeignKey("spotify_tracks.uri"), nullable=True)
     last_random_play_offset: Optional[int] = db.Column(db.Integer, nullable=True)
 
     last_fm_username: str = db.Column(db.String(128), unique=True)
     last_fm_last_refresh_time = db.Column(db.DateTime)
 
-    uses_rsAnki_javascript: bool = db.Column(db.Boolean, server_default='false', nullable=False)
+    uses_rsAnki_javascript: bool = db.Column(db.Boolean, server_default="false", nullable=False)
     # default tag applied to cards on export
     default_spotify_anki_tag: str = db.Column(db.Text)
 
@@ -60,7 +61,7 @@ class User(UserMixin, BaseModel):
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        return '<User {}>'.format(self.username)
+        return "<User {}>".format(self.username)
 
 
 @login.user_loader

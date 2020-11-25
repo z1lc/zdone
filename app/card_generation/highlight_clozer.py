@@ -10,20 +10,7 @@ from app.config import is_prod
 
 # initialize the model once when we import this script
 NLP = spacy.load("en_core_web_sm")
-BORING_WORDS = [
-    'they',
-    'them',
-    'one',
-    'two',
-    'it',
-    'we',
-    'you',
-    'i',
-    'me',
-    'what',
-    'people',
-    'person'
-]
+BORING_WORDS = ["they", "them", "one", "two", "it", "we", "you", "i", "me", "what", "people", "person"]
 
 
 def get_clozed_highlight(highlight):
@@ -38,7 +25,7 @@ def get_clozed_highlight(highlight):
 # ham, -> ham
 # extra-crispy -> extra-crispy
 def no_punc(word: str) -> str:
-    word_apostrophe_removed = re.sub(r"'.", '', word)
+    word_apostrophe_removed = re.sub(r"'.", "", word)
     return word_apostrophe_removed.strip(string.punctuation)
 
 
@@ -56,7 +43,13 @@ def get_keywords(sentence: str) -> List[str]:
     # first, grab interesting entities. will include things like "LeBron James", "Google", and "1865" (year)
     result.update(get_interesting_entities(doc.ents))
     # next, add worthwhile nouns like "dog", "fox"
-    result.update([no_punc(noun_chunk.root.text) for noun_chunk in doc.noun_chunks if no_punc(noun_chunk.root.text).lower() not in BORING_WORDS])
+    result.update(
+        [
+            no_punc(noun_chunk.root.text)
+            for noun_chunk in doc.noun_chunks
+            if no_punc(noun_chunk.root.text).lower() not in BORING_WORDS
+        ]
+    )
     # finally, let's add the longest word
     result.update([get_longest_word(no_punc(sentence))])
     return list(result)
@@ -75,14 +68,7 @@ def not_number_at_front(ent):
 # Sometimes the keyword will be something like "the United Kingdom".
 # This method takes keywords like that and transforms them into "United Kingdom"
 def _clean_keyword(best_entity: str) -> str:
-    bad_starting_words = [
-        "the",
-        "a",
-        "an",
-        "of",
-        "on",
-        "in"
-    ]
+    bad_starting_words = ["the", "a", "an", "of", "on", "in"]
     stripped_best_entity = best_entity.strip()
     best_entity_words = stripped_best_entity.split(" ")
     if best_entity_words[0].lower() in bad_starting_words:
@@ -115,8 +101,11 @@ def cloze_out_keyword(keyword: str, sentence: str) -> str:
     if num_words_in_keywords > 1:
         return sentence.replace(keyword, cloze_word_with_punc(keyword))
     return " ".join(
-        map(lambda word: cloze_word_with_punc(word) if no_punc(word.lower()) == keyword.lower() else word,
-            sentence_words))
+        map(
+            lambda word: cloze_word_with_punc(word) if no_punc(word.lower()) == keyword.lower() else word,
+            sentence_words,
+        )
+    )
 
 
 def get_prefix_punc(word: str) -> str:
@@ -132,13 +121,13 @@ def get_suffix_punc(word: str) -> str:
         last_non_punc_idx -= 1
     # check for apostrophes in possessive/plurals prior to other punctuation
     # e.g. catch things like "The house is LeBron's."
-    trimmed_ending_punctuation_word = word[:last_non_punc_idx + 1]
-    if trimmed_ending_punctuation_word.endswith("\'s"):
+    trimmed_ending_punctuation_word = word[: last_non_punc_idx + 1]
+    if trimmed_ending_punctuation_word.endswith("'s"):
         last_non_punc_idx -= 2  # trim 's
-    return word[last_non_punc_idx + 1:]
+    return word[last_non_punc_idx + 1 :]
 
 
 def cloze_word_with_punc(word: str, idx: int = 0) -> str:
     prefix_punc = get_prefix_punc(word)
     suffix_punc = get_suffix_punc(word)
-    return prefix_punc + '{{c' + str(idx + 1) + '::' + no_punc(word) + "}}" + suffix_punc
+    return prefix_punc + "{{c" + str(idx + 1) + "::" + no_punc(word) + "}}" + suffix_punc

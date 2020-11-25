@@ -10,14 +10,14 @@ MINIMUM_DAYS_BETWEEN_NOTIFICATION_FOR_SAME_REMINDER = 2
 MAXIMUM_DAYS_BETWEEN_NOTIFICATION_FOR_SAME_REMINDER = 14
 
 # This code is scheduled to run once daily by the Heroku Scheduler
-if __name__ == '__main__':
-    log('Will send a single notification to everyone who has a Pushover user key.')
+if __name__ == "__main__":
+    log("Will send a single notification to everyone who has a Pushover user key.")
     for user in User.query.filter(User.pushover_user_key.isnot(None)).all():  # type: ignore
         num_active_reminders = Reminder.query.filter_by(user_id=user.id, active=True).count()
         last_n_to_ignore = max(
-            min(num_active_reminders // 2,
-                MAXIMUM_DAYS_BETWEEN_NOTIFICATION_FOR_SAME_REMINDER),
-            MINIMUM_DAYS_BETWEEN_NOTIFICATION_FOR_SAME_REMINDER)
+            min(num_active_reminders // 2, MAXIMUM_DAYS_BETWEEN_NOTIFICATION_FOR_SAME_REMINDER),
+            MINIMUM_DAYS_BETWEEN_NOTIFICATION_FOR_SAME_REMINDER,
+        )
 
         valid_potential_reminders_to_be_sent_with_counts = f"""
 with reminder_notifications_joined as (
@@ -47,7 +47,8 @@ order by 3 asc, 4 asc;"""
             lowest_number_of_notifications = potential_reminders[0][2]
             highest_number_of_notifications = potential_reminders[-1][2]
             num_notifications_max_random_choice = random.choice(
-                list(range(lowest_number_of_notifications, highest_number_of_notifications + 1)))
+                list(range(lowest_number_of_notifications, highest_number_of_notifications + 1))
+            )
             potential_reminders = [p for p in potential_reminders if p[2] <= num_notifications_max_random_choice]
             selected_reminder_id = random.choice(potential_reminders)[0]
             log(f"Will send notification for reminder id {selected_reminder_id} for user {user.username}.")

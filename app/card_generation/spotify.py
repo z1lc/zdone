@@ -7,8 +7,14 @@ from dateutil import parser
 from genanki import Model, Deck
 
 from app import db
-from app.card_generation.util import create_html_unordered_list, zdNote, get_template, AnkiCard, get_default_css, \
-    get_rs_anki_css
+from app.card_generation.util import (
+    create_html_unordered_list,
+    zdNote,
+    get_template,
+    AnkiCard,
+    get_default_css,
+    get_rs_anki_css,
+)
 from app.log import log
 from app.models.base import User
 from app.models.spotify import LegacySpotifyTrackNoteGuidMapping
@@ -33,26 +39,29 @@ class SpotifyTrackNote(zdNote):
 
 
 def generate_tracks(user: User, deck: Deck, tags: List[str]):
-    legacy_mappings: Dict[str, str] = {lm.spotify_track_uri: lm.anki_guid for lm in
-                                       LegacySpotifyTrackNoteGuidMapping.query.filter_by(user_id=user.id).all()}
+    legacy_mappings: Dict[str, str] = {
+        lm.spotify_track_uri: lm.anki_guid
+        for lm in LegacySpotifyTrackNoteGuidMapping.query.filter_by(user_id=user.id).all()
+    }
     for track in get_tracks(user):
         inner_artists = []
-        for inner_artist in track['artists']:
-            inner_artists.append(inner_artist['name'])
-        album_name = track['album']['name'].replace('"', '\'')
-        release_year = parser.parse(track['album']['release_date']).date().year
+        for inner_artist in track["artists"]:
+            inner_artists.append(inner_artist["name"])
+        album_name = track["album"]["name"].replace('"', "'")
+        release_year = parser.parse(track["album"]["release_date"]).date().year
         track_as_note = SpotifyTrackNote(
             model=get_track_model(user),
             tags=tags,
             fields=[
-                track['uri'],
-                track['name'].replace('"', '\''),
-                ", ".join(inner_artists).replace('"', '\''),
+                track["uri"],
+                track["name"].replace('"', "'"),
+                ", ".join(inner_artists).replace('"', "'"),
                 f"<i>{album_name}</i> ({release_year})",
-                f"<img src='{track['album']['images'][0]['url']}'>"
-            ])
-        if track['uri'] in legacy_mappings:
-            track_as_note.guid = legacy_mappings.get(track['uri'])
+                f"<img src='{track['album']['images'][0]['url']}'>",
+            ],
+        )
+        if track["uri"] in legacy_mappings:
+            track_as_note.guid = legacy_mappings.get(track["uri"])
         deck.add_note(track_as_note)
 
 
@@ -107,24 +116,27 @@ order by 1 asc, 3 desc"""
             img_src = f"https://www.zdone.co/static/images/artists/{artist.image_override_name}"
 
         if img_src:
-            top_played_tracks_for_artist = [clean_track_name(row[2]) for row in top_played_tracks if
-                                            row[0] == artist.uri]
+            top_played_tracks_for_artist = [
+                clean_track_name(row[2]) for row in top_played_tracks if row[0] == artist.uri
+            ]
             top_played_tracks_for_artist = list(dict.fromkeys(top_played_tracks_for_artist))
             songs = create_html_unordered_list(top_played_tracks_for_artist)
 
-            top_played_albums_for_artist = {clean_album_name(row[2]): row[3].year for row in top_played_albums if
-                                            row[0] == artist.uri}
+            top_played_albums_for_artist = {
+                clean_album_name(row[2]): row[3].year for row in top_played_albums if row[0] == artist.uri
+            }
             albums = create_html_unordered_list(
-                [f'<i>{name}</i> ({year})' for name, year in top_played_albums_for_artist.items()], max_length=10)
+                [f"<i>{name}</i> ({year})" for name, year in top_played_albums_for_artist.items()], max_length=10
+            )
 
             this_artist_top_collaborators = list()
             if user.id == 1:
                 this_artist_top_collaborators = collaborators_grouped_by_artist_uri[artist.uri]
                 this_artist_top_collaborators.remove(artist.name)
 
-            genres = ''
-            similar_artists = ''
-            years_active = ''
+            genres = ""
+            similar_artists = ""
+            years_active = ""
 
             artist_as_note = zdNote(
                 model=get_artist_model(user),
@@ -139,16 +151,17 @@ order by 1 asc, 3 desc"""
                     similar_artists,
                     years_active,
                     create_html_unordered_list(this_artist_top_collaborators, max_length=10),
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                ])
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                ],
+            )
             deck.add_note(artist_as_note)
 
 
@@ -156,9 +169,7 @@ def get_track_model(user: User) -> Model:
     should_generate_albumart_card: bool = user.username == "rsanek"
     legacy_model_id: int = 1579060616046
 
-    templates: List[JsonDict] = [
-        get_template(AnkiCard.AUDIO_TO_ARTIST, user)
-    ]
+    templates: List[JsonDict] = [get_template(AnkiCard.AUDIO_TO_ARTIST, user)]
     if should_generate_albumart_card:
         templates.append(get_template(AnkiCard.AUDIO_AND_ALBUM_ART_TO_ALBUM, user))
 
@@ -166,42 +177,42 @@ def get_track_model(user: User) -> Model:
         # the legacy model ID was from when I imported my model to everyone else. I migrated to the publicly-facing,
         # default model ID, but kept existing users on my old model ID for simplicity.
         legacy_model_id if 1 < user.id <= 6 else SPOTIFY_TRACK_MODEL_ID,
-        'Spotify Track',
+        "Spotify Track",
         fields=[
-            {'name': 'Track URI'},
-            {'name': 'Track Name'},
-            {'name': 'Artist(s)'},
-            {'name': 'Album'},
-            {'name': 'Album Art'},
+            {"name": "Track URI"},
+            {"name": "Track Name"},
+            {"name": "Artist(s)"},
+            {"name": "Album"},
+            {"name": "Album Art"},
         ],
         css="@import '_anki.css';" if user.uses_rsAnki_javascript else get_default_css(),
-        templates=templates
+        templates=templates,
     )
 
 
 def get_artist_model(user: User) -> Model:
     return genanki.Model(
         SPOTIFY_ARTIST_MODEL_ID,
-        'Spotify Artist',
+        "Spotify Artist",
         fields=[
-            {'name': 'Artist URI'},
-            {'name': 'Name'},
-            {'name': 'Image'},
-            {'name': 'Songs'},
-            {'name': 'Albums'},
-            {'name': 'Genres'},
-            {'name': 'Similar Artists'},
-            {'name': 'Years Active'},
-            {'name': 'Extra Field 1'},  # Collaborators / featured artists
-            {'name': 'Extra Field 2'},  # Reserved for future use
-            {'name': 'Extra Field 3'},  # Reserved for future use
-            {'name': 'Extra Field 4'},  # Reserved for future use
-            {'name': 'Extra Field 5'},  # Reserved for future use
-            {'name': 'Extra Field 6'},  # Reserved for future use
-            {'name': 'Extra Field 7'},  # Reserved for future use
-            {'name': 'Extra Field 8'},  # Reserved for future use
-            {'name': 'Extra Field 9'},  # Reserved for future use
-            {'name': 'Extra Field 10'},  # Reserved for future use
+            {"name": "Artist URI"},
+            {"name": "Name"},
+            {"name": "Image"},
+            {"name": "Songs"},
+            {"name": "Albums"},
+            {"name": "Genres"},
+            {"name": "Similar Artists"},
+            {"name": "Years Active"},
+            {"name": "Extra Field 1"},  # Collaborators / featured artists
+            {"name": "Extra Field 2"},  # Reserved for future use
+            {"name": "Extra Field 3"},  # Reserved for future use
+            {"name": "Extra Field 4"},  # Reserved for future use
+            {"name": "Extra Field 5"},  # Reserved for future use
+            {"name": "Extra Field 6"},  # Reserved for future use
+            {"name": "Extra Field 7"},  # Reserved for future use
+            {"name": "Extra Field 8"},  # Reserved for future use
+            {"name": "Extra Field 9"},  # Reserved for future use
+            {"name": "Extra Field 10"},  # Reserved for future use
         ],
         css=get_rs_anki_css() if user.uses_rsAnki_javascript else get_default_css(),
         templates=[
@@ -222,7 +233,7 @@ def get_artist_model(user: User) -> Model:
             get_template(AnkiCard.EXTRA_ARTIST_TEMPLATE_8, user),
             get_template(AnkiCard.EXTRA_ARTIST_TEMPLATE_9, user),
             get_template(AnkiCard.EXTRA_ARTIST_TEMPLATE_10, user),
-        ]
+        ],
     )
 
 
@@ -263,7 +274,7 @@ def clean_track_name(name: str) -> str:
         " \\(Remix\\)",
         " - Remix",
         " - Extended",
-        " - From \"[A-z ]+\" Soundtrack",
+        ' - From "[A-z ]+" Soundtrack',
         " - Featured in [A-z ]+",
         " - Avicii By Avicii",
         " \\(Isak Original Extended\\) - Benny Benassi Presents The Biz",

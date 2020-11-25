@@ -8,12 +8,12 @@ from utils import TEST_USER, get_test_highlight
 
 @pytest.mark.skip(reason="integration")
 def test_refresh_highlights_and_books():
-    refresh_highlights_and_books(User.query.filter_by(username='rsanek').one())
+    refresh_highlights_and_books(User.query.filter_by(username="rsanek").one())
 
 
 @pytest.mark.skip(reason="integration")
 def test_get_paginated():
-    highlights = get_paginated(User.query.filter_by(username='rsanek').one(), "highlights")
+    highlights = get_paginated(User.query.filter_by(username="rsanek").one(), "highlights")
     print(highlights)
 
 

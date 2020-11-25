@@ -27,14 +27,17 @@ where rn.id is null and user_id={user.id} and active"""
 
 
 def get_recent_task_completions(
-        user: User,
-        date_start: datetime.date = today() - datetime.timedelta(days=7)) -> List[Task]:
-    log_task_pair = db.session.query(TaskLog, Task) \
-        .outerjoin(Task) \
-        .filter(TaskLog.user_id == user.id) \
-        .filter(TaskLog.action == "complete") \
-        .filter(TaskLog.at >= date_start) \
-        .order_by(TaskLog.at.desc()).all()  # type: ignore
+    user: User, date_start: datetime.date = today() - datetime.timedelta(days=7)
+) -> List[Task]:
+    log_task_pair = (
+        db.session.query(TaskLog, Task)
+        .outerjoin(Task)
+        .filter(TaskLog.user_id == user.id)
+        .filter(TaskLog.action == "complete")
+        .filter(TaskLog.at >= date_start)
+        .order_by(TaskLog.at.desc())  # type: ignore
+        .all()
+    )
     return [tlog.task_name or task.title for tlog, task in log_task_pair]
 
 
@@ -50,11 +53,14 @@ def get_current_median_skew(user: User) -> Optional[float]:
 
 
 def get_reminders_from_this_week(user: User) -> List[Reminder]:
-    notification_reminder_pair = db.session.query(ReminderNotification, Reminder) \
-        .join(ReminderNotification) \
-        .filter(Reminder.user_id == user.id) \
-        .filter(ReminderNotification.sent_at >= today() - datetime.timedelta(days=7)) \
-        .order_by(ReminderNotification.sent_at.desc()).all()  # type: ignore
+    notification_reminder_pair = (
+        db.session.query(ReminderNotification, Reminder)
+        .join(ReminderNotification)
+        .filter(Reminder.user_id == user.id)
+        .filter(ReminderNotification.sent_at >= today() - datetime.timedelta(days=7))
+        .order_by(ReminderNotification.sent_at.desc())  # type: ignore
+        .all()
+    )
     return [r for _, r in notification_reminder_pair][:7]
 
 
@@ -75,25 +81,22 @@ limit 1"""
 def send_and_log_notification(user: User, reminder_id: int, should_log: bool = True) -> None:
     reminder = Reminder.query.filter_by(id=reminder_id).one()
     if reminder.user_id != user.id:
-        raise ValueError(f'User {user.username} does not own reminder with id {reminder.id}.')
+        raise ValueError(f"User {user.username} does not own reminder with id {reminder.id}.")
     args = {
-        'title': reminder.title,
-        'message': reminder.message,
-        'priority': -1,
-        'html': 1,
+        "title": reminder.title,
+        "message": reminder.message,
+        "priority": -1,
+        "html": 1,
     }
     if len(reminder.message) > 1000:
-        args['message'] = f"{reminder.message[:1000]}..."
-        args['url_title'] = "Read more..."
-        args['url'] = f"https://zdone.co/reminders/{reminder.id}"
+        args["message"] = f"{reminder.message[:1000]}..."
+        args["url_title"] = "Read more..."
+        args["url"] = f"https://zdone.co/reminders/{reminder.id}"
     get_pushover_client(user).send_message(**args)
-    log(f'Sent notification {reminder.title}: {reminder.message}'
-        f' to clients for user {user.username}.')
+    log(f"Sent notification {reminder.title}: {reminder.message}" f" to clients for user {user.username}.")
     if should_log:
         notification = ReminderNotification(
-            reminder_id=reminder.id,
-            sent_at=datetime.datetime.utcnow(),
-            sent_via="pushover"
+            reminder_id=reminder.id, sent_at=datetime.datetime.utcnow(), sent_via="pushover"
         )
         db.session.add(notification)
         db.session.commit()
