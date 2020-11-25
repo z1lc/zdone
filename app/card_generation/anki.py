@@ -7,7 +7,7 @@ from app.card_generation.spotify import generate_tracks, generate_artists
 from app.card_generation.videos import generate_videos
 from app.card_generation.readwise import generate_readwise_highlight_clozes, generate_readwise_people
 from app.log import log
-from app.models.base import User
+from app.models.base import User, GateDef
 from app.util import today_datetime
 
 SPOTIFY_TRACK_DECK_ID: int = 1586000000000
@@ -43,17 +43,15 @@ def generate_full_apkg(user: User, filename: str) -> int:
     log(f"Generating tracks... {today_datetime()}")
     generate_tracks(user, deck, tags)
 
-    # artists released internally only so far
-    if user.id <= 6:
+    if user.is_gated(GateDef.INTERNAL_USER):
         log(f"Generating artists... {today_datetime()}")
         generate_artists(user, deck, tags)
 
-    # videos not released yet
-    if user.username in ["rsanek", "demo"]:
+    if user.is_gated(GateDef.GENERATE_VIDEO_NOTES):
         log(f"Generating videos... {today_datetime()}")
         generate_videos(user, deck, tags)
 
-    if user.id <= 2 and user.readwise_access_token is not None:
+    if user.readwise_access_token is not None:
         log(f"Generating highlights... {today_datetime()}")
         generate_readwise_highlight_clozes(user, deck, tags)
         generate_readwise_people(user, deck, tags)

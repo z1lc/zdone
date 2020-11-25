@@ -9,14 +9,14 @@ from app.card_generation.highlight_clozer import get_clozed_highlight
 from app.card_generation.people_getter import get_people, maybe_get_wikipedia_info, get_person_note
 from app.card_generation.util import zdNote, get_rs_anki_css, get_default_css, get_template, AnkiCard
 from app.log import log
-from app.models.base import User
+from app.models.base import User, GateDef
 from app.util import JsonDict
 
 READWISE_HIGHLIGHT_CLOZE_MODEL_ID = 1604800000000
 
 
 def generate_readwise_people(user: User, deck: Deck, tags: List[str]):
-    if not user.id == 2:
+    if not user.is_gated(GateDef.GENERATE_READWISE_PERSON_NOTES):
         log("Generating people cards from highlights is not enabled for this user yet")
         return
 

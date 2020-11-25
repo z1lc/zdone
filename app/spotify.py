@@ -17,7 +17,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app import kv, db
 from app.log import log
-from app.models.base import User
+from app.models.base import User, GateDef
 from app.models.spotify import (
     ManagedSpotifyArtist,
     SpotifyArtist,
@@ -87,7 +87,7 @@ def update_spotify_anki_playlist(user: User):
     if (
         user.spotify_token_json is None
         or user.spotify_token_json == ""
-        or user.username not in ["rsanek", "vsanek", "jsankova", "will"]
+        or not user.is_gated(GateDef.CREATE_ANKI_SPOTIFY_PLAYLIST)
     ):
         log(f"Skipping update for user {user.username} as they are not on the allowlist.")
         return
@@ -227,7 +227,7 @@ def add_or_get_artist(sp, spotify_artist_uri: str):
 
 def maybe_get_spotify_authorize_url(full_url: str, user: User) -> Optional[str]:
     sp_oauth = oauth2.SpotifyOAuth(
-        scope=ALL_SCOPES if user.id <= 8 else MIN_SCOPES,
+        scope=ALL_SCOPES if user.is_gated(GateDef.USE_GENEROUS_SPOTIFY_SCOPES) else MIN_SCOPES,
         client_id="03f34cada5cc46a5929be06ff7532321",
         client_secret=kv.get("SPOTIFY_CLIENT_SECRET"),
         redirect_uri="https://www.zdone.co/spotify/auth"
@@ -250,7 +250,7 @@ def maybe_get_spotify_authorize_url(full_url: str, user: User) -> Optional[str]:
 
 def get_spotify(full_url: str, user: User):
     sp_oauth = oauth2.SpotifyOAuth(
-        scope=ALL_SCOPES if user.id <= 8 else MIN_SCOPES,
+        scope=ALL_SCOPES if user.is_gated(GateDef.USE_GENEROUS_SPOTIFY_SCOPES) else MIN_SCOPES,
         client_id="03f34cada5cc46a5929be06ff7532321",
         client_secret=kv.get("SPOTIFY_CLIENT_SECRET"),
         redirect_uri="https://www.zdone.co/spotify/auth"

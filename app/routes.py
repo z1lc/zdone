@@ -18,7 +18,7 @@ from app.card_generation.anki import generate_full_apkg
 from app.card_generation.readwise import get_highlights
 from app.card_generation.util import AnkiCard
 from app.models.anki import AnkiReviewLog
-from app.models.base import User
+from app.models.base import User, GateDef
 from . import app, db, kv
 from .forms import LoginForm, RegistrationForm, ReminderForm, REMINDER_DEFAULT
 from .hn import get_unread_stories, get_total_and_average_reads_per_week
@@ -202,7 +202,7 @@ def spotify():
         total_artists=len(artists_dict.keys()),
         recommendations=recommendations,
         show_last_fm_plays=current_user.last_fm_last_refresh_time is not None,
-        internal_user=(current_user.id <= 6),
+        internal_user=(current_user.is_gated(GateDef.INTERNAL_USER)),
     )
 
 
@@ -337,7 +337,7 @@ def index():
             api_key=current_user.api_key,
             tasks_api_get=api_get(current_user),
         )
-    elif current_user.username in ["jsankova", "vsanek"]:
+    elif current_user.pushover_user_key:
         return redirect(url_for("reminders"))
     else:
         return redirect(url_for("spotify"))

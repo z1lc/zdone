@@ -8,7 +8,7 @@ from app import app, db
 from app.card_generation.anki import generate_full_apkg
 from app.log import log
 from app.models.anki import ApkgGeneration
-from app.models.base import User
+from app.models.base import User, GateDef
 from app.readwise import refresh_highlights_and_books
 from app.themoviedb import refresh_videos
 from app.util import get_b2_api, get_pushover_client
@@ -30,7 +30,7 @@ def refresh_user(user: User):
     else:
         log(f"Did not find Readwise credentials for user {user.username}")
 
-    if user.id <= 6:
+    if user.is_gated(GateDef.INTERNAL_USER):
         log(f"Beginning generation of Anki package file (.apkg) for user {user.username}...")
         filename: str = os.path.join(app.instance_path, f"anki-export-{user.username}.apkg")
         os.makedirs(app.instance_path, exist_ok=True)
@@ -66,7 +66,7 @@ def refresh_user(user: User):
 
             log(f"Successfully completed apkg generation & upload for user {user.username}.")
 
-            if user.username == "will":
+            if user.is_gated(GateDef.SEND_PUSHOVER_NOTIFICATION_AFTER_APKG_GENERATION):
                 log(f"Will send Pushover reminder to {user.username}.")
                 args = {
                     "title": "Download new zdone apkg",
