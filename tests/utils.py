@@ -10,8 +10,10 @@ BECOMING_IMAGE_URL = "https://images-na.ssl-images-amazon.com/images/I/41eRuKxPb
 
 def get_test_highlight(
     id: str = "zdone:highlight:12345",
-    text: str = "It is a truth universally acknowledged, that a single man in possession of a good fortune, "
-    "must be in want of a wife.",
+    text: str = "There are few people whom I really love, and still fewer of whom I think well. The more I see of the "
+    "world, the more am I dissatisfied with it; and every day confirms my belief of the inconsistency of "
+    "all human characters, and of the little dependence that can be placed on the appearance of merit or "
+    "sense.",
     source_title: str = "Pride and Prejudice",
     source_author: str = "Jane Austen",
     cover_image_url: str = BECOMING_IMAGE_URL,
