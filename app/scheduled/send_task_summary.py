@@ -7,7 +7,7 @@ from jinja2 import Environment, PackageLoader, select_autoescape, StrictUndefine
 from app import kv
 from app.hn import get_hn_articles_from_this_week
 from app.log import log
-from app.models.base import User
+from app.models.base import User, GateDef
 from app.reminders import (
     get_reminders_from_this_week,
     get_recent_task_completions,
@@ -36,6 +36,8 @@ def send_email(user: User):
     distinct_listens = get_distinct_songs_this_week(user)
     new_listens = get_new_songs_this_week(user)
     distinct_users = get_distinct_users_in_last_week()
+    show_users = user.is_gated(GateDef.WEEKLY_ZDONE_SUMMARY_EMAIL_SHOW_USERS)
+
     if reminders or tasks:
         content = sendgrid.Content(
             "text/html",
@@ -51,8 +53,8 @@ def send_email(user: User):
                 artists=get_new_this_week(user)[:5],
                 active_reminders=len([r for r in get_reminders(user) if r.active]),
                 unseen_reminders=len(get_unseen_reminders(user)),
-                num_distinct_users=len(distinct_users) if user.username == "rsanek" else None,
-                distinct_user_string=", ".join(distinct_users) if user.username == "rsanek" else None,
+                num_distinct_users=len(distinct_users) if show_users else None,
+                distinct_user_string=", ".join(distinct_users) if show_users else None,
             ),
         )
         mail = sendgrid.Mail(from_email, to_email, subject, content)

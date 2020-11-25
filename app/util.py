@@ -9,7 +9,7 @@ from flask import jsonify, Response
 from pushover import Client
 
 from app import kv, db
-from app.models.base import User
+from app.models.base import User, GateDef
 
 JsonDict = Dict[str, Any]
 
@@ -35,13 +35,13 @@ def get_navigation(user: User, current_page: str) -> str:
     pages.append('<a href="/spotify" target="_self">Music</a>' if current_page != "Music" else "Music")
     if user.tmdb_session_id:
         pages.append('<a href="/video" target="_self">Video</a>' if current_page != "Video" else "Video")
-    if user.username in ["rsanek", "vsanek", "will"]:
+    if user.is_gated(GateDef.SHOW_HACKER_NEWS_LINK):
         pages.append('<a href="/hn" target="_self">HN</a>' if current_page != "HN" else "HN")
-    if user.username in ["rsanek", "will"]:
+    if user.readwise_access_token:
         pages.append(
             '<a href="/highlights" target="_self">Highlights</a>' if current_page != "Highlights" else "Highlights"
         )
-    if user.username in ["rsanek"]:
+    if user.is_gated(GateDef.SHOW_LOGOUT_LINK):
         pages.append('<a href="/logout" target="_self">Log out</a>')
     return " | ".join(pages)
 

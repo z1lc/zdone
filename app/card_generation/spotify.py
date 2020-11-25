@@ -16,7 +16,7 @@ from app.card_generation.util import (
     get_rs_anki_css,
 )
 from app.log import log
-from app.models.base import User
+from app.models.base import User, GateDef
 from app.models.spotify import LegacySpotifyTrackNoteGuidMapping
 from app.spotify import get_tracks, get_common_artists
 from app.util import JsonDict, today_datetime
@@ -91,7 +91,7 @@ order by 4 desc"""
 with tracks_by_artist_with_plays as (select sf.spotify_artist_uri, sp.spotify_track_uri
                                      from spotify_plays sp
                                               join spotify_features sf on sp.spotify_track_uri = sf.spotify_track_uri
-                                     where user_id = 1),
+                                     where user_id = {user.id}),
     plays_per_song as (select tbawp.spotify_artist_uri, st.uri, count(*) as plays_for_song
                        from spotify_tracks st
                                 join tracks_by_artist_with_plays tbawp on st.uri = tbawp.spotify_track_uri
@@ -129,10 +129,8 @@ order by 1 asc, 3 desc"""
                 [f"<i>{name}</i> ({year})" for name, year in top_played_albums_for_artist.items()], max_length=10
             )
 
-            this_artist_top_collaborators = list()
-            if user.id == 1:
-                this_artist_top_collaborators = collaborators_grouped_by_artist_uri[artist.uri]
-                this_artist_top_collaborators.remove(artist.name)
+            this_artist_top_collaborators = collaborators_grouped_by_artist_uri[artist.uri]
+            this_artist_top_collaborators.remove(artist.name)
 
             genres = ""
             similar_artists = ""
@@ -166,7 +164,7 @@ order by 1 asc, 3 desc"""
 
 
 def get_track_model(user: User) -> Model:
-    should_generate_albumart_card: bool = user.username == "rsanek"
+    should_generate_albumart_card: bool = user.is_gated(GateDef.SPOTIFY_GENERATE_ALBUM_ART_CARD_FOR_TRACK_NOTES)
     legacy_model_id: int = 1579060616046
 
     templates: List[JsonDict] = [get_template(AnkiCard.AUDIO_TO_ARTIST, user)]
@@ -176,7 +174,7 @@ def get_track_model(user: User) -> Model:
     return genanki.Model(
         # the legacy model ID was from when I imported my model to everyone else. I migrated to the publicly-facing,
         # default model ID, but kept existing users on my old model ID for simplicity.
-        legacy_model_id if 1 < user.id <= 6 else SPOTIFY_TRACK_MODEL_ID,
+        legacy_model_id if user.is_gated(GateDef.USE_SPOTIFY_TRACK_LEGACY_MODEL_ID) else SPOTIFY_TRACK_MODEL_ID,
         "Spotify Track",
         fields=[
             {"name": "Track URI"},
