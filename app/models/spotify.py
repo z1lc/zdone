@@ -12,7 +12,7 @@ class SpotifyArtist(BaseModel):
     uri: str = db.Column(db.String(128), primary_key=True)
     name: str = db.Column(db.Text, nullable=False)
     spotify_image_url: str = db.Column(db.Text)
-    good_image: bool = db.Column(db.Boolean, nullable=False, server_default='false')
+    good_image: bool = db.Column(db.Boolean, nullable=False, server_default="false")
     image_override_name: str = db.Column(db.String(128), nullable=True)
     last_top_tracks_refresh: datetime.datetime = db.Column(db.DateTime, nullable=True)
 
@@ -23,14 +23,14 @@ class SpotifyArtist(BaseModel):
 class ManagedSpotifyArtist(BaseModel):
     __tablename__ = "managed_spotify_artists"
     id: int = db.Column(db.Integer, primary_key=True)
-    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
+    user_id: int = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_artists.uri"), nullable=False)
     date_added: datetime.date = db.Column(db.Date, nullable=False, server_default=func.current_date())
     comment: str = db.Column(db.String(128))
-    num_top_tracks: int = db.Column(db.Integer, server_default='3')
-    following: Optional[bool] = db.Column(db.Boolean, server_default='true', nullable=True)
+    num_top_tracks: int = db.Column(db.Integer, server_default="3")
+    following: Optional[bool] = db.Column(db.Boolean, server_default="true", nullable=True)
     last_fm_scrobbles: Optional[int] = db.Column(db.Integer, nullable=True)
-    __table_args__ = (UniqueConstraint('user_id', 'spotify_artist_uri', name='_user_id_and_spotify_artist_uri'),)
+    __table_args__ = (UniqueConstraint("user_id", "spotify_artist_uri", name="_user_id_and_spotify_artist_uri"),)
 
     def get_bare_uri(self):
         return self.spotify_artist_uri.split("spotify:artist:")[1]
@@ -40,7 +40,7 @@ class SpotifyAlbum(BaseModel):
     __tablename__ = "spotify_albums"
     uri: str = db.Column(db.String(128), primary_key=True)
     name: str = db.Column(db.Text, nullable=False)
-    spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
+    spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_artists.uri"), nullable=False)
     album_type: str = db.Column(db.String(128), nullable=False)
     spotify_image_url: str = db.Column(db.Text)
     released_at: datetime.date = db.Column(db.Date, nullable=False)
@@ -53,43 +53,43 @@ class SpotifyTrack(BaseModel):
     __tablename__ = "spotify_tracks"
     uri: str = db.Column(db.String(128), primary_key=True)
     name: str = db.Column(db.String(1024), nullable=False)
-    spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
-    spotify_album_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_albums.uri'), nullable=False)
+    spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_artists.uri"), nullable=False)
+    spotify_album_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_albums.uri"), nullable=False)
     duration_milliseconds: int = db.Column(db.Integer, nullable=False)
 
 
 class SpotifyFeature(BaseModel):
     __tablename__ = "spotify_features"
     id: int = db.Column(db.Integer, primary_key=True)
-    spotify_track_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=False)
-    spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
+    spotify_track_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_tracks.uri"), nullable=False)
+    spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_artists.uri"), nullable=False)
     ordinal: int = db.Column(db.Integer, nullable=False)
     __table_args__ = (
-        UniqueConstraint('spotify_track_uri', 'spotify_artist_uri'),
-        UniqueConstraint('spotify_track_uri', 'ordinal'),
+        UniqueConstraint("spotify_track_uri", "spotify_artist_uri"),
+        UniqueConstraint("spotify_track_uri", "ordinal"),
     )
 
 
 class SpotifyPlay(BaseModel):
     __tablename__ = "spotify_plays"
     id: int = db.Column(db.Integer, primary_key=True)
-    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    spotify_track_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=False)
+    user_id: int = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    spotify_track_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_tracks.uri"), nullable=False)
     created_at: datetime.datetime = db.Column(db.DateTime, nullable=False)
 
 
 class TopTrack(BaseModel):
     __tablename__ = "top_tracks"
     id: int = db.Column(db.Integer, primary_key=True)
-    artist_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False)
-    track_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=False)
+    artist_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_artists.uri"), nullable=False)
+    track_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_tracks.uri"), nullable=False)
     ordinal: int = db.Column(db.Integer, nullable=False)
     api_response: str = db.Column(db.Text)  # simple dump of the exact json that was returned by the API
     __table_args__ = (
-        UniqueConstraint('artist_uri', 'track_uri'),
-        UniqueConstraint('artist_uri', 'ordinal'),
-        CheckConstraint('ordinal >= 1'),
-        CheckConstraint('ordinal <= 10'),
+        UniqueConstraint("artist_uri", "track_uri"),
+        UniqueConstraint("artist_uri", "ordinal"),
+        CheckConstraint("ordinal >= 1"),
+        CheckConstraint("ordinal <= 10"),
     )
 
 
@@ -97,7 +97,7 @@ class TopTrack(BaseModel):
 class BestSellingArtist(BaseModel):
     __tablename__ = "best_selling_artists"
     id: int = db.Column(db.Integer, primary_key=True)
-    artist_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_artists.uri'), nullable=False, unique=True)
+    artist_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_artists.uri"), nullable=False, unique=True)
     claimed_sales: int = db.Column(db.Integer, nullable=False)
 
 
@@ -110,10 +110,10 @@ class BestSellingArtist(BaseModel):
 class LegacySpotifyTrackNoteGuidMapping(BaseModel):
     __tablename__ = "legacy_spotify_track_note_guid_mappings"
     id: int = db.Column(db.Integer, primary_key=True)
-    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    spotify_track_uri: str = db.Column(db.String(128), db.ForeignKey('spotify_tracks.uri'), nullable=False)
+    user_id: int = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    spotify_track_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_tracks.uri"), nullable=False)
     anki_guid: str = db.Column(db.String(10), nullable=False)
     __table_args__ = (
-        UniqueConstraint('user_id', 'spotify_track_uri', name='_user_id_and_spotify_track_uri'),
-        UniqueConstraint('user_id', 'anki_guid', name='_user_id_and_anki_guid'),
+        UniqueConstraint("user_id", "spotify_track_uri", name="_user_id_and_spotify_track_uri"),
+        UniqueConstraint("user_id", "anki_guid", name="_user_id_and_anki_guid"),
     )

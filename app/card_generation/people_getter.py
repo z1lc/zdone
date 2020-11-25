@@ -16,7 +16,6 @@ wikipedia.set_rate_limiting(True, timedelta(seconds=1))
 
 
 class Person:
-
     def __init__(self, name: str, seen_in: str, selected_highlight: str):
         self.name = name
         self.seen_in = seen_in
@@ -33,7 +32,6 @@ class Person:
 
 
 class WikipediaPerson(Person):
-
     def __init__(self, name: str, seen_in: str, selected_highlight: str, known_for_html: str, images_html: str):
         super().__init__(name, seen_in, selected_highlight)
         self.known_for_html = known_for_html
@@ -48,10 +46,12 @@ def _looks_like_name(text: str) -> bool:
 
 
 def get_people(highlight_data: Dict[str, str]) -> List[Person]:
-    doc = NLP(highlight_data['text'])
-    return [Person(ent.text, highlight_data['source_title'], highlight_data['text']) for ent in doc.ents if
-            _looks_like_name(ent.text) and
-            ent.label_ in ["PERSON"]]
+    doc = NLP(highlight_data["text"])
+    return [
+        Person(ent.text, highlight_data["source_title"], highlight_data["text"])
+        for ent in doc.ents
+        if _looks_like_name(ent.text) and ent.label_ in ["PERSON"]
+    ]
 
 
 def get_person_note(wikipedia_person: WikipediaPerson, tags, user):
@@ -63,8 +63,9 @@ def get_person_note(wikipedia_person: WikipediaPerson, tags, user):
             wikipedia_person.known_for_html,
             wikipedia_person.images_html,
             wikipedia_person.seen_in,
-            wikipedia_person.selected_highlight
-        ])
+            wikipedia_person.selected_highlight,
+        ],
+    )
 
 
 def _get_person_model(user):
@@ -75,13 +76,13 @@ def _get_person_model(user):
     ]
     return genanki.Model(
         PERSON_MODEL_ID,
-        'Notable Person',
+        "Notable Person",
         fields=[
-            {'name': 'Name'},
-            {'name': 'Known For'},
-            {'name': 'Image'},
-            {'name': 'Seen In'},
-            {'name': 'Selected Highlight'}
+            {"name": "Name"},
+            {"name": "Known For"},
+            {"name": "Image"},
+            {"name": "Seen In"},
+            {"name": "Selected Highlight"}
             # TODO(rob/will): Add more fields before public release
         ],
         css=(get_rs_anki_css() if user.uses_rsAnki_javascript else get_default_css()),
@@ -105,21 +106,23 @@ def _remove_parens_content_except_dates(sentence: str) -> str:
 
 
 def _remove_sentence_starters(sentence):
-    sentence_starters = [".*? (is|was|has been|has) (an|a|the) ",
-                         ".*? (is|was|has been|has) ",
-                         "He (is|was|has been|has) ",
-                         "She (is|was|has been|has) ",
-                         "They (are|were|have been|has) ",
-                         "They're ",
-                         "His ",
-                         "Her ",
-                         "Their "]
+    sentence_starters = [
+        ".*? (is|was|has been|has) (an|a|the) ",
+        ".*? (is|was|has been|has) ",
+        "He (is|was|has been|has) ",
+        "She (is|was|has been|has) ",
+        "They (are|were|have been|has) ",
+        "They're ",
+        "His ",
+        "Her ",
+        "Their ",
+    ]
     return re.sub("(" + "|".join(sentence_starters) + ")", "", sentence, count=1)
 
 
 def _remove_jr_sr(summary: str) -> str:
-    no_jr = summary.replace('Jr.', '')
-    no_jr_no_sr = no_jr.replace('Sr.', '')
+    no_jr = summary.replace("Jr.", "")
+    no_jr_no_sr = no_jr.replace("Sr.", "")
     return no_jr_no_sr
 
 
@@ -132,12 +135,12 @@ def _remove_name_refs(sentence: str, name: str) -> str:
     name_parts = name.split(" ")
     result = sentence
     for part in name_parts:
-        result = result.replace(part, '')
+        result = result.replace(part, "")
     return result
 
 
 def _remove_double_spaces(sentence):
-    return sentence.replace('  ', ' ')
+    return sentence.replace("  ", " ")
 
 
 def _get_known_for_html(summary_text: str, name: str) -> str:
@@ -147,9 +150,7 @@ def _get_known_for_html(summary_text: str, name: str) -> str:
     sentences = [_remove_parens_content_except_dates(sentence) for sentence in sentences]
     sentences = [_remove_sentence_starters(sentence) for sentence in sentences]
     sentences = [_remove_double_spaces(sentence) for sentence in sentences]
-    return "<ul>\n" + \
-           "\n".join(["<li>" + sentence.strip() + "</li>" for sentence in sentences]) + \
-           "</ul>"
+    return "<ul>\n" + "\n".join(["<li>" + sentence.strip() + "</li>" for sentence in sentences]) + "</ul>"
 
 
 def _get_images_with_persons_name(image_urls: List[str], name: str) -> List[str]:
@@ -159,7 +160,7 @@ def _get_images_with_persons_name(image_urls: List[str], name: str) -> List[str]
 
 def _get_image_html(image_urls: List[str], name: str) -> str:
     relevant_image_urls = _get_images_with_persons_name(image_urls, name)[0:3]
-    return "".join([f"<img src=\"{url}\">" for url in relevant_image_urls])
+    return "".join([f'<img src="{url}">' for url in relevant_image_urls])
 
 
 def maybe_get_wikipedia_info(person: Person) -> Optional[WikipediaPerson]:
@@ -173,4 +174,5 @@ def maybe_get_wikipedia_info(person: Person) -> Optional[WikipediaPerson]:
         seen_in=person.seen_in,
         selected_highlight=person.selected_highlight,
         known_for_html=_get_known_for_html(wiki_page.summary, name_on_wikipedia),
-        images_html=_get_image_html(wiki_page.images, name_on_wikipedia))
+        images_html=_get_image_html(wiki_page.images, name_on_wikipedia),
+    )

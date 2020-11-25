@@ -7,7 +7,7 @@ from app.card_generation.spotify import clean_album_name, clean_track_name
 
 @pytest.mark.skip(reason="integration")
 def test_send_and_log_notification_integration():
-    update_spotify_anki_playlist(User.query.filter_by(username='rsanek').one())
+    update_spotify_anki_playlist(User.query.filter_by(username="rsanek").one())
 
 
 def test_clean_track_name():
@@ -24,18 +24,20 @@ def test_clean_track_name():
     assert "Get Lucky" == clean_track_name("Get Lucky (feat. Pharrell Williams & Nile Rodgers) - Radio Edit")
     assert "Instant Crush" == clean_track_name("Instant Crush (feat. Julian Casablancas)")
     assert "Sucker For Pain" == clean_track_name(
-        "Sucker For Pain (with Wiz Khalifa, Imagine Dragons, Logic & Ty Dolla $ign feat. X Ambassadors)")
+        "Sucker For Pain (with Wiz Khalifa, Imagine Dragons, Logic & Ty Dolla $ign feat. X Ambassadors)"
+    )
 
     assert "No Place" == clean_track_name("No Place - Will Clarke Remix")
     assert "Don't" == clean_track_name("Don't - Don Diablo Remix")
     assert "I Don’t Even Know You Anymore" == clean_track_name(
-        "I Don’t Even Know You Anymore (feat. Bazzi & Lil Wayne)")
+        "I Don’t Even Know You Anymore (feat. Bazzi & Lil Wayne)"
+    )
 
     assert "I Walk the Line" == clean_track_name("I Walk the Line - Stereo Version")
     assert "Ring Of Fire" == clean_track_name("Ring Of Fire - 1988 Version")
 
     assert "ringtone" == clean_track_name("ringtone (Remix) [feat. Charli XCX, Rico Nasty, Kero Kero Bonito]")
-    assert "Mrs. Robinson" == clean_track_name("Mrs. Robinson - From \"The Graduate\" Soundtrack")
+    assert "Mrs. Robinson" == clean_track_name('Mrs. Robinson - From "The Graduate" Soundtrack')
     assert "Only The Young" == clean_track_name("Only The Young - Featured in Miss Americana")
     assert "La vie en rose" == clean_track_name("La vie en rose - Single Version")
     assert "Dream A Little Dream Of Me" == clean_track_name("Dream A Little Dream Of Me - With Introduction")
@@ -53,7 +55,8 @@ def test_clean_track_name():
 
     assert "Epiphany" == clean_track_name("Epiphany - Edit")
     assert "Folsom Prison Blues" == clean_track_name(
-        "Folsom Prison Blues - Live at Folsom State Prison, Folsom, CA - January 1968")
+        "Folsom Prison Blues - Live at Folsom State Prison, Folsom, CA - January 1968"
+    )
 
 
 def test_clean_album_name():

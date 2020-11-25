@@ -19,3 +19,9 @@ repos:
       rev: v0.782
       hooks:
         -   id: mypy
+  -   repo: https://github.com/ambv/black
+      rev: stable
+      hooks:
+        - id: black
+          exclude: ^migrations/versions/  # ideally this would be configured directly within the pyproject.toml file but I couldn't get it to work there
+          language_version: python3.8

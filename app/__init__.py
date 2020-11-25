@@ -16,33 +16,36 @@ if not app.debug:
         integrations=[FlaskIntegration(), SqlalchemyIntegration()],
         before_send=filter_non_prod,
         environment=get_environment_from_environment_variable(),
-        send_default_pii=True
+        send_default_pii=True,
     )
-Talisman(app, content_security_policy={
-    'default-src': [
-        '\'self\'',
-        '\'unsafe-inline\'',
-        '*.cloudflare.com',
-        '*.datatables.net',
-        '*.fontawesome.com',
-        '*.google-analytics.com',
-        '*.googleapis.com',
-        '*.googletagmanager.com',
-        '*.gstatic.com',
-        '*.jquery.com',
-        '*.sentry.io',
-        '*.sentry-cdn.com',
-        '*.w3schools.com',
-        '*.tmdb.org',
-        '*.youtube.com',
-        '*.ytimg.com',
-    ]
-})
+Talisman(
+    app,
+    content_security_policy={
+        "default-src": [
+            "'self'",
+            "'unsafe-inline'",
+            "*.cloudflare.com",
+            "*.datatables.net",
+            "*.fontawesome.com",
+            "*.google-analytics.com",
+            "*.googleapis.com",
+            "*.googletagmanager.com",
+            "*.gstatic.com",
+            "*.jquery.com",
+            "*.sentry.io",
+            "*.sentry-cdn.com",
+            "*.w3schools.com",
+            "*.tmdb.org",
+            "*.youtube.com",
+            "*.ytimg.com",
+        ]
+    },
+)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
 login = LoginManager(app)
-login.login_view = 'login'
+login.login_view = "login"
 
 from . import routes

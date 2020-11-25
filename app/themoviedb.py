@@ -10,13 +10,14 @@ from app import kv, db
 from app.log import log
 from app.models.base import User
 from app.models.videos import Video, VideoPerson, VideoCredit, YouTubeVideo, ManagedVideo
+
 # https://developers.themoviedb.org/3/configuration/get-api-configuration
 from app.util import today, to_tmdb_id
 
-BASE_URL = 'https://image.tmdb.org/t/p/'
-POSTER_SIZE = 'w500'
+BASE_URL = "https://image.tmdb.org/t/p/"
+POSTER_SIZE = "w500"
 YOUTUBE_DURATIONS_CACHE: Dict[str, int] = {}
-IGNORED_VIDEO_IDS = ['zdone:video:tmdb:693874']
+IGNORED_VIDEO_IDS = ["zdone:video:tmdb:693874"]
 
 
 class VideoType(Enum):
@@ -39,24 +40,28 @@ def _get_full_paginated(function):
 
 def _get_page_results(function, page: int):
     ret = function(page=page)
-    return ret['total_pages'], ret['results']
+    return ret["total_pages"], ret["results"]
 
 
 def refresh_videos(user: User):
-    tmdbsimple.API_KEY = kv.get('TMDB_API_KEY')
+    tmdbsimple.API_KEY = kv.get("TMDB_API_KEY")
     # to get session id, GET https://api.themoviedb.org/3/authentication/token/new?api_key=API_KEY
     # then use request_token to forward person to https://www.themoviedb.org/authenticate/REQUEST_TOKEN?redirect_to=http://callback.com
     # then POST to /authentication/session/new with same request_token
     acct = tmdbsimple.Account(session_id=user.tmdb_session_id)
     acct.info()  # wild that you have to call this to avoid exceptions...
 
-    result = ''
-    tvs = ([(True, rtv) for rtv in _get_full_paginated(acct.rated_tv)] +
-           [(True, ftv) for ftv in _get_full_paginated(acct.favorite_tv)] +
-           [(False, wtv) for wtv in _get_full_paginated(acct.watchlist_tv)])
-    movies = ([(True, rm) for rm in _get_full_paginated(acct.rated_movies)] +
-              [(True, fm) for fm in _get_full_paginated(acct.favorite_movies)] +
-              [(False, wm) for wm in _get_full_paginated(acct.watchlist_movies)])
+    result = ""
+    tvs = (
+        [(True, rtv) for rtv in _get_full_paginated(acct.rated_tv)]
+        + [(True, ftv) for ftv in _get_full_paginated(acct.favorite_tv)]
+        + [(False, wtv) for wtv in _get_full_paginated(acct.watchlist_tv)]
+    )
+    movies = (
+        [(True, rm) for rm in _get_full_paginated(acct.rated_movies)]
+        + [(True, fm) for fm in _get_full_paginated(acct.favorite_movies)]
+        + [(False, wm) for wm in _get_full_paginated(acct.watchlist_movies)]
+    )
     current_item, total_items = 0, len(tvs) + len(movies)
 
     for watched, tv in tvs:
@@ -89,22 +94,20 @@ def refresh_videos(user: User):
 
 
 def clean_description(description, video_name, replacement):
-    return description \
-        .replace(video_name, replacement) \
-        .replace(video_name.lower(), replacement)
+    return description.replace(video_name, replacement).replace(video_name.lower(), replacement)
 
 
 def hydrate_credits(video_id, credits):
-    for credit in credits['cast'] + [c for c in credits['crew'] if c['job'] == 'Director']:
-        get_or_add_credit(video_id, credit.get('order', None), credit['credit_id'])
+    for credit in credits["cast"] + [c for c in credits["crew"] if c["job"] == "Director"]:
+        get_or_add_credit(video_id, credit.get("order", None), credit["credit_id"])
     return
 
 
 def get_or_add_first_youtube_trailer(videos) -> Optional[str]:
-    youtube_trailers = [m for m in videos['results'] if m['site'] == 'YouTube']
+    youtube_trailers = [m for m in videos["results"] if m["site"] == "YouTube"]
     youtube_trailers.sort(key=lambda trailer: _sort_trailer(trailer))
     if youtube_trailers:
-        key = youtube_trailers[0]['key']
+        key = youtube_trailers[0]["key"]
         if get_or_add_youtube_video(key):
             return key
 
@@ -115,16 +118,16 @@ def get_or_add_first_youtube_trailer(videos) -> Optional[str]:
 # Trailer, Teaser, Clip, Featurette, Behind the Scenes, Bloopers
 def _sort_trailer(trailer) -> Tuple[int, int]:
     # Trailers are obviously ideal. Clips are also OK. Teasers should really be avoided.
-    priorities = ['Trailer', 'Clip', 'Featurette', 'Bloopers', 'Behind the Scenes', 'Teaser']
+    priorities = ["Trailer", "Clip", "Featurette", "Bloopers", "Behind the Scenes", "Teaser"]
 
-    duration = _get_video_duration_from_youtube(trailer['key'])
+    duration = _get_video_duration_from_youtube(trailer["key"])
     # if we don't find a duration, it's probably because the video was deleted
     # if the duration is more than 60 minutes, we actually probably have the real movie, which we also don't want
     if not duration or duration > 60 * 60:
         return len(priorities) + 1, 0
 
     try:
-        return priorities.index(trailer['type']), -duration
+        return priorities.index(trailer["type"]), -duration
     except ValueError:
         return len(priorities), -duration
 
@@ -134,10 +137,7 @@ def get_or_add_youtube_video(key: str) -> Optional[YouTubeVideo]:
     if not maybe_video:
         seconds = _get_video_duration_from_youtube(key)
         if seconds:
-            maybe_video = YouTubeVideo(
-                key=key,
-                duration_seconds=seconds
-            )
+            maybe_video = YouTubeVideo(key=key, duration_seconds=seconds)
             db.session.add(maybe_video)
             db.session.commit()
         else:
@@ -150,7 +150,7 @@ def _get_video_duration_from_youtube(key) -> Optional[int]:
     if key in YOUTUBE_DURATIONS_CACHE:
         return YOUTUBE_DURATIONS_CACHE.get(key)
 
-    video_data = Api(api_key=kv.get('YOUTUBE_API_KEY')).get_video_by_id(video_id=key)
+    video_data = Api(api_key=kv.get("YOUTUBE_API_KEY")).get_video_by_id(video_id=key)
     # we won't get back metadata from YouTube if the video was deleted, set to private, etc.
     if video_data.items:
         pt_string = video_data.items[0].contentDetails.duration
@@ -171,8 +171,8 @@ def get_or_add_credit(video_id, order, tmdb_credit_id):
             id=credit_id,
             video_id=video_id,
             person_id=f"zdone:person:tmdb:{credit_detail['person']['id']}",
-            character=credit_detail.get('media').get('character', None),
-            job=credit_detail.get('job', None),
+            character=credit_detail.get("media").get("character", None),
+            job=credit_detail.get("job", None),
             order=order,
         )
         db.session.add(maybe_credit)
@@ -186,11 +186,11 @@ def get_or_add_person(person_id: str) -> VideoPerson:
         person = tmdbsimple.People(to_tmdb_id(person_id)).info()
         maybe_person = VideoPerson(
             id=person_id,
-            name=person['name'],
-            image_url=get_full_tmdb_image_url(person['profile_path']),
-            birthday=person['birthday'],
-            deathday=person['deathday'],
-            known_for=person['known_for_department'],
+            name=person["name"],
+            image_url=get_full_tmdb_image_url(person["profile_path"]),
+            birthday=person["birthday"],
+            deathday=person["deathday"],
+            known_for=person["known_for_department"],
         )
         db.session.add(maybe_person)
         db.session.commit()
@@ -209,16 +209,16 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
     maybe_video = Video.query.filter_by(id=video_id).one_or_none()
     if not maybe_video:
         if type == VideoType.MOVIE:
-            m_id = tmdb_api_movie_or_tv_response['id']
-            title = tmdb_api_movie_or_tv_response['title']
-            original_title = tmdb_api_movie_or_tv_response['original_title']
-            description = tmdb_api_movie_or_tv_response['overview']
-            image = get_full_tmdb_image_url(tmdb_api_movie_or_tv_response['poster_path'])
+            m_id = tmdb_api_movie_or_tv_response["id"]
+            title = tmdb_api_movie_or_tv_response["title"]
+            original_title = tmdb_api_movie_or_tv_response["original_title"]
+            description = tmdb_api_movie_or_tv_response["overview"]
+            image = get_full_tmdb_image_url(tmdb_api_movie_or_tv_response["poster_path"])
 
             movie_detail = tmdbsimple.Movies(m_id)
             info = movie_detail.info()
-            maybe_budget = int(info['budget'])
-            maybe_revenue = int(info['revenue'])
+            maybe_budget = int(info["budget"])
+            maybe_revenue = int(info["revenue"])
 
             m_credits = tmdbsimple.Movies(m_id).credits()
             maybe_video = Video(
@@ -226,40 +226,41 @@ def get_or_add_video(video_id: str, type: VideoType, tmdb_api_movie_or_tv_respon
                 name=title,
                 original_name=original_title if original_title != title else None,
                 description=clean_description(description, title, "[film]"),
-                release_date=tmdb_api_movie_or_tv_response.get('release_date', None),
+                release_date=tmdb_api_movie_or_tv_response.get("release_date", None),
                 last_air_date=None,
                 youtube_trailer_key=get_or_add_first_youtube_trailer(movie_detail.videos()),
                 poster_image_url=image,
-                film_or_tv='film',
+                film_or_tv="film",
                 budget=maybe_budget if maybe_budget > 0 else None,
                 revenue=maybe_revenue if maybe_revenue > 0 else None,
             )
         else:
-            tv_details = tmdbsimple.TV(tmdb_api_movie_or_tv_response['id'])
+            tv_details = tmdbsimple.TV(tmdb_api_movie_or_tv_response["id"])
             tv_info = tv_details.info()
-            m_credits = tmdbsimple.TV(tmdb_api_movie_or_tv_response['id']).credits()
-            name = tmdb_api_movie_or_tv_response['name']
-            original_name = tmdb_api_movie_or_tv_response['original_name']
+            m_credits = tmdbsimple.TV(tmdb_api_movie_or_tv_response["id"]).credits()
+            name = tmdb_api_movie_or_tv_response["name"]
+            original_name = tmdb_api_movie_or_tv_response["original_name"]
             maybe_video = Video(
                 id=video_id,
                 name=name,
                 original_name=original_name if original_name != name else None,
-                description=clean_description(tmdb_api_movie_or_tv_response['overview'],
-                                              tmdb_api_movie_or_tv_response['name'], "[TV show]"),
-                release_date=tv_info['first_air_date'],
-                last_air_date=tv_info['last_air_date'],
+                description=clean_description(
+                    tmdb_api_movie_or_tv_response["overview"], tmdb_api_movie_or_tv_response["name"], "[TV show]"
+                ),
+                release_date=tv_info["first_air_date"],
+                last_air_date=tv_info["last_air_date"],
                 youtube_trailer_key=get_or_add_first_youtube_trailer(tv_details.videos()),
-                poster_image_url=get_full_tmdb_image_url(tmdb_api_movie_or_tv_response['poster_path']),
-                film_or_tv='TV show',
-                seasons=len([s for s in tv_info['seasons'] if s['air_date']])
+                poster_image_url=get_full_tmdb_image_url(tmdb_api_movie_or_tv_response["poster_path"]),
+                film_or_tv="TV show",
+                seasons=len([s for s in tv_info["seasons"] if s["air_date"]]),
             )
 
         db.session.add(maybe_video)
         db.session.commit()
         hydrate_credits(video_id, m_credits)
         if type == VideoType.TV:
-            for i, creator_response in enumerate(tv_info['created_by']):
-                get_or_add_credit(video_id, i, creator_response['credit_id'])
+            for i, creator_response in enumerate(tv_info["created_by"]):
+                get_or_add_credit(video_id, i, creator_response["credit_id"])
 
     maybe_managed_video = ManagedVideo.query.filter_by(user_id=user.id, video_id=video_id).one_or_none()
     if not maybe_managed_video:
@@ -289,15 +290,15 @@ def backfill_null():
     for video in Video.query.all():
         if video.is_film():
             m_info = tmdbsimple.Movies(to_tmdb_id(video.id)).info()
-            video.name = m_info['title']
-            if m_info['title'] != m_info['original_title']:
-                video.original_name = m_info['original_title']
+            video.name = m_info["title"]
+            if m_info["title"] != m_info["original_title"]:
+                video.original_name = m_info["original_title"]
 
         elif video.is_tv():
             tv_info = tmdbsimple.TV(to_tmdb_id(video.id)).info()
-            video.name = tv_info['name']
-            if tv_info['name'] != tv_info['original_name']:
-                video.original_name = tv_info['original_name']
+            video.name = tv_info["name"]
+            if tv_info["name"] != tv_info["original_name"]:
+                video.original_name = tv_info["original_name"]
 
         # video.youtube_trailer_key = get_or_add_first_youtube_trailer(m_videos)
         # if video.is_tv():

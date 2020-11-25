@@ -9,6 +9,7 @@ import pytz
 from flask import Response
 from flask_login import current_user
 from tld import get_fld
+
 # watch out, this dependency is actually py-trello
 from trello import TrelloClient, trellolist
 
@@ -20,8 +21,9 @@ from app.util import failure, success, JsonDict
 
 
 def api_get(user: User) -> JsonDict:
-    user_time_zone = pytz.timezone(user.current_time_zone) if user.current_time_zone \
-        else pytz.timezone('America/Los_Angeles')
+    user_time_zone = (
+        pytz.timezone(user.current_time_zone) if user.current_time_zone else pytz.timezone("America/Los_Angeles")
+    )
     tasks = Task.query.filter_by(user_id=int(user.id)).all()
     ret_tasks = []
     user_local_date = datetime.datetime.now(user_time_zone).date()
@@ -33,29 +35,35 @@ def api_get(user: User) -> JsonDict:
         if task.is_after_delay(user_local_date):
             average_daily_load += 1 / task.ideal_interval
             if due:
-                ret_tasks.append({
-                    "id": task.id,
-                    "service": "zdone",
-                    "raw_name": task.title,
-                    "name": task.title,
-                    "note": task.description,
-                    "subtask_id": None,
-                    "length_minutes": None,
-                    "last_completion": humanize.naturaltime(
-                        datetime.datetime.now(user_time_zone).date() - task.last_completion),
-                })
+                ret_tasks.append(
+                    {
+                        "id": task.id,
+                        "service": "zdone",
+                        "raw_name": task.title,
+                        "name": task.title,
+                        "note": task.description,
+                        "subtask_id": None,
+                        "length_minutes": None,
+                        "last_completion": humanize.naturaltime(
+                            datetime.datetime.now(user_time_zone).date() - task.last_completion
+                        ),
+                    }
+                )
 
     if average_daily_load >= 3.0:
-        ret_tasks.insert(0, {
-            "id": None,
-            "service": "zdone",
-            "raw_name": "Reconfigure tasks",
-            "name": "Reconfigure tasks",
-            "note": f"Average daily task load is {round(average_daily_load, 2)}, which is ≥3. Remove tasks or "
-                    f"schedule them less frequently to avoid feeling overwhelmed.",
-            "subtask_id": None,
-            "length_minutes": None,
-        })
+        ret_tasks.insert(
+            0,
+            {
+                "id": None,
+                "service": "zdone",
+                "raw_name": "Reconfigure tasks",
+                "name": "Reconfigure tasks",
+                "note": f"Average daily task load is {round(average_daily_load, 2)}, which is ≥3. Remove tasks or "
+                f"schedule them less frequently to avoid feeling overwhelmed.",
+                "subtask_id": None,
+                "length_minutes": None,
+            },
+        )
 
     i = 0
     for tcard in get_updated_trello_cards(user):
@@ -65,7 +73,7 @@ def api_get(user: User) -> JsonDict:
         else:
             ret_tasks.append(tcard)
 
-    lists = [{"id": l.id, "name": l.name} for l in get_open_trello_lists(user) if l.name != 'Completed via zdone']
+    lists = [{"id": l.id, "name": l.name} for l in get_open_trello_lists(user) if l.name != "Completed via zdone"]
 
     current_date = datetime.datetime.now(user_time_zone).date()
     this_sunday = current_date - datetime.timedelta(days=current_date.weekday() + 1)
@@ -88,13 +96,15 @@ def api_get(user: User) -> JsonDict:
     return r
 
 
-def do_update_task(update: str,
-                   service: str,
-                   task_id: str,
-                   days: Optional[int],
-                   task_raw_name: Optional[str],
-                   to_list_id: Optional[str],
-                   user: User = current_user) -> Tuple[Response, int]:
+def do_update_task(
+    update: str,
+    service: str,
+    task_id: str,
+    days: Optional[int],
+    task_raw_name: Optional[str],
+    to_list_id: Optional[str],
+    user: User = current_user,
+) -> Tuple[Response, int]:
     if task_id is None:
         return failure(f"Must pass a valid task_id.")
     if service not in ["trello", "zdone"]:
@@ -104,12 +114,7 @@ def do_update_task(update: str,
     if user.current_time_zone is None:
         return failure(f"User {user.username} does not have a time zone setting.")
 
-    log = TaskLog(
-        user_id=user.id,
-        at=datetime.datetime.utcnow(),
-        at_time_zone=user.current_time_zone,
-        action=update
-    )
+    log = TaskLog(user_id=user.id, at=datetime.datetime.utcnow(), at_time_zone=user.current_time_zone, action=update)
     if service == "zdone":
         task = Task.query.filter_by(id=int(task_id)).one()
         log.task_id = task.id
@@ -120,14 +125,16 @@ def do_update_task(update: str,
             # Partial completions allow us to get credit for doing at least *some* work in pursuit of a goal.
             # We aren't actually done with the task, though, so we need to make sure to get to it soon again.
             # Here, we defer by ~2-5 days.
-            task.defer_until = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date() \
-                               + datetime.timedelta(days=random.choice(range(2, 6)))
+            task.defer_until = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date() + datetime.timedelta(
+                days=random.choice(range(2, 6))
+            )
         elif update == "defer":
             if days is None:
                 return failure(f"Need to pass number of days to defer by.")
             else:
-                task.defer_until = datetime.datetime.now(pytz.timezone(user.current_time_zone)).date() \
-                                   + datetime.timedelta(days=days)
+                task.defer_until = datetime.datetime.now(
+                    pytz.timezone(user.current_time_zone)
+                ).date() + datetime.timedelta(days=days)
         else:
             failure(f"Update type {update} not supported for zdone.")
         db.session.commit()
@@ -141,9 +148,11 @@ def do_update_task(update: str,
             return failure(f"Failed to get Trello client for user {user.username}.")
 
         if update == "complete":
-            completed_list_id = \
-                [l for l in [board for board in client.list_boards() if board.name == 'Backlogs'][0].list_lists() if
-                 l.name == "Completed via zdone"][0].id
+            completed_list_id = [
+                l
+                for l in [board for board in client.list_boards() if board.name == "Backlogs"][0].list_lists()
+                if l.name == "Completed via zdone"
+            ][0].id
             client.get_card(task_id).change_list(completed_list_id)
             log.task_name = task_raw_name
             db.session.add(log)
@@ -161,10 +170,7 @@ def do_update_task(update: str,
 
 def get_trello_client(user: User) -> Optional[TrelloClient]:
     if user.trello_api_key and user.trello_api_access_token:
-        client = TrelloClient(
-            api_key=user.trello_api_key,
-            api_secret=user.trello_api_access_token
-        )
+        client = TrelloClient(api_key=user.trello_api_key, api_secret=user.trello_api_access_token)
         return client
 
     return None
@@ -177,7 +183,7 @@ def ensure_trello_setup_idempotent(user: User) -> str:
         return "API key and/or access token not set.<br>"
     else:
         to_return += "API key & access token correctly set.<br>"
-        maybe_backlogs_board = [board for board in client.list_boards() if board.name == 'Backlogs']
+        maybe_backlogs_board = [board for board in client.list_boards() if board.name == "Backlogs"]
         if not maybe_backlogs_board:
             return "Did not find a board called 'Backlogs'.<br>"
         else:
@@ -207,9 +213,11 @@ def ensure_trello_setup_idempotent(user: User) -> str:
                     )
                 except Exception as e:
                     to_return += f"Received exception while adding webhook: {e}<br>"
-                    to_return += f"Did not succeed in creating webhook!" \
-                                 f" It is likely the Trello library is still broken." \
-                                 f" You'll probably just have to do this by hand in Postman."
+                    to_return += (
+                        f"Did not succeed in creating webhook!"
+                        f" It is likely the Trello library is still broken."
+                        f" You'll probably just have to do this by hand in Postman."
+                    )
                 else:
                     to_return += f"Successfully created zdone webhook with id {hook.id}.<br>"
 
@@ -219,8 +227,8 @@ def ensure_trello_setup_idempotent(user: User) -> str:
 def get_open_trello_lists(user: User) -> List[trellolist.List]:
     client = get_trello_client(user)
     if client:
-        backlog_board = [board for board in client.list_boards() if board.name == 'Backlogs'][0]
-        return backlog_board.list_lists('open')
+        backlog_board = [board for board in client.list_boards() if board.name == "Backlogs"][0]
+        return backlog_board.list_lists("open")
     return []
 
 
@@ -230,7 +238,7 @@ def get_updated_trello_cards(user: User, force_refresh: bool = False):
         for tlist in get_open_trello_lists(user):
             for tcard in tlist.list_cards():
                 pretty_name = tcard.name
-                urls = re.findall(r'(https?://[^\s]+)', pretty_name)
+                urls = re.findall(r"(https?://[^\s]+)", pretty_name)
                 for url in urls:
                     pretty_name = pretty_name.replace(url, f'<a href="{url}">{get_fld(url)} 🔗</a>')
                 item = {
@@ -238,7 +246,7 @@ def get_updated_trello_cards(user: User, force_refresh: bool = False):
                     "service": "trello",
                     "raw_name": f"{tcard.name}",
                     "name": f"<a href='{tcard.url}'>{tlist.name}</a>: {pretty_name}",
-                    "note": tcard.description.replace('\n', '<br>'),
+                    "note": tcard.description.replace("\n", "<br>"),
                     "list_name": tlist.name,
                     "subtask_id": None,
                     "length_minutes": None,

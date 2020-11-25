@@ -53,7 +53,7 @@ def test_clean_keyword():
         "grasshopper",
         "ugly duckling",
         "Duchess of Cambridge",
-        "LeBron James"
+        "LeBron James",
     ]
     assert len(unclean_keywords) == len(expected_cleaned_keywords)
     for i in range(len(unclean_keywords)):
@@ -88,15 +88,20 @@ def test_cloze_out_keyword_with_apostrophe_followed_by_period():
 # WHEN clozing out the keyword
 # THEN clozes out only full occurrences of all words in keyword
 def test_cloze_out_multiword_keyword():
-    relevant_sentence = "LeBron James is the greatest basketball player of all time. James is much better than the other players."
+    relevant_sentence = (
+        "LeBron James is the greatest basketball player of all time. James is much better than the other players."
+    )
     keyword = "LeBron James"
     expected_cloze = "{{c1::LeBron James}} is the greatest basketball player of all time. James is much better than the other players."
     assert expected_cloze == cloze_out_keyword(keyword, relevant_sentence)
 
 
 def test_does_not_use_bad_images():
-    highlights = [get_test_highlight(
-        cover_image_url="https://readwise-assets.s3.amazonaws.com/static/images/article1.be68295a7e40.png")]
+    highlights = [
+        get_test_highlight(
+            cover_image_url="https://readwise-assets.s3.amazonaws.com/static/images/article1.be68295a7e40.png"
+        )
+    ]
     for note in _generate_clozed_highlight_notes(highlights, [], TEST_USER):
         assert "" == note.fields[5]
 
@@ -105,24 +110,29 @@ def test_does_not_generate_empty_cloze():
     highlights = [get_test_highlight(text="")]
     assert 0 == len(_generate_clozed_highlight_notes(highlights, [], TEST_USER))
 
+
 # Can be useful to have around, so just skipping in CI/normal development
 # To make this test work, you need to set `maybe_environment` to PRODUCTION value
 @pytest.mark.skip(reason="nondeterministic")
 def test_cloze_randomness():
-    highlights = [get_test_highlight(
-        text="It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of "
-             "foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light,"
-             " it was the season of Darkness, it was the spring of hope, it was the winter of despair.",
-        source_title="A Tale of Two Cities",
-        source_author="Charles Dickens",
-    )]
+    highlights = [
+        get_test_highlight(
+            text="It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of "
+            "foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light,"
+            " it was the season of Darkness, it was the spring of hope, it was the winter of despair.",
+            source_title="A Tale of Two Cities",
+            source_author="Charles Dickens",
+        )
+    ]
     # generate notes for this highlight 50 times, these 50 highlights should have at least 1 different clozed out text
     many_generated_notes = [_generate_clozed_highlight_notes(highlights, [], TEST_USER) for _ in range(50)]
     # make sure we aren't creating multiple clozes. we allow for cases where no clozes are generated (len(...) == 0)
     assert all([len(generated_notes) <= 1 for generated_notes in many_generated_notes])
 
     # The text selected for cloze should be random, so we check here that it doesn't select the same text every time.
-    clozed_texts = [generated_notes[0].fields[2] for generated_notes in many_generated_notes if len(generated_notes) > 0]
+    clozed_texts = [
+        generated_notes[0].fields[2] for generated_notes in many_generated_notes if len(generated_notes) > 0
+    ]
     # use the location of the first cloze marker, c1::, and compare it with the marker location in other clozes. If
     # the location is different in other cards, then the word that is clozed out is different, too.
     first_note_index_of_cloze = clozed_texts[0].index("c1::")
@@ -130,11 +140,13 @@ def test_cloze_randomness():
 
 
 def test_avoid_clozing_denylist_word():
-    highlights = [get_test_highlight(
-        text="What differentiates the success stories from the failures is that the successful entrepreneurs had "
-             "the foresight, the ability, and the tools to discover which parts of their plans were working "
-             "brilliantly and which were misguided, and adapt their strategies accordingly."
-    )]
+    highlights = [
+        get_test_highlight(
+            text="What differentiates the success stories from the failures is that the successful entrepreneurs had "
+            "the foresight, the ability, and the tools to discover which parts of their plans were working "
+            "brilliantly and which were misguided, and adapt their strategies accordingly."
+        )
+    ]
     generated_notes = _generate_clozed_highlight_notes(highlights, [], TEST_USER)
     assert len(generated_notes) == 1
     for note in generated_notes:

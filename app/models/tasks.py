@@ -8,18 +8,18 @@ from app.models.base import BaseModel
 class Reminder(BaseModel):
     __tablename__ = "reminders"
     id: int = db.Column(db.Integer, primary_key=True)
-    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id: int = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     title: str = db.Column(db.Text)
     # pushover's limit for the message is 1024 characters https://pushover.net/api
     message: str = db.Column(db.Text)
-    active: bool = db.Column(db.Boolean, server_default='true', nullable=False)
+    active: bool = db.Column(db.Boolean, server_default="true", nullable=False)
     inactive_explanation: str = db.Column(db.Text)
 
 
 class ReminderNotification(BaseModel):
     __tablename__ = "reminder_notifications"
     id: int = db.Column(db.Integer, primary_key=True)
-    reminder_id: int = db.Column(db.Integer, db.ForeignKey('reminders.id'), nullable=False)
+    reminder_id: int = db.Column(db.Integer, db.ForeignKey("reminders.id"), nullable=False)
     sent_at: datetime.datetime = db.Column(db.DateTime, nullable=False)
     sent_via = db.Column(db.String, nullable=False)
 
@@ -27,7 +27,7 @@ class ReminderNotification(BaseModel):
 class Task(BaseModel):
     __tablename__ = "tasks"
     id: int = db.Column(db.Integer, primary_key=True)
-    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id: int = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     title: str = db.Column(db.Text, nullable=False)
     description: Optional[str] = db.Column(db.Text, nullable=True)
     ideal_interval: int = db.Column(db.Integer, nullable=False)
@@ -57,8 +57,8 @@ class Task(BaseModel):
 class TaskLog(BaseModel):
     __tablename__ = "task_logs"
     id: int = db.Column(db.Integer, primary_key=True)
-    task_id: Optional[int] = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=True)
-    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    task_id: Optional[int] = db.Column(db.Integer, db.ForeignKey("tasks.id"), nullable=True)
+    user_id: int = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     task_name: Optional[str] = db.Column(db.Text, nullable=True)
     at: datetime.datetime = db.Column(db.DateTime, nullable=False)  # ALWAYS UTC
     # in what time zone were we when we saved the above UTC timestamp?
