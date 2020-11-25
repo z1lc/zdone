@@ -24,7 +24,7 @@ To develop zdone locally, clone the repository, `pip install -r requirements.txt
  * `SECRET_KEY` to a long, random string
  * `ZDONE_ENVIRONMENT` to `development`
 
-You are least likely to run into compabitility issues if you match your Python version to what is defined in [runtime.txt](runtime.txt). It may also be useful to install pre-commit to avoid common issues that will fail the build: `pip install pre-commit`; `pre-commit install`; then `pre-commit run --all-files` from the repo root. Read more in [their documentation](https://pre-commit.com/).
+You are least likely to run into compatibility issues if you match your Python version to what is defined in [runtime.txt](runtime.txt). It may also be useful to install pre-commit to avoid common issues that will fail the build (namely, [code formatting](https://black.readthedocs.io/en/stable/) and [static typing](https://mypy.readthedocs.io/en/stable/)). Run `pre-commit install`; then `pre-commit run --all-files` from the repo root. Read more in [their documentation](https://pre-commit.com/).
 
 
 ## Milestones
