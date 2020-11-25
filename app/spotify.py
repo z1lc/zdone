@@ -110,12 +110,11 @@ def update_spotify_anki_playlist(user: User):
 
     # as far as I can tell, the API doesn't have an easy way to avoid adding duplicate
     # songs to a playlist, so here we delete all tracks in the playlist before re-adding.
-    sp.user_playlist_replace_tracks(user=me["id"], playlist_id=user.spotify_playlist_uri, tracks=[])
+    sp.playlist_replace_items(playlist_id=user.spotify_playlist_uri, items=[])
     for track_uris in chunker(unique_uris, 100):
-        sp.user_playlist_add_tracks(
-            user=me["id"],
+        sp.playlist_add_items(
             playlist_id=user.spotify_playlist_uri,
-            tracks=track_uris,
+            items=track_uris,
         )
 
     log(f"Updated Spotify playlist for user {user.username}")
