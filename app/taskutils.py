@@ -50,7 +50,7 @@ def api_get(user: User) -> JsonDict:
                     }
                 )
 
-    if average_daily_load >= 3.0:
+    if average_daily_load >= 3.01:
         ret_tasks.insert(
             0,
             {
