@@ -9,6 +9,8 @@ REMINDER_DEFAULT = (
     "Implementation intentions are an effective way to change behavior:\n\n"
     "In situation X, I will do behavior Y to achieve subgoal Z."
 )
+MINIMUM_USERNAME_LENGTH = 3
+MAXIMUM_USERNAME_LENGTH = 64
 
 
 class LoginForm(FlaskForm):
@@ -28,6 +30,11 @@ class RegistrationForm(FlaskForm):
     # When you add any methods that match the pattern validate_<field_name>, WTForms takes those as custom validators
     # and invokes them in addition to the stock validators.
     def validate_username(self, username):
+        if len(username.data) < MINIMUM_USERNAME_LENGTH:
+            raise ValidationError(f"Username should be at least {MINIMUM_USERNAME_LENGTH} characters long.")
+        if len(username.data) > MAXIMUM_USERNAME_LENGTH:
+            raise ValidationError(f"Username cannot be more than {MAXIMUM_USERNAME_LENGTH} characters long.")
+
         user = User.query.filter_by(username=username.data).first()
         if user is not None:
             raise ValidationError("Username already registered; please use a different one.")
