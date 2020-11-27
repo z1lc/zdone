@@ -1,6 +1,6 @@
 import pytest
 
-from app.card_generation.highlight_clozer import cloze_out_keyword, no_punc, _clean_keyword
+from app.card_generation.highlight_clozer import cloze_out_keyword, no_punc, _clean_keyword, detect_language
 from app.card_generation.readwise import _generate_clozed_highlight_notes
 from utils import TEST_USER, get_test_highlight, BECOMING_IMAGE_URL
 
@@ -153,6 +153,19 @@ def test_avoid_clozing_denylist_word():
         assert "{{c1::What" not in note.fields[2]
 
 
+def test_works_for_czech():
+    highlights = [
+        get_test_highlight(
+            text="Těžba ropy a plynu z břidlic a navýšení americké produkce posílily americkou bezpečnost (i "
+            "bezpečnost Západu) v mnoha směrech. Americká ekonomika už není rukojmím světového ropného trhu. "
+            "Pokles cen ropy v důsledku americké produkce oslabil diktátory od Putina po Madura. Americký plyn "
+            "navýšil americký export a ekonomický vliv."
+        )
+    ]
+    generated_notes = _generate_clozed_highlight_notes(highlights, [], TEST_USER)
+    assert len(generated_notes) == 1
+
+
 def test_image_url():
     generated_notes = _generate_clozed_highlight_notes([get_test_highlight()], [], TEST_USER)
     assert len(generated_notes) == 1
@@ -176,3 +189,19 @@ def test_clozes_not_generated_for_very_short_highlight():
     assert len(generated_notes) == 0
     for note in generated_notes:
         assert not note.fields[0] == short_highlight_id
+
+
+def test_detect_language_en():
+    assert "en" == detect_language("This is an English sentence.")
+
+
+def test_detect_language_fr():
+    assert "fr" == detect_language("Ceci est une phrase française.")
+
+
+def test_detect_language_es():
+    assert "es" == detect_language("Esta es una oración en español.")
+
+
+def test_detect_language_cs():
+    assert "cs" == detect_language("Toto je věta v češtině.")
