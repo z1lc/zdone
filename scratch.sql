@@ -199,6 +199,5 @@ order by claimed_sales desc
 --Completed Trello tasks (non-recurring)
 select at, task_name
 from task_logs
-where user_id = 1 and task_id is null and action = 'complete'
-and at >= '2020-11-26'
+where user_id = 1 and task_id is null and action = 'complete' and at >= '2020-11-26'
 order by at desc
