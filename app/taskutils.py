@@ -15,7 +15,7 @@ from trello import TrelloClient, trellolist
 
 from app import db
 from app.models.base import User
-from app.models.tasks import TaskLog, Task
+from app.models.tasks import TaskLog, Task, RecurrenceType
 from app.reminders import get_most_recent_reminder, get_recent_task_completions
 from app.util import failure, success, JsonDict
 
@@ -122,7 +122,17 @@ def do_update_task(
         log.task_id = task.id
         db.session.add(log)
         if update == "complete":
-            task.last_completion = datetime.datetime.now(pytz.timezone(user.current_time_zone))
+            if task.recurrence_type == RecurrenceType.FROM_COMPLETION_DATE:
+                task.last_completion = datetime.datetime.now(pytz.timezone(user.current_time_zone))
+            elif task.recurrence_type == RecurrenceType.FROM_DUE_DATE:
+                task.last_completion = task.last_completion + datetime.timedelta(days=task.ideal_interval)
+            elif task.recurrence_type == RecurrenceType.NONE:
+                # Tasks with RecurrenceType.NONE start with an ideal_interval of -1 and switch to 0 once completed
+                task.ideal_interval = 0
+            else:
+                raise ValueError(
+                    f"Future scheduling for RecurrenceType {task.recurrence_type} undefined (task ID {task.id})."
+                )
         elif update == "partial_complete":
             # Partial completions allow us to get credit for doing at least *some* work in pursuit of a goal.
             # We aren't actually done with the task, though, so we need to make sure to get to it soon again.

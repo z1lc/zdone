@@ -1,13 +1,14 @@
 insert into youtube_video_overrides (video_id, youtube_trailer_key)
 values ('zdone:video:tmdb:1104', 'RTMk-xy2dTY');
 
-insert into tasks (user_id, title, description, ideal_interval, last_completion, defer_until)
+insert into tasks (user_id, title, description, ideal_interval, last_completion, defer_until, recurrence_type)
 values (1,
         '', --title
         '', --description
         7, --ideal interval
         current_date, --last completion
-        NULL --defer until
+        NULL, --defer until
+        'FROM_COMPLETION_DATE' --recurrence type: FROM_COMPLETION_DATE   FROM_DUE_DATE   NONE
 )
 ;
 
