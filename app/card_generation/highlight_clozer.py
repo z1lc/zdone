@@ -9,21 +9,22 @@ from spacy_langdetect import LanguageDetector
 
 from app.config import is_prod
 
-
-def get_en_with_pipe():
-    en = spacy.load("en_core_web_sm")
-    en.add_pipe(LanguageDetector(), name="language_detector", last=True)
-    return en
-
-
-# initialize the model once when we import this script
-NLPs = {
-    "en": get_en_with_pipe(),
-    "fr": spacy.load("fr_core_news_sm"),
-    "es": spacy.load("es_core_news_sm"),
-    "cs": spacy.blank("cs"),  # no Czech models yet
-}
+NLPs = None
 BORING_WORDS = ["they", "them", "one", "two", "it", "we", "you", "i", "me", "what", "people", "person"]
+
+
+def get_NLPs():
+    global NLPs
+    if not NLPs:
+        en = spacy.load("en_core_web_sm")
+        en.add_pipe(LanguageDetector(), name="language_detector", last=True)
+        NLPs = {
+            "en": en,
+            "fr": spacy.load("fr_core_news_sm"),
+            "es": spacy.load("es_core_news_sm"),
+            "cs": spacy.blank("cs"),  # no Czech models yet
+        }
+    return NLPs
 
 
 def get_clozed_highlight(highlight):
@@ -51,12 +52,12 @@ def get_longest_word(no_punctuation_sentence) -> str:
 
 
 def detect_language(sentence: str) -> str:
-    return NLPs["en"](sentence)._.language["language"]
+    return get_NLPs()["en"](sentence)._.language["language"]
 
 
 def get_keywords(sentence: str) -> List[str]:
     # try to get language-specific NLP, but fall back to English if we don't have one for that language
-    doc = NLPs.get(detect_language(sentence), NLPs["en"])(sentence)
+    doc = get_NLPs().get(detect_language(sentence), get_NLPs()["en"])(sentence)
     result = set()
     # first, grab interesting entities. will include things like "LeBron James", "Google", and "1865" (year)
     result.update(get_interesting_entities(doc.ents))
