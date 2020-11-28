@@ -93,7 +93,7 @@ def send_and_log_notification(user: User, reminder_id: int, should_log: bool = T
         args["url_title"] = "Read more..."
         args["url"] = f"https://zdone.co/reminders/{reminder.id}"
     get_pushover_client(user).send_message(**args)
-    log(f"Sent notification {reminder.title}: {reminder.message}" f" to clients for user {user.username}.")
+    log(f"Sent notification {reminder.title}: {reminder.message} to clients for user {user.username}.")
     if should_log:
         notification = ReminderNotification(
             reminder_id=reminder.id, sent_at=datetime.datetime.utcnow(), sent_via="pushover"
