@@ -29,7 +29,7 @@ tld==0.12.3
 pifx==1.0.1
 suntime==1.2.5
 b2sdk==1.2.0
-spacy==2.3.2
+spacy==2.3.4
 wikipedia==1.4.0
 spotipy==2.16.1
 black==20.8b1
