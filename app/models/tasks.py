@@ -1,5 +1,8 @@
 import datetime
+from enum import Enum
 from typing import Optional
+
+from sentry_sdk import capture_exception
 
 from app import db
 from app.models.base import BaseModel
@@ -24,17 +27,33 @@ class ReminderNotification(BaseModel):
     sent_via = db.Column(db.String, nullable=False)
 
 
+class RecurrenceType(Enum):
+    FROM_COMPLETION_DATE = 1
+    FROM_DUE_DATE = 2
+    NONE = 3
+
+
 class Task(BaseModel):
     __tablename__ = "tasks"
     id: int = db.Column(db.Integer, primary_key=True)
     user_id: int = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     title: str = db.Column(db.Text, nullable=False)
     description: Optional[str] = db.Column(db.Text, nullable=True)
+    # Tasks with RecurrenceType.NONE start with an ideal_interval of -1 and switch to 0 once completed
+    # All other RecurrenceTypes use positive ideal_intervals
     ideal_interval: int = db.Column(db.Integer, nullable=False)
-    # the local date of last completion, for ease of skew calculation
+    # the last_completion column is a bit of a misnomer, as it is not always the date of last completion.
+    # It varies based on the recurrence type:
+    #   for FROM_COMPLETION_DATE, it is the actual date of last completion.
+    #   for FROM_DUE_DATE, it is the date the task *would have* most recently been completed,
+    #       if it were completed on time.
+    #   for NONE, it is the due date.
     last_completion: datetime.date = db.Column(db.Date, nullable=False)
     # local date for when this task can be re-enabled again
     defer_until: Optional[datetime.date] = db.Column(db.Date, nullable=True)
+    recurrence_type: RecurrenceType = db.Column(
+        db.Enum(RecurrenceType), nullable=False, server_default=RecurrenceType.FROM_COMPLETION_DATE.name
+    )
 
     def is_after_delay(self, user_local_date: datetime.date) -> bool:
         return self.defer_until is None or user_local_date >= self.defer_until
@@ -51,7 +70,18 @@ class Task(BaseModel):
         """
         if not ignore_deferral and self.defer_until and user_local_date < self.defer_until:
             return 0.0
-        return (user_local_date - self.last_completion).days / self.ideal_interval
+
+        if self.recurrence_type in [RecurrenceType.FROM_COMPLETION_DATE]:
+            return (user_local_date - self.last_completion).days / self.ideal_interval
+        # we use 100 here & below so that once a specific-date task becomes due,
+        # it is always prioritized to the front of the list
+        elif self.recurrence_type in [RecurrenceType.FROM_DUE_DATE]:
+            return 100 if (user_local_date - self.last_completion).days >= self.ideal_interval else 0
+        elif self.recurrence_type in [RecurrenceType.NONE]:
+            return 100 if self.ideal_interval == -1 and user_local_date >= self.last_completion else 0
+        else:
+            capture_exception(ValueError(f"Could not calculate skew for RecurrenceType {self.recurrence_type}"))
+            return 0
 
 
 class TaskLog(BaseModel):

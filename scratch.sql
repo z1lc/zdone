@@ -1,13 +1,14 @@
 insert into youtube_video_overrides (video_id, youtube_trailer_key)
 values ('zdone:video:tmdb:1104', 'RTMk-xy2dTY');
 
-insert into tasks (user_id, title, description, ideal_interval, last_completion, defer_until)
+insert into tasks (user_id, title, description, ideal_interval, last_completion, defer_until, recurrence_type)
 values (1,
         '', --title
         '', --description
         7, --ideal interval
         current_date, --last completion
-        NULL --defer until
+        NULL, --defer until
+        'FROM_COMPLETION_DATE' --recurrence type: FROM_COMPLETION_DATE   FROM_DUE_DATE   NONE
 )
 ;
 
@@ -194,3 +195,9 @@ from best_selling_artists bsa
 where not following or following is null
 order by claimed_sales desc
 ;
+
+--Completed Trello tasks (non-recurring)
+select at, task_name
+from task_logs
+where user_id = 1 and task_id is null and action = 'complete' and at >= '2020-11-26'
+order by at desc
