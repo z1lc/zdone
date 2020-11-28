@@ -5,11 +5,24 @@ from typing import List, Tuple
 
 import spacy
 from spacy.tokens import Span
+from spacy_langdetect import LanguageDetector
 
 from app.config import is_prod
 
+
+def get_en_with_pipe():
+    en = spacy.load("en_core_web_sm")
+    en.add_pipe(LanguageDetector(), name="language_detector", last=True)
+    return en
+
+
 # initialize the model once when we import this script
-NLP = spacy.load("en_core_web_sm")
+NLPs = {
+    "en": get_en_with_pipe(),
+    "fr": spacy.load("fr_core_news_sm"),
+    "es": spacy.load("es_core_news_sm"),
+    "cs": spacy.blank("cs"),  # no Czech models yet
+}
 BORING_WORDS = ["they", "them", "one", "two", "it", "we", "you", "i", "me", "what", "people", "person"]
 
 
@@ -37,8 +50,13 @@ def get_longest_word(no_punctuation_sentence) -> str:
     return max(no_punctuation_sentence.split(" "), key=len)
 
 
+def detect_language(sentence: str) -> str:
+    return NLPs["en"](sentence)._.language["language"]
+
+
 def get_keywords(sentence: str) -> List[str]:
-    doc = NLP(sentence)
+    # try to get language-specific NLP, but fall back to English if we don't have one for that language
+    doc = NLPs.get(detect_language(sentence), NLPs["en"])(sentence)
     result = set()
     # first, grab interesting entities. will include things like "LeBron James", "Google", and "1865" (year)
     result.update(get_interesting_entities(doc.ents))

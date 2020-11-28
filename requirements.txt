@@ -30,10 +30,13 @@ pifx==1.0.1
 suntime==1.2.5
 b2sdk==1.2.0
 spacy==2.3.4
+spacy_langdetect==0.1.2
 wikipedia==1.4.0
 spotipy==2.16.1
 black==20.8b1
 pre-commit==2.9.2
 
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.3.0/en_core_web_sm-2.3.0.tar.gz
+https://github.com/explosion/spacy-models/releases/download/fr_core_news_sm-2.3.0/fr_core_news_sm-2.3.0.tar.gz
+https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-2.3.0/es_core_news_sm-2.3.0.tar.gz
 git+git://github.com/z1lc/genanki.git#egg=genanki
