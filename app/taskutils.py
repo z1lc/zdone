@@ -32,8 +32,9 @@ def api_get(user: User) -> JsonDict:
 
     for task in tasks:
         due = task.calculate_skew(user_local_date) >= 1
-        if task.ideal_interval > 0 and task.is_after_delay(user_local_date):
-            average_daily_load += 1 / task.ideal_interval
+        if task.is_after_delay(user_local_date):
+            if task.ideal_interval > 0:
+                average_daily_load += 1 / task.ideal_interval
             if due:
                 ret_tasks.append(
                     {
