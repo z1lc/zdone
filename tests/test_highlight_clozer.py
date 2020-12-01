@@ -1,6 +1,12 @@
 import pytest
 
-from app.card_generation.highlight_clozer import cloze_out_keyword, no_punc, _clean_keyword, detect_language
+from app.card_generation.highlight_clozer import (
+    cloze_out_keyword,
+    no_punc,
+    _clean_keyword,
+    detect_language,
+    _lemmatized,
+)
 from app.card_generation.readwise import _generate_clozed_highlight_notes
 from utils import TEST_USER, get_test_highlight, BECOMING_IMAGE_URL
 
@@ -205,3 +211,10 @@ def test_detect_language_es():
 
 def test_detect_language_cs():
     assert "cs" == detect_language("Toto je věta v češtině.")
+
+
+def test_lemmatizer():
+    assert _lemmatized("Mexico's") == "Mexico"
+    assert _lemmatized("examples") == "example"
+    assert _lemmatized("apples!") == "apple"
+    assert _lemmatized("LeBron James") == "LeBron Jame"

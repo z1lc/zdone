@@ -10,7 +10,28 @@ from spacy_langdetect import LanguageDetector
 from app.config import is_prod
 
 NLPs = None
-BORING_WORDS = ["they", "them", "one", "two", "it", "we", "you", "i", "me", "what", "people", "person"]
+BORING_WORDS = [
+    "they",
+    "them",
+    "one",
+    "two",
+    "it",
+    "we",
+    "you",
+    "i",
+    "me",
+    "what",
+    "people",
+    "person",
+    "chapter",
+    "reason",
+    "why",
+    "who",
+    "when",
+    "where",
+    "something",
+    "alternative",
+]
 
 
 def get_NLPs():
@@ -38,6 +59,7 @@ def get_clozed_highlight(highlight):
 # Returns a word with punctuation chars removed, except dashes in middle of word
 # ham, -> ham
 # extra-crispy -> extra-crispy
+# Mexico's -> Mexico
 def no_punc(word: str) -> str:
     word_apostrophe_removed = re.sub(r"'.", "", word)
     return word_apostrophe_removed.strip(string.punctuation)
@@ -55,6 +77,19 @@ def detect_language(sentence: str) -> str:
     return get_NLPs()["en"](sentence)._.language["language"]
 
 
+# Takes a word and attempts to return a simple lemma of the word.
+# This involves removing punctuation in the word along with attempting to convert the word from plural to singular form
+# We could use spacy here, but that seemed like overkill given the majority of what we are trying to do can be
+# accomplished by just removing trailing "s" characters from words.
+# Example transformations:
+# words. -> word
+# apples! -> apple
+# examples, -> example
+# Mexico's -> Mexico
+def _lemmatized(text):
+    return no_punc(text).rstrip("s")
+
+
 def get_keywords(sentence: str) -> List[str]:
     # try to get language-specific NLP, but fall back to English if we don't have one for that language
     doc = get_NLPs().get(detect_language(sentence), get_NLPs()["en"])(sentence)
@@ -66,7 +101,7 @@ def get_keywords(sentence: str) -> List[str]:
         [
             no_punc(noun_chunk.root.text)
             for noun_chunk in doc.noun_chunks
-            if no_punc(noun_chunk.root.text).lower() not in BORING_WORDS
+            if _lemmatized(noun_chunk.root.text).lower() not in BORING_WORDS
         ]
     )
     # finally, let's add the longest word
@@ -121,7 +156,7 @@ def cloze_out_keyword(keyword: str, sentence: str) -> str:
         return sentence.replace(keyword, cloze_word_with_punc(keyword))
     return " ".join(
         map(
-            lambda word: cloze_word_with_punc(word) if no_punc(word.lower()) == keyword.lower() else word,
+            lambda word: cloze_word_with_punc(word) if _lemmatized(word).lower() == keyword.lower() else word,
             sentence_words,
         )
     )
