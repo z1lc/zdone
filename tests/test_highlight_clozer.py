@@ -48,7 +48,7 @@ def test_no_punc_removes_prefix():
 
 def test_clean_keyword():
     unclean_keywords = [
-        "the United Kingdom",
+        "the United Kingdom's",
         "a grasshopper",
         " an ugly duckling ",
         "the Duchess of Cambridge",
@@ -59,7 +59,7 @@ def test_clean_keyword():
         "grasshopper",
         "ugly duckling",
         "Duchess of Cambridge",
-        "LeBron James",
+        "LeBron Jame",  # lemmatization will strip the trailing 's'
     ]
     assert len(unclean_keywords) == len(expected_cleaned_keywords)
     for i in range(len(unclean_keywords)):
@@ -71,7 +71,7 @@ def test_clean_keyword():
 # THEN clozes out the capitalized and lower-case keyword
 def test_cloze_out_keyword_capitalization():
     relevant_sentence = "Mountains that are tall are more interesting than mountains that are short."
-    keyword = "mountains"
+    keyword = "mountain"
     expected_cloze = "{{c1::Mountains}} that are tall are more interesting than {{c1::mountains}} that are short."
     assert expected_cloze == cloze_out_keyword(keyword, relevant_sentence)
 
@@ -218,3 +218,4 @@ def test_lemmatizer():
     assert _lemmatized("examples") == "example"
     assert _lemmatized("apples!") == "apple"
     assert _lemmatized("LeBron James") == "LeBron Jame"
+    assert _lemmatized("differentiates") == "differentiate"

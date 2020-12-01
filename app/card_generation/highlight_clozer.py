@@ -99,13 +99,13 @@ def get_keywords(sentence: str) -> List[str]:
     # next, add worthwhile nouns like "dog", "fox"
     result.update(
         [
-            no_punc(noun_chunk.root.text)
+            _lemmatized(noun_chunk.root.text)
             for noun_chunk in doc.noun_chunks
             if _lemmatized(noun_chunk.root.text).lower() not in BORING_WORDS
         ]
     )
     # finally, let's add the longest word
-    result.update([get_longest_word(no_punc(sentence))])
+    result.update([_lemmatized(get_longest_word(no_punc(sentence)))])
     return list(result)
 
 
@@ -131,7 +131,7 @@ def _clean_keyword(best_entity: str) -> str:
     # handle any whitespace issues
     result = " ".join(best_entity_words)
     result = result.strip()
-    return result
+    return _lemmatized(result)
 
 
 # return the most interesting entities from a list of entities in a sentence
