@@ -14,7 +14,7 @@ sentry-sdk[flask]==0.19.4
 mock==4.0.2
 py-trello==0.17.1
 jsmin==2.2.2
-tmdbsimple==2.6.6
+tmdbsimple==2.7.0
 email_validator==1.1.2
 pytest==6.1.2
 mypy==0.790
