@@ -71,8 +71,7 @@ from reminder_notifications
 where user_id = {user.id}
 order by sent_at desc
 limit 1"""
-    reminders = list(db.engine.execute(prepared_sql))
-    if reminders:
+    if reminders := list(db.engine.execute(prepared_sql)):
         most_recent_reminder_id = reminders[0][0]
         return Reminder.query.filter_by(id=most_recent_reminder_id).one_or_none()
     return None

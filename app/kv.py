@@ -8,8 +8,7 @@ def get(key: str) -> str:
 
 
 def put(key: str, value: str) -> None:
-    maybe_kv = kv.query.filter_by(k=key).one_or_none()
-    if maybe_kv:
+    if maybe_kv := kv.query.filter_by(k=key).one_or_none():
         maybe_kv.v = value
     else:
         db.session.add(kv(k=key, v=value))
