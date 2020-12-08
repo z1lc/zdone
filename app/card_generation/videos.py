@@ -54,6 +54,10 @@ having sum(case when mv.watched
                     then case when v.seasons is not null
                                   -- cap at 10 seasons per show, and consider 3 seasons as ≈ 1 movie
                                   then least(v.seasons::float, 10.0) / 3
+                              -- in the situation when there are no seasons set, it means either it's a pre-release TV
+                              -- show with no seasons yet, or a movie. In both cases, we should just use 1. It is a fair
+                              -- question to ask, how could you have watched a pre-release TV show, but we leave the
+                              -- answer to that as an exercise for the reader
                               else 1 end
                 -- 'want to watch' should be counted the same, whether it's a TV show or a movie
                 else 0.5 end) >= 4"""
