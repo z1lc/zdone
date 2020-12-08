@@ -89,8 +89,7 @@ def api_get(user: User) -> JsonDict:
         "trello_lists": lists,
     }
 
-    latest_reminder = get_most_recent_reminder(user)
-    if latest_reminder:
+    if latest_reminder := get_most_recent_reminder(user):
         r["latest_reminder"] = {
             "title": latest_reminder.title,
             "message": latest_reminder.message,
@@ -238,8 +237,7 @@ def ensure_trello_setup_idempotent(user: User) -> str:
 
 
 def get_open_trello_lists(user: User) -> List[trellolist.List]:
-    client = get_trello_client(user)
-    if client:
+    if client := get_trello_client(user):
         backlog_board = [board for board in client.list_boards() if board.name == "Backlogs"][0]
         return backlog_board.list_lists("open")
     return []

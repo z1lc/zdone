@@ -141,8 +141,7 @@ def privacy():
 @app.route("/spotify/auth")
 @login_required
 def spotify_auth():
-    maybe_url = maybe_get_spotify_authorize_url(request.url, user=current_user)
-    if maybe_url:
+    if maybe_url := maybe_get_spotify_authorize_url(request.url, user=current_user):
         return redirect(maybe_url, 302)
     last_spotify_track = current_user.last_spotify_track
     if last_spotify_track:

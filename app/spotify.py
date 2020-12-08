@@ -259,13 +259,10 @@ def get_spotify(full_url: str, user: User):
         cache_path=f".cache-{user.username}",
     )
 
-    token_info = get_cached_token_info(sp_oauth, user)
-
-    if not token_info:
-        return sp_oauth.get_authorize_url()
+    if token_info := get_cached_token_info(sp_oauth, user):
+        return spotipy.Spotify(auth=token_info["access_token"])
     else:
-        sp = spotipy.Spotify(auth=token_info["access_token"])
-        return sp
+        return sp_oauth.get_authorize_url()
 
 
 def bulk_add_tracks(sp, track_uris: List[str]) -> None:
