@@ -58,7 +58,8 @@ if __name__ == "__main__":
         if i % 10 == 0:
             log(f"On item #{i}; {round(i * 100 / len(stories))}% done.")
         item = get_item(story.id)
-        if item:
+        # not sure why, but seems like sometimes we just receive back an item with time/id but no score, title?
+        if item and "title" in item:
             story.comments = item.get("descendants", 0)
             story.score = item["score"]
             story.title = item["title"]
