@@ -19,6 +19,7 @@ from app.card_generation.readwise import get_highlights
 from app.card_generation.util import AnkiCard
 from app.models.anki import AnkiReviewLog
 from app.models.base import User, GateDef
+from app.models.wiki import WikipediaFollow, WikipediaPage
 from . import app, db, kv
 from .forms import LoginForm, RegistrationForm, ReminderForm, REMINDER_DEFAULT
 from .hn import get_unread_stories, get_total_and_average_reads_per_week
@@ -295,7 +296,38 @@ def api_log_review(api_key, zdone_id, raw_template_name):
     return success()
 
 
-@app.route("/api/<api_key>/play/<track_uri>/<callback_function_name>")
+@app.route("/api/<api_key>/follow/<wiki_page>/", methods=["GET", "POST"])
+def api_follow(api_key, wiki_page):
+    return_boolean = "false"
+
+    if user := validate_api_key(api_key):
+        maybe_follow = WikipediaFollow.query.filter_by(user_id=user.id, wikipedia_page_id=wiki_page).one_or_none()
+        if flask.request.method == "GET":
+            return_boolean = "true" if maybe_follow else "false"
+        elif flask.request.method == "POST":
+            if maybe_follow:
+                # already following
+                return_boolean = "true"
+            else:
+                maybe_page = WikipediaPage.query.filter_by(id=wiki_page).one_or_none()
+                if not maybe_page:
+                    db.session.add(WikipediaPage(id=wiki_page))
+
+                db.session.add(
+                    WikipediaFollow(
+                        user_id=user.id,
+                        wikipedia_page_id=wiki_page,
+                    )
+                )
+                db.session.commit()
+                return_boolean = "true"
+
+    r = flask.Response(return_boolean)
+    r.headers["Access-Control-Allow-Origin"] = "*"
+    return r
+
+
+@app.route("/api/<api_key>/play/<track_uri>/<callback_function_name>/")
 def api_play_song(api_key, track_uri, callback_function_name):
     user = validate_api_key(api_key)
     if not user:
