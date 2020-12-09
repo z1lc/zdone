@@ -296,6 +296,7 @@ def api_log_review(api_key, zdone_id, raw_template_name):
     return success()
 
 
+# see https://github.com/z1lc/zdone-webextension
 @app.route("/api/<api_key>/follow/<wiki_page>/", methods=["GET", "POST"])
 def api_follow(api_key, wiki_page):
     return_boolean = "false"
