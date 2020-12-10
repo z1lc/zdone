@@ -313,6 +313,7 @@ def api_follow(api_key, wiki_page):
                 maybe_page = WikipediaPage.query.filter_by(id=wiki_page).one_or_none()
                 if not maybe_page:
                     db.session.add(WikipediaPage(id=wiki_page))
+                    db.session.commit()
 
                 db.session.add(
                     WikipediaFollow(
