@@ -10,7 +10,7 @@ flask-talisman==0.7.0
 flask_login==0.5.0
 flask_migrate==2.5.3
 flask_wtf==0.14.3
-sentry-sdk[flask]==0.19.4
+sentry-sdk[flask]==0.19.5
 mock==4.0.3
 py-trello==0.17.1
 jsmin==2.2.2
@@ -29,12 +29,12 @@ tld==0.12.3
 pifx==1.0.1
 suntime==1.2.5
 b2sdk==1.2.0
-spacy==2.3.4
+spacy==2.3.5
 spacy_langdetect==0.1.2
 wikipedia==1.4.0
 spotipy==2.16.1
 black==20.8b1
-pre-commit==2.9.2
+pre-commit==2.9.3
 
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.3.0/en_core_web_sm-2.3.0.tar.gz
 https://github.com/explosion/spacy-models/releases/download/fr_core_news_sm-2.3.0/fr_core_news_sm-2.3.0.tar.gz
