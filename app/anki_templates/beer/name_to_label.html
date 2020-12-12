@@ -3,7 +3,7 @@
     <br>
     <ul>
         <li>{{ '{{Style}}' }}</li>
-        <li>{{ '{{Brewery Name}}' }} ({{ '{{Brewery Type}}' }})</li>
+        <li>{{ '{{Brewery Name}}' }} ({{ '{{Brewery Type}}' }} in {{ '{{Brewery Location}}' }})</li>
         <li>{{ '{{ABV}}' }} ABV</li>
         <li>{{ '{{IBU}}' }} IBU</li>
     </ul>
@@ -12,7 +12,10 @@
 {% if is_front %}
 <div id="imagePart"><img src="_blank_beer.png"></div>
 {% else %}
-<div id="imagePart" class="rsAnswer">{{ '{{Label Image}}' }}</div>
+<div id="imagePart" class="rsAnswer">{{ '{{Label Image}}' }}
+    {% if not is_front %}{{ '{{^Label Image}}' }}{% endif %}
+    {{ '{{Extra Images}}' }}
+    {% if not is_front %}{{ '{{/Label Image}}' }}{% endif %}</div>
 {% endif %}
 
 {{ script_include|safe }}

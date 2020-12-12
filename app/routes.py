@@ -273,7 +273,14 @@ def api_log_review(api_key, zdone_id, raw_template_name):
     if not user:
         return api_key_failure()
 
-    ids_start_with = ["spotify:track:", "spotify:artist:", "zdone:video:", "zdone:person:", "zdone:highlight:"]
+    ids_start_with = [
+        "spotify:track:",
+        "spotify:artist:",
+        "zdone:video:",
+        "zdone:person:",
+        "zdone:highlight:",
+        "zdone:beer:",
+    ]
     if not list(filter(zdone_id.startswith, ids_start_with)):
         error = f"Provided ID ({zdone_id}) does not seem to be a zdone ID."
         capture_exception(ValueError(error))
