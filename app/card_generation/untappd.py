@@ -1,4 +1,6 @@
+import json
 from typing import List
+from urllib.request import urlopen
 
 import genanki
 from genanki import Deck
@@ -30,6 +32,7 @@ def get_beer_model(user):
             {"name": "Style"},
             {"name": "Brewery Name"},
             {"name": "Brewery Type"},
+            {"name": "Brewery Location"},
             {"name": "Label Image"},
             {"name": "Extra Images"},
             # TODO(rob): Add more fields before public release
@@ -37,6 +40,18 @@ def get_beer_model(user):
         css=(get_rs_anki_css() if user.uses_rsAnki_javascript else get_default_css()),
         templates=templates,
     )
+
+
+def get_country(lat, lon):
+    url = f"https://maps.googleapis.com/maps/api/geocode/json?latlng={lat},{lon}&key={kv.get('GOOGLE_MAPS_API_KEY')}"
+    v = urlopen(url).read()
+    j = json.loads(v)
+    components = j["results"][0]["address_components"]
+    country = None
+    for c in components:
+        if "country" in c["types"]:
+            country = c["long_name"]
+    return country
 
 
 def generate_beer(user: User, deck: Deck, tags: List[str]):
@@ -48,6 +63,11 @@ def generate_beer(user: User, deck: Deck, tags: List[str]):
     for beer_response in client.user.beers(user.untappd_username)["response"]["beers"]["items"]:
         beer = client.beer.info(beer_response["beer"]["bid"])["response"]["beer"]
         brewery = beer["brewery"]
+        label_image_src = beer["beer_label_hd"]
+        extra_image_srcs = [{photo["photo"]["photo_img_md"]} for photo in beer["media"]["items"][:3]]
+
+        country = get_country(brewery["location"]["lat"], brewery["location"]["lng"])
+        brewery_location = f"{brewery['location']['brewery_city']}, {brewery['location']['brewery_state']}, {country}"
 
         deck.add_note(
             zdNote(
@@ -63,8 +83,9 @@ def generate_beer(user: User, deck: Deck, tags: List[str]):
                     # https://www.brewersassociation.org/statistics-and-data/craft-beer-industry-market-segments/
                     # micro = <15k barrels; regional = <6m barrels; macro = >6m
                     brewery["brewery_type"],
-                    f"<img src='{beer['beer_label_hd']}'>",
-                    "".join([f"<img src='{photo['photo']['photo_img_md']}'>" for photo in beer["media"]["items"][:3]]),
+                    brewery_location,
+                    f"<img src='{label_image_src}'>" if label_image_src else "",
+                    "".join([f"<img src='{photo}'>" for photo in extra_image_srcs]) if extra_image_srcs else "",
                 ],
             )
         )

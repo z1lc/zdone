@@ -1,16 +1,21 @@
 <div id="textPart">
-    {% if not is_front %}
+    {% if is_front %}
+    What beer?
+    {% else %}
     <span class="rsAnswer rsAnkiBold">{{ '{{Name}}' }}</span><br>
     <ul>
         <li>{{ '{{Style}}' }}</li>
-        <li>{{ '{{Brewery Name}}' }} ({{ '{{Brewery Type}}' }})</li>
+        <li>{{ '{{Brewery Name}}' }} ({{ '{{Brewery Type}}' }} in {{ '{{Brewery Location}}' }})</li>
         <li>{{ '{{ABV}}' }} ABV</li>
         <li>{{ '{{IBU}}' }} IBU</li>
     </ul>
     {% endif %}
 </div>
 
-<div id="imagePart">{{ '{{Label Image}}' }}{% if not is_front %}{{ '{{Extra Images}}' }}{% endif %}</div>
+<div id="imagePart">{{ '{{Label Image}}' }}
+    {% if not is_front %}{{ '{{^Label Image}}' }}{% endif %}
+    {{ '{{Extra Images}}' }}
+    {% if not is_front %}{{ '{{/Label Image}}' }}{% endif %}</div>
 
 
 {{ script_include|safe }}
