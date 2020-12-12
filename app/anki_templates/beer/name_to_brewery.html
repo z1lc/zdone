@@ -1,0 +1,17 @@
+<div id="textPart">
+    What brewery brews <span class="rsAnkiBold">{{ '{{Name}}' }}</span>?
+    {% if not is_front %}
+    <hr>
+    <span class="rsAnswer rsAnkiBold">{{ '{{Brewery Name}}' }}</span> ({{ '{{Brewery Type}}' }})
+    <ul>
+        <li>{{ '{{Style}}' }}</li>
+        <li>{{ '{{ABV}}' }} ABV</li>
+        <li>{{ '{{IBU}}' }} IBU</li>
+    </ul>
+    {% endif %}
+</div>
+
+<div id="imagePart">{{ '{{Label Image}}' }}{{ '{{Extra Images}}' }}</div>
+
+
+{{ script_include|safe }}

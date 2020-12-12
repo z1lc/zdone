@@ -1,0 +1,18 @@
+<div id="textPart">{% if is_front %}Visualize the label for {% endif %}<span class="rsAnkiBold noUnderline">{{ '{{Name}}' }}</span>
+    {% if not is_front %}
+    <br>
+    <ul>
+        <li>{{ '{{Style}}' }}</li>
+        <li>{{ '{{Brewery Name}}' }} ({{ '{{Brewery Type}}' }})</li>
+        <li>{{ '{{ABV}}' }} ABV</li>
+        <li>{{ '{{IBU}}' }} IBU</li>
+    </ul>
+    {% endif %}
+</div>
+{% if is_front %}
+<div id="imagePart"><img src="_blank_beer.png"></div>
+{% else %}
+<div id="imagePart" class="rsAnswer">{{ '{{Label Image}}' }}</div>
+{% endif %}
+
+{{ script_include|safe }}

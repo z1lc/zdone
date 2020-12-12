@@ -7,11 +7,11 @@
     {% endif %}
     {{ '{{Known For}}' }}
 </div>
-{%  if not is_front %}
 <div id="imagePart">
+    {%  if not is_front %}
     <span id="insertPersonImageHere">{{ '{{Image}}' }}</span>
+    {%  endif %}
 </div>
-{%  endif %}
 
 {{ script_include|safe }}
 {{ '{{/Known For}}'}}

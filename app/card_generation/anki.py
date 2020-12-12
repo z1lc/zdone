@@ -3,14 +3,16 @@ from typing import List
 import genanki
 from genanki import Deck
 
-from app.card_generation.spotify import generate_tracks, generate_artists
-from app.card_generation.videos import generate_videos
 from app.card_generation.readwise import generate_readwise_highlight_clozes, generate_readwise_people
+from app.card_generation.spotify import generate_tracks, generate_artists
+from app.card_generation.untappd import generate_beer
+from app.card_generation.videos import generate_videos
 from app.log import log
 from app.models.base import User, GateDef
 from app.util import today_datetime
 
 SPOTIFY_TRACK_DECK_ID: int = 1586000000000
+TEST_FILENAME = "test_filename.apkg"
 
 """
 Things to keep in mind when adding new models / templates:
@@ -56,6 +58,11 @@ def generate_full_apkg(user: User, filename: str) -> int:
         generate_readwise_highlight_clozes(user, deck, tags)
         generate_readwise_people(user, deck, tags)
 
+    if user.untappd_username and user.is_gated(GateDef.GENERATE_BEER_NOTES):
+        log(f"Generating beer... {today_datetime()}")
+        generate_beer(user, deck, tags)
+
     log(f"Packaging into file... {today_datetime()}")
-    genanki.Package(deck).write_to_file(filename)
+    if filename != TEST_FILENAME:
+        genanki.Package(deck).write_to_file(filename)
     return len(deck.notes)

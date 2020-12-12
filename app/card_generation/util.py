@@ -67,6 +67,12 @@ class AnkiCard(Enum):
     PERSON_KNOWN_FOR_TO_NAME_AND_IMAGE = (32, "person", "Name")
     PERSON_NAME_TO_IMAGE = (33, "person", "Name")
 
+    # Beer via Untappd
+    LABEL_TO_NAME = (35, "beer", "zdone Beer ID")
+    NAME_TO_BREWERY = (36, "beer", "zdone Beer ID")
+    NAME_TO_LABEL = (37, "beer", "zdone Beer ID")
+    NAME_TO_STYLE = (38, "beer", "zdone Beer ID")
+
     def __init__(self, unique_number: int, directory: str, id_field_name: str = None, name_override: str = None):
         self.unique_number = unique_number
         self.directory = directory

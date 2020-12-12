@@ -28,6 +28,7 @@ class GateDef(enum.Enum):
     SEND_PUSHOVER_NOTIFICATION_AFTER_APKG_GENERATION = 7
     SPOTIFY_GENERATE_ALBUM_ART_CARD_FOR_TRACK_NOTES = 8
     USE_SPOTIFY_TRACK_LEGACY_MODEL_ID = 9
+    GENERATE_BEER_NOTES = 12
 
     # other
     CREATE_ANKI_SPOTIFY_PLAYLIST = 10
@@ -75,6 +76,8 @@ class User(UserMixin, BaseModel):
     tmdb_session_id: str = db.Column(db.Text, unique=True)
 
     readwise_access_token: str = db.Column(db.Text, unique=True)
+
+    untappd_username: str = db.Column(db.Text, unique=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

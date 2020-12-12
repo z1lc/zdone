@@ -9,6 +9,7 @@ from wikipedia import wikipedia, WikipediaPage, PageError, WikipediaException
 from app.card_generation.util import zdNote, get_template, AnkiCard, get_rs_anki_css, get_default_css
 from app.log import log
 from app.util import JsonDict
+from app.models.base import User
 
 NLP = spacy.load("en_core_web_sm")
 PERSON_MODEL_ID = 1605000000000
@@ -54,7 +55,7 @@ def get_people(highlight_data: Dict[str, str]) -> List[Person]:
     ]
 
 
-def get_person_note(wikipedia_person: WikipediaPerson, tags, user):
+def get_person_note(wikipedia_person: WikipediaPerson, tags: List[str], user: User):
     return zdNote(
         model=_get_person_model(user),
         tags=tags,
