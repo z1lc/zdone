@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from app.card_generation.anki import generate_full_apkg, TEST_FILENAME
@@ -41,6 +43,14 @@ def test_models_reasonable():
                 assert "rsAnswer" or "{{cloze:" in answer
                 # ensure all cards have logging on their back
                 assert f"https://www.zdone.co/api/{TEST_USER.api_key}/log/" in answer
+
+                # ensure there's a textPart followed by an imagePart
+                assert re.search(
+                    r"<div id=\"textPart\"[\s\S]*?</div>[\s\S]*?<div id=\"imagePart\"[\s\S]*?</div>", question
+                ), question
+                assert re.search(
+                    r"<div id=\"textPart\"[\s\S]*?</div>[\s\S]*?<div id=\"imagePart\"[\s\S]*?</div>", answer
+                ), answer
 
 
 @pytest.mark.skip(reason="integration")
