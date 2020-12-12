@@ -34,7 +34,7 @@ spacy_langdetect==0.1.2
 wikipedia==1.4.0
 spotipy==2.16.1
 black==20.8b1
-pre-commit==2.9.2
+pre-commit==2.9.3
 
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.3.0/en_core_web_sm-2.3.0.tar.gz
 https://github.com/explosion/spacy-models/releases/download/fr_core_news_sm-2.3.0/fr_core_news_sm-2.3.0.tar.gz
