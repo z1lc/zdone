@@ -3,7 +3,7 @@ from genanki import Deck
 
 from app.card_generation.untappd import generate_beer
 from app.models.base import User
-from card_generation.anki import SPOTIFY_TRACK_DECK_ID
+from app.card_generation.anki import SPOTIFY_TRACK_DECK_ID
 
 
 @pytest.mark.skip(reason="integration")
