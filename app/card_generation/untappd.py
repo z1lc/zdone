@@ -17,9 +17,9 @@ BEER_MODEL_ID = 1607000000000
 def get_beer_model(user):
     templates: List[JsonDict] = [
         get_template(AnkiCard.LABEL_TO_NAME, user),
-        get_template(AnkiCard.NAME_TO_BREWERY, user),
         get_template(AnkiCard.NAME_TO_LABEL, user),
         get_template(AnkiCard.NAME_TO_STYLE, user),
+        get_template(AnkiCard.NAME_TO_BREWERY, user),
     ]
     return genanki.Model(
         BEER_MODEL_ID,
