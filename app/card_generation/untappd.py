@@ -64,7 +64,7 @@ def generate_beer(user: User, deck: Deck, tags: List[str]):
         beer = client.beer.info(beer_response["beer"]["bid"])["response"]["beer"]
         brewery = beer["brewery"]
         label_image_src = beer["beer_label_hd"]
-        extra_image_srcs = [{photo["photo"]["photo_img_md"]} for photo in beer["media"]["items"][:3]]
+        extra_image_srcs = [photo["photo"]["photo_img_md"] for photo in beer["media"]["items"][:3]]
 
         country = get_country(brewery["location"]["lat"], brewery["location"]["lng"])
         brewery_location = f"{brewery['location']['brewery_city']}, {brewery['location']['brewery_state']}, {country}"
