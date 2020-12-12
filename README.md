@@ -7,6 +7,7 @@
    * **Music**: uses [Spotify](https://www.spotify.com/) to help you get more into music. Read more about it in the [launch post on Reddit](https://www.reddit.com/r/Anki/comments/g0zgyc/spotify_anki_learn_to_recognize_songs_by_your/). Open for [registration](https://www.zdone.co/register).
    * **Movies & TV**: uses [TMDb](https://www.themoviedb.org/) and [YouTube](https://www.youtube.com/) to help you get more into movies & TV shows. Invite-only.
    * **Books & Articles**: uses [Readwise](https://readwise.io/) to help you retain insights from what you read. Invite-only.
+   * **Beer**: uses [Untappd](https://untappd.com/) for reviewing your checked-in beers. Invite-only.
    * Future planned categories include **Art**, **Podcasts**, and **Video Games**.
  * **Todo system**: a forgiving todo management system focused on recurring tasks. You set up a recurrence interval for all your tasks, and zdone will prioritize your tasks based on how overdue they are. Invite-only.
  * **Reminder system**: a low-touch way to consistently remind yourself of arbitrary thoughts over time. You set up a list of such reminders, and zdone will notify you via push notifications on a daily basis. Invite-only.

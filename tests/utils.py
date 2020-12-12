@@ -2,7 +2,7 @@ from app.models.base import User
 from app.util import JsonDict
 
 TEST_USER = User(
-    id=1, username="rsanek", email="rsanek@gmail.com", api_key="api-key-rsanek-1234", uses_rsAnki_javascript=True
+    id=1234, username="demo", email="demo@zdone.co", api_key="api-key-demo-1234", uses_rsAnki_javascript=True
 )
 
 BECOMING_IMAGE_URL = "https://images-na.ssl-images-amazon.com/images/I/41eRuKxPb3L._SL200_.jpg"

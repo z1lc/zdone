@@ -105,7 +105,7 @@ def generate_readwise_highlight_clozes(user: User, deck: Deck, tags: List[str]):
 
 # Given highlights from db, return cloze notes for those highlights
 # Useful as testing seam for entire cloze generation pipeline without hitting real db
-def _generate_clozed_highlight_notes(all_highlights, tags, user):
+def _generate_clozed_highlight_notes(all_highlights, tags: List[str], user: User):
     # Don't produce cloze cards for highlights that only contain a small number of words
     long_enough_highlights = list(filter(lambda highlight: len(highlight["text"].split(" ")) > 5, all_highlights))
     result = []
