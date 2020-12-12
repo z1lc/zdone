@@ -29,12 +29,12 @@ def is_ci():
     return get_environment_from_environment_variable() == CI
 
 
-def get_environment_from_environment_variable():
+def get_environment_from_environment_variable(should_log: bool = False):
     valid_environments = ENV_TO_SENTRY_REPORT_MAP.keys()
     maybe_environment = os.environ.get("ZDONE_ENVIRONMENT")
     if maybe_environment not in valid_environments:
         raise ValueError(f"You need to set environment variable ZDONE_ENVIRONMENT to one of {valid_environments}!")
-    else:
+    if maybe_environment and should_log:
         will_or_will_not = "WILL" if ENV_TO_SENTRY_REPORT_MAP[maybe_environment] else "WILL NOT"
         log(
             f"zdone is running in the '{maybe_environment}' environment. "

@@ -56,8 +56,8 @@ def generate_beer(user: User, deck: Deck, tags: List[str]):
                 fields=[
                     f"zdone:beer:untappd:{beer['bid']}",
                     beer["beer_name"],
-                    beer["beer_abv"],
-                    beer["beer_ibu"],
+                    str(beer["beer_abv"]),
+                    str(beer["beer_ibu"]),
                     beer["beer_style"],
                     brewery["brewery_name"],
                     # https://www.brewersassociation.org/statistics-and-data/craft-beer-industry-market-segments/
@@ -68,5 +68,3 @@ def generate_beer(user: User, deck: Deck, tags: List[str]):
                 ],
             )
         )
-
-    print("hi")

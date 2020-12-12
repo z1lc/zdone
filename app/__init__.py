@@ -15,7 +15,7 @@ if not app.debug:
         dsn="https://4dbd095718e34cb7bc4f7d64ecf488c4@sentry.io/1678958",
         integrations=[FlaskIntegration(), SqlalchemyIntegration()],
         before_send=filter_non_prod,
-        environment=get_environment_from_environment_variable(),
+        environment=get_environment_from_environment_variable(should_log=True),
         send_default_pii=True,
     )
 Talisman(

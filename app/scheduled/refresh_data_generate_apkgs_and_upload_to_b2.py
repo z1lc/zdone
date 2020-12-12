@@ -80,7 +80,7 @@ def refresh_user(user: User):
 
 
 if __name__ == "__main__":
-    for user in User.query.all():  # type: ignore
+    for user in db.session.query(User).order_by(User.id.asc()).all():  # type: ignore
         try:
             refresh_user(user)
         except Exception as e:
