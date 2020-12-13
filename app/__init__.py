@@ -38,6 +38,7 @@ Talisman(
             "*.tmdb.org",
             "*.youtube.com",
             "*.ytimg.com",
+            "*.scdn.co",
         ]
     },
 )
