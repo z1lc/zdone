@@ -66,6 +66,10 @@ with hn as (select u2.username, count(*) as total_hn_reads
                      from managed_videos
                               join users u6 on managed_videos.user_id = u6.id
                      group by 1),
+    all_reviews as (select username, count(*) as reviews
+                    from anki_review_logs
+                             join users u7 on anki_review_logs.user_id = u7.id
+                    group by 1),
     grouped as (select u.id,
                     username,
                     count(distinct spotify_track_uri) as distinct_count,
@@ -85,6 +89,7 @@ select grouped.id,
     managed_artists,
     managed_videos,
     reminders as total_reminders,
+    reviews,
 --     round(total_count * 1.0 / greatest(distinct_count, 1), 2) as plays_per_song,
     total_hn_reads as hn_articles_read,
     total_tasks_completed as tasks_completed
@@ -94,6 +99,7 @@ from grouped
          full outer join hn on hn.username = grouped.username
          full outer join tasks_summary on tasks_summary.username = grouped.username
          full outer join reminders_summary on reminders_summary.username = grouped.username
+         full outer join all_reviews on all_reviews.username = grouped.username
 where total_count > 1
 order by 3 desc, 4 desc, 5 asc
 ;
