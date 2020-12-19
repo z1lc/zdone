@@ -54,12 +54,14 @@ def get_country(lat, lon):
     return country
 
 
-def generate_beer(user: User, deck: Deck, tags: List[str]):
+def generate_beer(user: User, deck: Deck, tags: List[str]) -> None:
     client = Untappd(
         client_id=kv.get("UNTAPPD_CLIENT_ID"),
         client_secret=kv.get("UNTAPPD_CLIENT_SECRET"),
         redirect_url="https://www.zdone.co/",
     )
+    beer_model = get_beer_model(user)
+
     for beer_response in client.user.beers(user.untappd_username)["response"]["beers"]["items"]:
         beer = client.beer.info(beer_response["beer"]["bid"])["response"]["beer"]
         brewery = beer["brewery"]
@@ -71,7 +73,7 @@ def generate_beer(user: User, deck: Deck, tags: List[str]):
 
         deck.add_note(
             zdNote(
-                model=get_beer_model(user),
+                model=beer_model,
                 tags=tags,
                 fields=[
                     f"zdone:beer:untappd:{beer['bid']}",

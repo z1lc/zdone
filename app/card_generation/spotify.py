@@ -43,6 +43,7 @@ def generate_tracks(user: User, deck: Deck, tags: List[str]):
         lm.spotify_track_uri: lm.anki_guid
         for lm in LegacySpotifyTrackNoteGuidMapping.query.filter_by(user_id=user.id).all()
     }
+    track_model = get_track_model(user)
     for track in get_tracks(user):
         inner_artists = []
         for inner_artist in track["artists"]:
@@ -50,7 +51,7 @@ def generate_tracks(user: User, deck: Deck, tags: List[str]):
         album_name = track["album"]["name"].replace('"', "'")
         release_year = parser.parse(track["album"]["release_date"]).date().year
         track_as_note = SpotifyTrackNote(
-            model=get_track_model(user),
+            model=track_model,
             tags=tags,
             fields=[
                 track["uri"],
@@ -65,7 +66,7 @@ def generate_tracks(user: User, deck: Deck, tags: List[str]):
         deck.add_note(track_as_note)
 
 
-def generate_artists(user: User, deck: Deck, tags: List[str]):
+def generate_artists(user: User, deck: Deck, tags: List[str]) -> None:
     log(f"getting top played tracks, albums, & collaborators... {today_datetime()}")
     top_played_tracks_sql = f"""
 select spotify_artist_uri, spotify_track_uri, st.name, count(*) from spotify_tracks st
@@ -108,6 +109,7 @@ order by 1 asc, 3 desc"""
         collaborators_grouped_by_artist_uri[artist_uri].append(collaborator_name)
 
     log(f"getting common artists... {today_datetime()}")
+    artist_model = get_artist_model(user)
     for artist in get_common_artists(user):
         img_src: Optional[str] = None
         if artist.good_image and artist.spotify_image_url:
@@ -137,7 +139,7 @@ order by 1 asc, 3 desc"""
             years_active = ""
 
             artist_as_note = zdNote(
-                model=get_artist_model(user),
+                model=artist_model,
                 tags=tags,
                 fields=[
                     artist.uri,
