@@ -90,50 +90,10 @@ class AnkiCard(Enum):
         )
 
 
-saved_time = None
-
-
-def get_card_id() -> int:
-    global saved_time
-    if not saved_time:
-        saved_time = int(time()) * 1000
-    else:
-        saved_time += 1
-
-    return saved_time
-
-
 class zdNote(genanki.Note):
     @property
     def guid(self):
         return genanki.guid_for(self.fields[0])
-
-    # copied over exactly except for where noted
-    def write_to_db(self, cursor, now_ts, deck_id, note_idx):
-        now_ts_milliseconds = now_ts * 1000
-        note_id = now_ts_milliseconds + note_idx
-        cursor.execute(
-            "INSERT INTO notes VALUES(?,?,?,?,?,?,?,?,?,?,?);",
-            (
-                note_id,  # id
-                self.guid,  # guid
-                self.model.model_id,  # mid
-                now_ts,  # mod
-                -1,  # usn
-                self._format_tags(),  # tags
-                self._format_fields(),  # flds
-                self.sort_field,  # sfld
-                0,  # csum, can be ignored
-                0,  # flags
-                "",  # data
-            ),
-        )
-
-        for card_idx, card in enumerate(self.cards):
-            # this is the only change; there were weird issues with duplicate card_ids getting generated so I just
-            # replaced it with a basic counter here.
-            card_id = get_card_id()
-            card.write_to_db(cursor, now_ts, deck_id, note_id, card_id)
 
 
 # we want to make sure you have actually listened to the artist for a bit, so let's say minimum 3 songs/albums

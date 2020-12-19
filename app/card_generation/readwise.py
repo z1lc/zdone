@@ -6,7 +6,7 @@ from genanki import Deck
 
 from app import db
 from app.card_generation.highlight_clozer import get_clozed_highlight
-from app.card_generation.people_getter import get_people, maybe_get_wikipedia_info, get_person_note
+from app.card_generation.people_getter import get_people, maybe_get_wikipedia_info, _get_person_model
 from app.card_generation.util import zdNote, get_rs_anki_css, get_default_css, get_template, AnkiCard
 from app.log import log
 from app.models.base import User, GateDef
@@ -15,7 +15,7 @@ from app.util import JsonDict
 READWISE_HIGHLIGHT_CLOZE_MODEL_ID = 1604800000000
 
 
-def generate_readwise_people(user: User, deck: Deck, tags: List[str]):
+def generate_readwise_people(user: User, deck: Deck, tags: List[str]) -> None:
     if not user.is_gated(GateDef.GENERATE_READWISE_PERSON_NOTES):
         log("Generating people cards from highlights is not enabled for this user yet")
         return
@@ -37,12 +37,25 @@ def _get_person_notes_from_highlight(highlights, tags, user):
     # Person(Lincoln) and Person(Abraham Lincoln) result in one copy of WikipediaPerson(Abraham Lincoln)
     unique_people = set()
     person_notes = []
+    person_model = _get_person_model(user)
     for i, person in enumerate(all_people):
         if wiki_person := maybe_get_wikipedia_info(person):
             log(f"[{round(i / len(all_people) * 100)}%] Found person {person.name}")
             if wiki_person not in unique_people:
                 unique_people.add(wiki_person)
-                person_notes.append(get_person_note(wiki_person, tags, user))
+                person_notes.append(
+                    zdNote(
+                        model=person_model,
+                        tags=tags,
+                        fields=[
+                            wiki_person.name,
+                            wiki_person.known_for_html,
+                            wiki_person.images_html,
+                            wiki_person.seen_in,
+                            wiki_person.selected_highlight,
+                        ],
+                    )
+                )
     return person_notes
 
 
@@ -96,7 +109,7 @@ def group_highlights_by_book(all_highlights):
     return groupby(all_highlights_sorted, keyFunc)
 
 
-def generate_readwise_highlight_clozes(user: User, deck: Deck, tags: List[str]):
+def generate_readwise_highlight_clozes(user: User, deck: Deck, tags: List[str]) -> None:
     all_highlights = get_highlights(user)
     clozed_highlight_notes = _generate_clozed_highlight_notes(all_highlights, tags, user)
     for note in clozed_highlight_notes:
@@ -110,6 +123,7 @@ def _generate_clozed_highlight_notes(all_highlights, tags: List[str], user: User
     long_enough_highlights = list(filter(lambda highlight: len(highlight["text"].split(" ")) > 5, all_highlights))
     result = []
     grouped_highlights = group_highlights_by_book(long_enough_highlights)
+    highlight_model = get_highlight_model(user)
     for book, book_highlights in grouped_highlights:
         # convert to list to use indexing for prev/next highlight
         book_highlights_list = list(book_highlights)
@@ -132,7 +146,7 @@ def _generate_clozed_highlight_notes(all_highlights, tags: List[str], user: User
                 if "readwise-assets" not in highlight_i["cover_image_url"]:
                     highlight_i["image"] = f"<img src='{highlight_i['cover_image_url']}'>"
                 highlight_as_note = zdNote(
-                    model=get_highlight_model(user),
+                    model=highlight_model,
                     tags=tags,
                     fields=[
                         highlight_i["id"],

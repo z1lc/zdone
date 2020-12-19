@@ -16,9 +16,6 @@
 ## Code
 Much of the templating, user login/session management, and database schema/migration framework follow [The Flask Mega-Tutorial](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world) by Miguel Grinberg. Looking at code examples from that tutorial will be helpful in understanding zdone code.
 
-A few dependencies have been forked from their public versions to integrate additional functionality (see [requirements.txt](requirements.txt)):
- * [genanki](https://github.com/z1lc/genanki) to allow custom creation dates for notes
-
 ### Development
 To develop zdone locally, clone the repository, `pip install -r requirements.txt` and set environment variables:
  * `DATABASE_URL` to a postgres database, of the style `postgres://user:password@host:port/database`. Once connected, you can get a blank database into the right state by running `flask db upgrade` from the repo root.

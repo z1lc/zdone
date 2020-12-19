@@ -32,7 +32,7 @@ where film_or_tv='{type}'"""
     return set([row[0] for row in list(db.engine.execute(sql))])
 
 
-def generate_videos(user: User, deck: Deck, tags: List[str]):
+def generate_videos(user: User, deck: Deck, tags: List[str]) -> None:
     video_id_to_html_formatted_name_and_year: Dict[str, str] = {}
     films = get_video_type_ids("film")
     tvs = get_video_type_ids("TV show")
@@ -63,6 +63,7 @@ having sum(case when mv.watched
                 else 0.5 end) >= 4"""
     top_people = [row[0] for row in list(db.engine.execute(top_people_sql))]
     top_people_string = "'" + "','".join(top_people) + "'"
+    video_model = get_video_model(user)
 
     log("Generating video notes...")
     for managed_video, video in managed_video_pair:
@@ -109,7 +110,7 @@ having sum(case when mv.watched
             )
 
         video_as_note = zdNote(
-            model=get_video_model(user),
+            model=video_model,
             tags=tags,
             fields=[
                 video.id,
@@ -141,6 +142,7 @@ having sum(case when mv.watched
         "Directing": "director",
         "Production": "producer",
     }
+    video_person_model = get_video_person_model(user)
 
     log("Generating video person notes...")
     for video_person in VideoPerson.query.filter(
@@ -201,7 +203,7 @@ group by 1, 2"""
             age = str(relativedelta(datetime.date.today(), video_person.birthday).years)
 
         person_as_note = zdNote(
-            model=get_video_person_model(user),
+            model=video_person_model,
             tags=tags,
             fields=[
                 video_person.id,

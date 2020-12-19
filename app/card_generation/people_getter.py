@@ -55,20 +55,6 @@ def get_people(highlight_data: Dict[str, str]) -> List[Person]:
     ]
 
 
-def get_person_note(wikipedia_person: WikipediaPerson, tags: List[str], user: User):
-    return zdNote(
-        model=_get_person_model(user),
-        tags=tags,
-        fields=[
-            wikipedia_person.name,
-            wikipedia_person.known_for_html,
-            wikipedia_person.images_html,
-            wikipedia_person.seen_in,
-            wikipedia_person.selected_highlight,
-        ],
-    )
-
-
 def _get_person_model(user):
     templates: List[JsonDict] = [
         get_template(AnkiCard.PERSON_NAME_TO_IMAGE, user),
