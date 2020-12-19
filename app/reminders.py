@@ -16,6 +16,20 @@ def get_reminders(user: User) -> List[Reminder]:
     return Reminder.query.filter_by(user_id=user.id).all()
 
 
+def get_current_median_number_of_reminder_notifications(user: User) -> float:
+    count_by_id = f"""
+select r.id, count(*)
+from reminders r
+         left join reminder_notifications rn on r.id = rn.reminder_id
+where user_id={user.id} and active
+group by 1
+"""
+    counts = [row[1] for row in list(db.engine.execute(count_by_id))]
+    if not counts:
+        return 0.0
+    return round(statistics.median(counts))
+
+
 def get_unseen_reminders(user: User) -> List[Reminder]:
     unseen_ids = f"""
 select r.id

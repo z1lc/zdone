@@ -14,6 +14,7 @@ from app.reminders import (
     get_current_median_skew,
     get_reminders,
     get_unseen_reminders,
+    get_current_median_number_of_reminder_notifications,
 )
 from app.spotify import get_distinct_songs_this_week, get_new_songs_this_week, get_new_this_week
 from app.util import get_distinct_users_in_last_week
@@ -52,6 +53,7 @@ def send_email(user: User):
                 new_listens=new_listens,
                 artists=get_new_this_week(user)[:5],
                 active_reminders=len([r for r in get_reminders(user) if r.active]),
+                median_reminder_notifications=get_current_median_number_of_reminder_notifications(user),
                 unseen_reminders=len(get_unseen_reminders(user)),
                 num_distinct_users=len(distinct_users) if show_users else None,
                 distinct_user_string=", ".join(distinct_users) if show_users else None,
