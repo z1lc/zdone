@@ -1,6 +1,13 @@
 # Future Anki Culture note types
 see [Whimsical](https://whimsical.com/WKr5BEqNM9EgYW9nE76vvc) for ideas
 
+ * [Music](#music)
+ * [Movies/TV](#moviestv)
+ * [Books](#books)
+ * [Art](#art)
+ * [Drinks](#drinks)
+ * [Podcasts](#podcasts)
+ * [Video Games](#video-games)
 
 ## Music
 ### Artist
@@ -105,15 +112,15 @@ Potential services:
 * [Goodreads](https://www.goodreads.com/)
 * [Readwise](https://readwise.io/)
 
-###Highlight
-####Fields
+### Highlight
+#### Fields
  * ~~Clozed highlight~~
  * ~~Source Title~~
  * ~~Source Author~~
  * ~~Source Image~~
  * ~~Previous / next highlights~~
 
-####Cards
+#### Cards
  * ~~Cloze~~
 
 ## Art
@@ -121,6 +128,23 @@ Potential services:
 * [Artsy.net](https://www.artsy.net/) (paintings+sculptures, public API. [`collections`](https://developers.artsy.net/v2/docs/collections) endpoint can be used to retrieve a users' favorites)
 * [WikiArt.org](https://www.wikiart.org/en) (paintings+sculptures, limited/under construction public API, seemingly not updated since 2017. Does not seem to have endpoint to list favorites / follows of a user)
 * [Essential Architecture](https://ankiweb.net/shared/info/42823875) shared deck on Ankiweb
+
+## Drinks
+Potential services:
+ * [Untappd](https://untappd.com/api/docs) for beer
+ * [CellarTracker](https://support.cellartracker.com/article/29-exporting-data) for wine
+ * [Distiller](https://github.com/DrinkDistiller/api-docs) for spirits
+ * Cocktails
+ * Tea
+ * Coffee
+
+## Podcasts
+Potential services:
+ * [Shuffle](https://getshuffle.app/)
+ * Spotify (see [API announcement](https://developer.spotify.com/community/news/2020/03/20/introducing-podcasts-api/) from March 2020)
+ * [Airr](https://www.airr.io/) ([via Readwise](https://help.readwise.io/article/103-how-do-i-save-highlights-from-the-podcasts-i-listen-to-using-airr), iOS-only as of Jan 2021)
+
+See also [issue #168](https://github.com/z1lc/zdone/issues/168).
 
 ## Video Games
 Potential services:

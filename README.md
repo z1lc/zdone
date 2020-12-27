@@ -8,7 +8,7 @@
    * **Movies & TV**: uses [TMDb](https://www.themoviedb.org/) and [YouTube](https://www.youtube.com/) to help you get more into movies & TV shows. Invite-only.
    * **Books & Articles**: uses [Readwise](https://readwise.io/) to help you retain insights from what you read. Invite-only.
    * **Beer**: uses [Untappd](https://untappd.com/) for reviewing your checked-in beers. Invite-only.
-   * Future planned categories include **Art**, **Podcasts**, and **Video Games**.
+   * Future [planned categories](notes/culture_note_type_ideas.md) include **Art**, **Drinks**, **Podcasts**, and **Video Games**.
  * **Todo system**: a forgiving todo management system focused on recurring tasks. You set up a recurrence interval for all your tasks, and zdone will prioritize your tasks based on how overdue they are. Invite-only.
  * **Reminder system**: a low-touch way to consistently remind yourself of arbitrary thoughts over time. You set up a list of such reminders, and zdone will notify you via push notifications on a daily basis. Invite-only.
  * **HN reader**: an interface to [Hacker News](https://news.ycombinator.com/) articles that sorts stories by all-time score. Once you read a story, you never see it again. Invite-only.
