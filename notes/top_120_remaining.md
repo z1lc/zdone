@@ -27,7 +27,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * ~~Billy Joel~~
 * ~~U2~~
 * ~~Barbra Streisand~~
-* Phil Collins
+* ~~Phil Collins~~
 * Aerosmith
 * ~~ABBA~~
 * ~~Frank Sinatra~~
@@ -37,7 +37,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * Bruce Springsteen
 * ~~Bruno Mars~~
 * ~~Jay-Z~~
-* Metallica
+* ~~Metallica~~
 * ~~Lady Gaga~~
 * Maroon 5
 * ~~Adele~~
@@ -90,7 +90,7 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * ~~Johnny Cash~~
 * Justin Timberlake
 * R.E.M.
-* Flo Rida
+* ~~Flo Rida~~
 * Van Halen
 * Ayumi Hamasaki
 * ~~Red Hot Chili Peppers~~
@@ -106,12 +106,12 @@ Sourced from Wikipedia's [List of best-selling music artists](https://en.wikiped
 * Usher
 * The Black Eyed Peas
 * Christina Aguilera
-* R. Kelly
+* ~~R. Kelly~~
 * Shakira
 * Robbie Williams
 * ~~Tupac Shakur~~
 * Kenny G
-* Nirvana
+* ~~Nirvana~~
 * ~~Enya~~
 * ~~Green Day~~
 * Bryan Adams

@@ -2,7 +2,13 @@ import pytest
 import tmdbsimple
 
 from app import kv
-from app.themoviedb import clean_description, backfill_null, get_or_add_person, get_or_add_youtube_video
+from app.themoviedb import (
+    clean_description,
+    backfill_null,
+    get_or_add_person,
+    get_or_add_youtube_video,
+    _get_video_duration_from_youtube,
+)
 
 
 def test_clean_description():
@@ -50,3 +56,7 @@ def get_imdb_top_250():
 
     for tmdbid in top250TM:
         tmdbsimple.Lists(id=123456789, session_id="REPLACE").add_item(media_id=tmdbid)
+
+
+def test__get_video_duration_from_youtube():
+    assert 93.0 == _get_video_duration_from_youtube("rcfKg23Xf_4")
