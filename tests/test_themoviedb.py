@@ -58,5 +58,6 @@ def get_imdb_top_250():
         tmdbsimple.Lists(id=123456789, session_id="REPLACE").add_item(media_id=tmdbid)
 
 
+@pytest.mark.skip(reason="integration")
 def test__get_video_duration_from_youtube():
     assert 93.0 == _get_video_duration_from_youtube("rcfKg23Xf_4")
