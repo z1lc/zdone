@@ -40,3 +40,4 @@ You are least likely to run into compatibility issues if you match your Python v
  * 2020-08-13 [MVP](https://github.com/z1lc/zdone/commit/6221269634b5ec28f75afdeb7bf23a6c9db9881d) for HN reader
  * 2020-11-13 [MVP](https://github.com/z1lc/zdone/pull/102) for book highlights
  * 2020-12-08 [MPV](https://github.com/z1lc/zdone-webextension/commit/99c197cd5f2ea7108b0102ee5b2e63e1365a83a1) for companion browser extension
+ * 2020-12-12 [MVP](https://github.com/z1lc/zdone/pull/179) for Untappd + Anki
