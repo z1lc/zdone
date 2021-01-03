@@ -162,7 +162,8 @@ def populate():
 def spotify():
     if current_user.spotify_token_json is None or current_user.spotify_token_json == "":
         return render_template("spotify_new_user.html")
-    follow_unfollow_artists(current_user)
+    if not current_user.is_gated(GateDef.INTERNAL_USER):
+        follow_unfollow_artists(current_user)
     managed_artists = (
         db.session.query(ManagedSpotifyArtist, SpotifyArtist)
         .join(ManagedSpotifyArtist)
