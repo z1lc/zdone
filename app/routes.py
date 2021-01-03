@@ -39,6 +39,7 @@ from .spotify import (
     get_top_recommendations,
     get_artists_images,
     populate_null,
+    get_percentage_best_selling_artists,
 )
 from .taskutils import do_update_task, ensure_trello_setup_idempotent, api_get
 from .util import (
@@ -197,6 +198,7 @@ def spotify():
         "spotify.html",
         navigation=get_navigation(current_user, "Music"),
         managed_artists=to_return,
+        percent_top_artists_formatted=get_percentage_best_selling_artists(current_user),
         totals_given="total_track_counts" in request.args,
         total_tracks=total_tracks,
         total_artists=len(artists_dict.keys()),
