@@ -15,9 +15,9 @@ values (1,
 -- Number of notifications sent per reminder for user (only includes active)
 select title, message, min(sent_at) as first_notification, max(sent_at) as last_notification,
     sum(case when sent_at is not null then 1 else 0 end) as total_notifications
-from reminders
-         left join reminder_notifications rn on reminders.id = rn.reminder_id
-         join users u on reminders.user_id = u.id
+from reminders r
+         left join reminder_notifications rn on r.id = rn.reminder_id
+         join users u on r.user_id = u.id
 where username = 'rsanek' and active
 group by 1, 2
 order by total_notifications desc, last_notification desc
