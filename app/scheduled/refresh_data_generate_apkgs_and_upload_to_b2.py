@@ -10,12 +10,19 @@ from app.log import log
 from app.models.anki import ApkgGeneration
 from app.models.base import User, GateDef
 from app.readwise import refresh_highlights_and_books
+from app.spotify import follow_unfollow_artists
 from app.themoviedb import refresh_videos
 from app.util import get_b2_api, get_pushover_client
 
 
 def refresh_user(user: User):
-    b2_api = get_b2_api()
+    if user.spotify_token_json:
+        log(f"Beginning refresh of followed Spotify artists for user {user.username}...")
+        follow_unfollow_artists(user)
+        log(f"Successfully completed Spotify artist refresh for user {user.username}.")
+    else:
+        log(f"Did not find Spotify credentials for user {user.username}")
+
     if user.tmdb_session_id:
         log(f"Beginning refresh of videos from TMDB for user {user.username}...")
         refresh_videos(user)
@@ -39,6 +46,7 @@ def refresh_user(user: User):
             log(f"0 notes were generated for user {user.username}. Will not upload to B2.")
         else:
             log(f"Successfully generated apkg with {notes} notes. Beginning upload to B2...")
+            b2_api = get_b2_api()
 
             at = datetime.utcnow()
             b2_filename = f'{at.strftime("%Y%m%d")}-{user.username}-{uuid.uuid4()}.apkg'
