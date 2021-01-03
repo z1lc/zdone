@@ -43,8 +43,11 @@
     Looking for <a href="/spotify/help">Help</a>?<br>
     <span id="downloadExtra">Download the <a id="download" href="/spotify/download_apkg" onclick="removeLinkDownload()">latest set of songs</a>.</span>
 <h2><a name="AUM">Artists Under Management</a></h2>
-    {% if not totals_given and internal_user %}
-        <span id="AUMExtra"><a id="AUMLink" href="?total_track_counts#AUM" onclick="removeLinkAUM()">Show total track count for artists</a> (includes top + liked)</span>
+    {% if internal_user %}
+        <span>Coverage of <a href="https://en.wikipedia.org/wiki/List_of_best-selling_music_artists" target="_blank">best-selling artists</a>: <b>{{ percent_top_artists_formatted }}%</b></span><br>
+        {% if not totals_given %}
+            <span id="AUMExtra"><a id="AUMLink" href="?total_track_counts#AUM" onclick="removeLinkAUM()">Show total track count for artists</a> (includes top + liked)</span>
+        {% endif %}
     {% endif %}
 <table id="managed_artists_table">
 <thead>
