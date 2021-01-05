@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 
 from sentry_sdk import capture_exception
+from spotipy import SpotifyException
 
 from app import app, db
 from app.card_generation.anki import generate_full_apkg
@@ -18,8 +19,15 @@ from app.util import get_b2_api, get_pushover_client
 def refresh_user(user: User):
     if user.spotify_token_json:
         log(f"Beginning refresh of followed Spotify artists for user {user.username}...")
-        follow_unfollow_artists(user)
-        log(f"Successfully completed Spotify artist refresh for user {user.username}.")
+        try:
+            follow_unfollow_artists(user)
+            log(f"Successfully completed Spotify artist refresh for user {user.username}.")
+        except SpotifyException as e:
+            log(f"Received SpotifyException during artist refresh for user {user.username}!")
+            log("This may mean they need to re-authorize.")
+            log(repr(e))
+            if user.is_gated(GateDef.INTERNAL_USER):
+                capture_exception(e)
     else:
         log(f"Did not find Spotify credentials for user {user.username}")
 
