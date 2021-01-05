@@ -40,8 +40,13 @@ def refresh_user(user: User):
 
     if user.readwise_access_token:
         log(f"Beginning export of books & highlights from Readwise for user {user.username}...")
-        refresh_highlights_and_books(user)
-        log(f"Successfully completed export of books & highlights from Readwise for user {user.username}.")
+        try:
+            refresh_highlights_and_books(user)
+            log(f"Successfully completed export of books & highlights from Readwise for user {user.username}.")
+        except Exception as e:
+            log(f"Received exception during Readwise export for user {user.username}!")
+            log(repr(e))
+            capture_exception(e)
     else:
         log(f"Did not find Readwise credentials for user {user.username}")
 
