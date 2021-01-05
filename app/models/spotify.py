@@ -43,7 +43,7 @@ class SpotifyAlbum(BaseModel):
     spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_artists.uri"), nullable=False)
     album_type: str = db.Column(db.String(128), nullable=False)
     spotify_image_url: str = db.Column(db.Text)
-    released_at: datetime.date = db.Column(db.Date, nullable=False)
+    released_at: Optional[datetime.date] = db.Column(db.Date, nullable=True)
 
     def get_bare_uri(self):
         return self.uri.split("spotify:album:")[1]
