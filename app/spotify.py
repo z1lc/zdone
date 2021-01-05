@@ -176,12 +176,18 @@ def add_or_get_album(sp, spotify_album_uri: str):
     album = SpotifyAlbum.query.filter_by(uri=spotify_album_uri).one_or_none()
     if not album:
         sp_album = sp.album(spotify_album_uri)
+        release_date: Optional[datetime.date] = None
+        try:
+            release_date = parser.parse(sp_album["release_date"]).date()
+        except Exception:
+            pass
+
         album = SpotifyAlbum(
             uri=spotify_album_uri,
             name=sp_album["name"],
             spotify_artist_uri=add_or_get_artist(sp, sp_album["artists"][0]["uri"]).uri,
             album_type=sp_album["album_type"],
-            released_at=parser.parse(sp_album["release_date"]).date(),
+            released_at=release_date,
             spotify_image_url=sp_album["images"][0]["url"] if sp_album["images"] else None,
         )
         db.session.add(album)
