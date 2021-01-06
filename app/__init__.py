@@ -5,6 +5,7 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_talisman import Talisman
 from sentry_sdk.integrations.flask import FlaskIntegration
+from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from app.config import Config, filter_non_prod, get_environment_from_environment_variable
@@ -18,6 +19,7 @@ if not app.debug:
         environment=get_environment_from_environment_variable(should_log=True),
         send_default_pii=True,
     )
+    ignore_logger("spotipy.oauth2")
 Talisman(
     app,
     content_security_policy={
