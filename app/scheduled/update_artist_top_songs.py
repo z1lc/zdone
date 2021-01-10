@@ -69,6 +69,7 @@ if __name__ == "__main__":
                 if try_count == MAX_RETRIES_PER_ARTIST:
                     # looks like we weren't able to resolve this with just a token refresh.
                     # publish this to Sentry so we know what's going on.
+                    log(f"Failed to update mappings for artist {artist.name}.")
                     capture_exception(e)
 
     log("Finished updating all followed artists.")
