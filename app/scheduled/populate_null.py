@@ -1,7 +1,7 @@
 import tmdbsimple
 
 from app import kv
-from app.themoviedb import backfill_null
+from app.spotify import backfill_null
 
 if __name__ == "__main__":
     tmdbsimple.API_KEY = kv.get("TMDB_API_KEY")
