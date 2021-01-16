@@ -23,7 +23,7 @@ python-pushover==0.4
 python-youtube==0.6.4
 isodate==0.6.0
 marshmallow==3.10.0
-sendgrid==6.4.8
+sendgrid==6.5.0
 humanize==3.2.0
 tld==0.12.5
 pifx==1.0.1
