@@ -310,6 +310,7 @@ def add_or_get_track(sp, track_uri: str) -> SpotifyTrack:
             spotify_artist_uri=add_or_get_artist(sp, sp_track["artists"][0]["uri"]).uri,
             spotify_album_uri=add_or_get_album(sp, sp_track["album"]["uri"]).uri,
             duration_milliseconds=sp_track["duration_ms"],
+            api_response=json.dumps(sp_track),
         )
         db.session.add(track)
         create_features_from_artists(sp, sp_track)
@@ -413,9 +414,7 @@ def get_top_tracks(sp, artist: SpotifyArtist, allow_refresh: bool = False) -> Tu
         to_return = []
         for ordinal, top_track in enumerate(top_tracks, 1):
             track = add_or_get_track(sp, top_track["uri"])
-            top_track_db = TopTrack(
-                track_uri=track.uri, artist_uri=artist.uri, ordinal=ordinal, api_response=json.dumps(top_track)
-            )
+            top_track_db = TopTrack(track_uri=track.uri, artist_uri=artist.uri, ordinal=ordinal)
             db.session.add(top_track_db)
             to_return.append(top_track_db)
         artist.last_top_tracks_refresh = datetime.datetime.utcnow()
@@ -457,6 +456,20 @@ def get_all_liked_tracks(sp):
     return liked_tracks
 
 
+def backfill_null():
+    sp = get_spotify("zdone", User.query.filter_by(username="rsanek").one())
+    all = SpotifyTrack.query.filter_by(api_response=None).all()
+    log(f"{len(all)} tracks to add API responses to.")
+    current = 0
+    for fifty_tracks in chunker(all, 50):
+        sp_tracks = sp.tracks([f.uri for f in fifty_tracks])["tracks"]
+        for track, sp_track in zip(fifty_tracks, sp_tracks):
+            track.api_response = json.dumps(sp_track)
+        db.session.commit()
+        current += 50
+        log(f"Successfully added 50 API responses. {round(current * 1000 / len(all)) / 10}% done.")
+
+
 def get_tracks(user: User) -> List[JsonDict]:
     log(f"get tracks {today_datetime()}")
     sp = get_spotify("zdone", user)
@@ -482,14 +495,18 @@ def get_tracks(user: User) -> List[JsonDict]:
 
     print(sorted(not_following_but_liked_tracks.items(), key=lambda dict_item: -dict_item[1])[:10])
 
+    log("getting all played tracks")
+    for track in SpotifyTrack.query.join(SpotifyPlay).filter_by(user_id=user.id).distinct().all():
+        dedup_map[track.uri] = json.loads(track.api_response)
+
     log(f"getting top 3 tracks per artist {today_datetime()}")
     # get top 3 tracks for each artist in ARTISTS
     for artist in my_managed_artists:
-        top_tracks = TopTrack.query.filter_by(artist_uri=artist.spotify_artist_uri).all()
-        if not top_tracks:
-            _, top_tracks = get_top_tracks(sp, SpotifyArtist.query.filter_by(uri=artist.spotify_artist_uri).one())
-        for top_track in top_tracks[: artist.num_top_tracks]:
-            dedup_map[top_track.track_uri] = json.loads(top_track.api_response)
+        tracks = SpotifyTrack.query.join(TopTrack).filter_by(artist_uri=artist.spotify_artist_uri).all()
+        if not tracks:
+            _, tracks = get_top_tracks(sp, SpotifyArtist.query.filter_by(uri=artist.spotify_artist_uri).one())
+        for top_track in tracks[: artist.num_top_tracks]:
+            dedup_map[top_track.uri] = json.loads(top_track.api_response)
 
     output = dedup_map.values()
 

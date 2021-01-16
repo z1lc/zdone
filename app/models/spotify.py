@@ -56,6 +56,7 @@ class SpotifyTrack(BaseModel):
     spotify_artist_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_artists.uri"), nullable=False)
     spotify_album_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_albums.uri"), nullable=False)
     duration_milliseconds: int = db.Column(db.Integer, nullable=False)
+    api_response: str = db.Column(db.Text)  # simple dump of the exact json that was returned by the API
 
 
 class SpotifyFeature(BaseModel):
@@ -84,7 +85,6 @@ class TopTrack(BaseModel):
     artist_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_artists.uri"), nullable=False)
     track_uri: str = db.Column(db.String(128), db.ForeignKey("spotify_tracks.uri"), nullable=False)
     ordinal: int = db.Column(db.Integer, nullable=False)
-    api_response: str = db.Column(db.Text)  # simple dump of the exact json that was returned by the API
     __table_args__ = (
         UniqueConstraint("artist_uri", "track_uri"),
         UniqueConstraint("artist_uri", "ordinal"),

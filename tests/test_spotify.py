@@ -1,8 +1,8 @@
 import pytest
 
+from app.card_generation.spotify import clean_album_name, clean_track_name
 from app.models.base import User
 from app.spotify import update_spotify_anki_playlist
-from app.card_generation.spotify import clean_album_name, clean_track_name
 
 
 @pytest.mark.skip(reason="integration")
