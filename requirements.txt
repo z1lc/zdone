@@ -25,7 +25,7 @@ isodate==0.6.0
 marshmallow==3.10.0
 sendgrid==6.4.8
 humanize==3.2.0
-tld==0.12.4
+tld==0.12.5
 pifx==1.0.1
 suntime==1.2.5
 b2sdk==1.2.0
