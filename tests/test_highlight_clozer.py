@@ -109,7 +109,7 @@ def test_does_not_use_bad_images():
         )
     ]
     for note in _generate_clozed_highlight_notes(highlights, [], TEST_USER):
-        assert "" == note.fields[5]
+        assert "" == note.fields[7]
 
 
 def test_does_not_generate_empty_cloze():
@@ -176,7 +176,7 @@ def test_image_url():
     generated_notes = _generate_clozed_highlight_notes([get_test_highlight()], [], TEST_USER)
     assert len(generated_notes) == 1
     for note in generated_notes:
-        assert BECOMING_IMAGE_URL in note.fields[5]
+        assert BECOMING_IMAGE_URL in note.fields[7]
 
 
 # Verify that given some test highlights, the whole pipeline works

@@ -1,6 +1,6 @@
 import pytest
 
-from app.card_generation.readwise import _get_person_notes_from_highlight
+from app.card_generation.readwise import _get_person_notes_from_highlight, translate_highlight
 from app.models.base import User
 from app.readwise import refresh_highlights_and_books, get_paginated
 from utils import TEST_USER, get_test_highlight
@@ -23,3 +23,8 @@ def test_get_person_notes_from_highlight():
         get_test_highlight(text="As a president, Lincoln was an interesting person"),
     ]
     assert len(_get_person_notes_from_highlight(fake_highlights, [], TEST_USER)) == 1
+
+
+@pytest.mark.skip(reason="integration")
+def test_translate_highlight():
+    translate_highlight("Esta es una oración en español.")

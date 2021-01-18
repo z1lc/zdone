@@ -48,12 +48,11 @@ def get_NLPs():
     return NLPs
 
 
-def get_clozed_highlight(highlight):
+def get_clozed_highlight_and_keyword(highlight) -> Tuple[str, str]:
     # use basic nlp to identify keyword in sentence to cloze
     keywords = get_keywords(highlight)
-    random_keyword = random.choice(keywords) if is_prod() else keywords[0]
-    result = highlight  # start with un-clozed sentence as result
-    return cloze_out_keyword(random_keyword, result)
+    random_keyword = random.choice(keywords) if is_prod() and detect_language(highlight) == "en" else keywords[0]
+    return cloze_out_keyword(random_keyword, highlight), random_keyword
 
 
 # Returns a word with punctuation chars removed, except dashes in middle of word
@@ -112,8 +111,8 @@ def get_keywords(sentence: str) -> List[str]:
 # Highlights will fairly regularly have the structure of
 # "One way to do..." or "Two things that differentiate..." etc
 # Often, the nlp will recognize "One" and "Two" as entities, which
-# can result in them being clozed out. Clozing out cardinal/ordainal entities
-# at the front of higlights is almost never useful, so this function helps filter them
+# can result in them being clozed out. Clozing out cardinal/ordinal entities
+# at the front of highlights is almost never useful, so this function helps filter them
 # out.
 def not_number_at_front(ent):
     return ent.label_ not in ["ORDINAL", "CARDINAL"] or ent.start > 3

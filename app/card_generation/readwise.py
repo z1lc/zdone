@@ -1,11 +1,13 @@
+import os
 from itertools import groupby
-from typing import List
+from typing import List, Optional
 
 import genanki
 from genanki import Deck
+from google.cloud import translate_v2 as translate
 
-from app import db
-from app.card_generation.highlight_clozer import get_clozed_highlight
+from app import db, kv, app
+from app.card_generation.highlight_clozer import get_clozed_highlight_and_keyword, detect_language
 from app.card_generation.people_getter import get_people, maybe_get_wikipedia_info, _get_person_model
 from app.card_generation.util import zdNote, get_rs_anki_css, get_default_css, get_template, AnkiCard
 from app.log import log
@@ -68,6 +70,8 @@ def get_highlight_model(user: User):
             {"name": "zdone Highlight ID"},
             {"name": "Original Highlight"},
             {"name": "Clozed Highlight"},
+            {"name": "Keyword"},
+            {"name": "Translated Highlight"},
             {"name": "Source Title"},
             {"name": "Source Author"},
             {"name": "Image"},
@@ -116,6 +120,18 @@ def generate_readwise_highlight_clozes(user: User, deck: Deck, tags: List[str]) 
         deck.add_note(note)
 
 
+def translate_highlight(highlight) -> Optional[str]:
+    detected_language = detect_language(highlight)
+    if detected_language == "es":
+        path = os.path.join(app.instance_path, "application_credentials.json")
+        if not os.path.exists(path):
+            with open(path, "w") as writer:
+                writer.write(kv.get("GOOGLE_APPLICATION_CREDENTIALS"))
+        translate_client = translate.Client.from_service_account_json(path)
+        return translate_client.translate(highlight, target_language="en")["translatedText"]
+    return None
+
+
 # Given highlights from db, return cloze notes for those highlights
 # Useful as testing seam for entire cloze generation pipeline without hitting real db
 def _generate_clozed_highlight_notes(all_highlights, tags: List[str], user: User):
@@ -129,9 +145,13 @@ def _generate_clozed_highlight_notes(all_highlights, tags: List[str], user: User
         book_highlights_list = list(book_highlights)
         for i in range(len(book_highlights_list)):
             highlight_i = book_highlights_list[i]
-            maybe_clozed_highlight = get_clozed_highlight(highlight_i["text"])
+            maybe_clozed_highlight, maybe_keyword = get_clozed_highlight_and_keyword(highlight_i["text"])
             if "{{c1::" in maybe_clozed_highlight:
                 highlight_i["clozed_highlight"] = maybe_clozed_highlight
+
+                highlight_i["translated_highlight"] = translate_highlight(highlight_i["text"]) or ""
+
+                # prev / next highlights
                 if i > 0:
                     highlight_i["prev_highlight"] = book_highlights_list[i - 1]["text"]
                 else:
@@ -152,6 +172,8 @@ def _generate_clozed_highlight_notes(all_highlights, tags: List[str], user: User
                         highlight_i["id"],
                         highlight_i["text"],
                         highlight_i["clozed_highlight"],
+                        maybe_keyword.lower(),
+                        highlight_i["translated_highlight"],
                         highlight_i["source_title"],
                         highlight_i["source_author"],
                         highlight_i["image"],
