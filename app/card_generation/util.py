@@ -229,7 +229,7 @@ $(document).keypress(function(e) {{
 
 def get_rs_anki_custom_script(is_front) -> str:
     return f"""<script type="text/javascript" src="_jquery-1.11.2.min.js"></script>
-<div id="categoryIdentifier{"Front" if is_front else "Back"}">{{Tags}}</div>
+<div id="categoryIdentifier{"Front" if is_front else "Back"}">{{{{Tags}}}}</div>
 <script type="text/javascript" src="_AnkiLibrary.js"></script>
 <script type="text/javascript">if (typeof rsAnki !== 'undefined') rsAnki.defaultUnified();</script>"""
 

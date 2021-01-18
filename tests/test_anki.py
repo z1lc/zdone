@@ -56,6 +56,10 @@ def test_models_reasonable():
                     r"<div id=\"textPart\"[\s\S]*?</div>[\s\S]*?<div id=\"imagePart\"[\s\S]*?</div>", answer
                 ), answer
 
+                # ensure we've got tags
+                assert "{{Tags}}" in question
+                assert "{{Tags}}" in answer
+
 
 @pytest.mark.skip(reason="integration")
 def test_generate_full_apkg():

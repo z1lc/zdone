@@ -1,12 +1,27 @@
 <div id="textPart">
-        {{ '{{#Source Title}}' }}<span id="rsAnkiContext">{{ '{{Source Title}}' }}:</span>{{ '{{/Source Title}}' }}<br>
-        {{ '{{cloze:Clozed Highlight}}' }}
+    {{ '{{#Source Title}}' }}<span id="rsAnkiContext">{{ '{{Source Title}}' }}:</span>{{ '{{/Source Title}}' }}<br>
+    {{ '{{cloze:Clozed Highlight}}' }}
+    {{ '{{#Translated Highlight}}' }}
+    <br><span class="mini">{{ '{{Translated Highlight}}' }}</span>
+    <hr>
     {% if not is_front %}
-        <br>
-        <ul>
-            {{ '{{#Prev Highlight}}' }}<li>{{ '{{Prev Highlight}}' }}</li>{{ '{{/Prev Highlight}}' }}
-            {{ '{{#Next Highlight}}' }}<li>{{ '{{Next Highlight}}' }}</li>{{ '{{/Next Highlight}}' }}
-        </ul>
+    <div id="rsAnkiSpanishMultipleChoice"></div>
+    {% else %}
+    <span class="rsAnswer">{{ '{{Keyword}}' }}</span>
+    {% endif %}
+    {{ '{{/Translated Highlight}}' }}
+    {% if not is_front %}
+    {{ '{{^Translated Highlight}}' }}
+    <br>
+    <ul>
+        {{ '{{#Prev Highlight}}' }}
+        <li>{{ '{{Prev Highlight}}' }}</li>
+        {{ '{{/Prev Highlight}}' }}
+        {{ '{{#Next Highlight}}' }}
+        <li>{{ '{{Next Highlight}}' }}</li>
+        {{ '{{/Next Highlight}}' }}
+    </ul>
+    {{ '{{/Translated Highlight}}' }}
     {% endif %}
 </div>
 <div id="imagePart">{{ '{{Image}}' }}</div>

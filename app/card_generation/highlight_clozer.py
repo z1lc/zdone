@@ -48,12 +48,11 @@ def get_NLPs():
     return NLPs
 
 
-def get_clozed_highlight(highlight):
+def get_clozed_highlight_and_keyword(highlight) -> Tuple[str, str]:
     # use basic nlp to identify keyword in sentence to cloze
     keywords = get_keywords(highlight)
     random_keyword = random.choice(keywords) if is_prod() else keywords[0]
-    result = highlight  # start with un-clozed sentence as result
-    return cloze_out_keyword(random_keyword, result)
+    return cloze_out_keyword(random_keyword, highlight), random_keyword
 
 
 # Returns a word with punctuation chars removed, except dashes in middle of word
