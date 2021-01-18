@@ -172,7 +172,7 @@ def _generate_clozed_highlight_notes(all_highlights, tags: List[str], user: User
                         highlight_i["id"],
                         highlight_i["text"],
                         highlight_i["clozed_highlight"],
-                        maybe_keyword,
+                        maybe_keyword.lower(),
                         highlight_i["translated_highlight"],
                         highlight_i["source_title"],
                         highlight_i["source_author"],
