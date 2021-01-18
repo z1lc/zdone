@@ -51,7 +51,7 @@ def get_NLPs():
 def get_clozed_highlight_and_keyword(highlight) -> Tuple[str, str]:
     # use basic nlp to identify keyword in sentence to cloze
     keywords = get_keywords(highlight)
-    random_keyword = random.choice(keywords) if is_prod() else keywords[0]
+    random_keyword = random.choice(keywords) if is_prod() and detect_language(highlight) == "en" else keywords[0]
     return cloze_out_keyword(random_keyword, highlight), random_keyword
 
 
