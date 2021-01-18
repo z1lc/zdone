@@ -111,8 +111,8 @@ def get_keywords(sentence: str) -> List[str]:
 # Highlights will fairly regularly have the structure of
 # "One way to do..." or "Two things that differentiate..." etc
 # Often, the nlp will recognize "One" and "Two" as entities, which
-# can result in them being clozed out. Clozing out cardinal/ordainal entities
-# at the front of higlights is almost never useful, so this function helps filter them
+# can result in them being clozed out. Clozing out cardinal/ordinal entities
+# at the front of highlights is almost never useful, so this function helps filter them
 # out.
 def not_number_at_front(ent):
     return ent.label_ not in ["ORDINAL", "CARDINAL"] or ent.start > 3
