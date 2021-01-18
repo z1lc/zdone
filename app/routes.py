@@ -176,8 +176,7 @@ def spotify():
     total_tracks = 0
     if "total_track_counts" in request.args:
         tracks = get_tracks(current_user)
-        play_uris = set([sp.spotify_track_uri for sp in SpotifyPlay.query.filter_by(user_id=current_user.id).all()])
-        total_tracks = len(play_uris.union(set([t["uri"] for t in tracks])))
+        total_tracks = len(set([t["uri"] for t in tracks]))
         for track in tracks:
             for artist in track["artists"]:
                 uris.append(artist["uri"])
