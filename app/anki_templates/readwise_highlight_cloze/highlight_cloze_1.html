@@ -1,5 +1,5 @@
 <div id="textPart">
-    {{ '{{#Source Title}}' }}<span id="rsAnkiContext">{{ '{{Source Title}}' }}:</span>{{ '{{/Source Title}}' }}<br>
+    {{ '{{#Source Title}}' }}<span id="rsAnkiContext">{{ '{{Source Title}}' }}:</span><br>{{ '{{/Source Title}}' }}
     {{ '{{cloze:Clozed Highlight}}' }}
     {{ '{{#Translated Highlight}}' }}
     <br><span class="mini">{{ '{{Translated Highlight}}' }}</span>
@@ -28,3 +28,4 @@
 
 
 {{ script_include|safe }}
+<script type="text/javascript">if (typeof rsAnki !== 'undefined') rsAnki.insertSpanishMultipleChoice("{{ '{{Keyword}}' }}", 12);</script>
