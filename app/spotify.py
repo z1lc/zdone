@@ -583,13 +583,26 @@ where uri not in (select * from my_artists)"""
     return [(row[0], row[1].split("spotify:artist:")[1]) for row in db.engine.execute(prepared_sql)]
 
 
-def get_percentage_best_selling_artists(user: User) -> int:
+def get_percentage_best_selling_artists(user: User, source) -> int:
     prepared_sql = f"""with my_follows as (select * from managed_spotify_artists where following and user_id = {user.id})
 select round(count(following)::float / count(*) * 100)
 from best_selling_artists bsa
          left join my_follows mf on mf.spotify_artist_uri = bsa.artist_uri
-         left join spotify_artists sa on bsa.artist_uri = sa.uri"""
+         left join spotify_artists sa on bsa.artist_uri = sa.uri
+         where source='{source}'"""
     return int([row[0] for row in db.engine.execute(prepared_sql)][0])
+
+
+def get_next_to_follow(user: User) -> List:
+    prepared_sql = f"""with my_follows as (select * from managed_spotify_artists where following and user_id = {user.id})
+select name, uri, count(*), sum(coalesce(claimed_sales, 0))
+from best_selling_artists bsa
+         full outer join my_follows mf on mf.spotify_artist_uri = bsa.artist_uri
+         left join spotify_artists sa on bsa.artist_uri = sa.uri
+where mf.id is null
+group by 1, 2
+order by 3 desc, 4 desc, 2 asc"""
+    return [(row[0], row[1].split("spotify:artist:")[1]) for row in db.engine.execute(prepared_sql)]
 
 
 def get_artists_images() -> str:
