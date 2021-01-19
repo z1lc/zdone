@@ -2,7 +2,7 @@ import pytest
 
 from app.card_generation.spotify import clean_album_name, clean_track_name
 from app.models.base import User
-from app.spotify import update_spotify_anki_playlist
+from app.spotify import update_spotify_anki_playlist, follow_unfollow_artists
 
 
 @pytest.mark.skip(reason="integration")
@@ -83,3 +83,8 @@ def test_clean_album_name():
     assert "Hypnotica" == clean_album_name("Hypnotica (Benny Benassi Presents The Biz)")
     assert "For Lack of a Better Name" == clean_album_name("For Lack of a Better Name (The Extended Mixes)")
     assert "Random Album Title" == clean_album_name("Random Album Title (Unmixed Extended Versions)")
+
+
+@pytest.mark.skip(reason="integration")
+def test_follow_unfollow_artists():
+    follow_unfollow_artists(User.query.filter_by(username="rsanek").one())

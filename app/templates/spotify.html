@@ -44,7 +44,12 @@
     <span id="downloadExtra">Download the <a id="download" href="/spotify/download_apkg" onclick="removeLinkDownload()">latest set of songs</a>.</span>
 <h2><a name="AUM">Artists Under Management</a></h2>
     {% if internal_user %}
-        Artists are refreshed from Spotify nightly.<br>Coverage of <a href="https://en.wikipedia.org/wiki/List_of_best-selling_music_artists" target="_blank">best-selling artists</a>: <b>{{ percent_top_artists_formatted }}%</b><br>
+        Artists are refreshed from Spotify nightly.<br>
+        Coverage of top artists: <a href="https://en.wikipedia.org/wiki/List_of_best-selling_music_artists" target="_blank">best-selling</a> (<b>{{ percent_top_artists_sales_formatted }}%</b>);
+<a href="https://en.wikipedia.org/wiki/List_of_most-streamed_artists_on_Spotify" target="_blank">most-streamed</a> (<b>{{ percent_top_artists_streams_formatted }}%</b>);
+<a href="https://en.wikipedia.org/wiki/List_of_highest-certified_music_artists_in_the_United_States" target="_blank">highest-certified</a> (<b>{{ percent_top_artists_certifications_formatted }}%</b>).<br>
+Next artists to follow with highest impact on coverage: {{ next_artists_to_follow|safe }}.
+        <br>
         {% if not totals_given %}
             <span id="AUMExtra"><a id="AUMLink" href="?total_track_counts#AUM" onclick="removeLinkAUM()">Show total track count for artists</a> (includes top + liked)</span>
         {% endif %}

@@ -40,6 +40,7 @@ from .spotify import (
     get_artists_images,
     populate_null,
     get_percentage_best_selling_artists,
+    get_next_to_follow,
 )
 from .taskutils import do_update_task, ensure_trello_setup_idempotent, api_get
 from .util import (
@@ -194,11 +195,25 @@ def spotify():
         for managed_artist, artist in managed_artists
     ]
     recommendations = get_top_recommendations(current_user)[:3]
+
+    next_artists_to_follow = [
+        f'<a href="https://open.spotify.com/artist/{a[1]}">{a[0]}</a>' for a in get_next_to_follow(current_user)[:3]
+    ]
+
     return render_template(
         "spotify.html",
         navigation=get_navigation(current_user, "Music"),
         managed_artists=to_return,
-        percent_top_artists_formatted=get_percentage_best_selling_artists(current_user),
+        percent_top_artists_sales_formatted=get_percentage_best_selling_artists(
+            current_user, "https://en.wikipedia.org/wiki/List_of_best-selling_music_artists"
+        ),
+        percent_top_artists_streams_formatted=get_percentage_best_selling_artists(
+            current_user, "https://en.wikipedia.org/wiki/List_of_most-streamed_artists_on_Spotify"
+        ),
+        percent_top_artists_certifications_formatted=get_percentage_best_selling_artists(
+            current_user, "https://en.wikipedia.org/wiki/List_of_highest-certified_music_artists_in_the_United_States"
+        ),
+        next_artists_to_follow=", ".join(next_artists_to_follow),
         totals_given="total_track_counts" in request.args,
         total_tracks=total_tracks,
         total_artists=len(artists_dict.keys()),
