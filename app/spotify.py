@@ -507,9 +507,7 @@ def get_tracks(user: User) -> List[JsonDict]:
     log(f"getting top 3 tracks per artist {today_datetime()}")
     # get top 3 tracks for each artist in ARTISTS
     for artist in my_managed_artists:
-        tracks = SpotifyTrack.query.join(TopTrack).filter_by(artist_uri=artist.spotify_artist_uri).all()
-        if not tracks:
-            _, tracks = get_top_tracks(sp, SpotifyArtist.query.filter_by(uri=artist.spotify_artist_uri).one())
+        _, tracks = get_top_tracks(sp, SpotifyArtist.query.filter_by(uri=artist.spotify_artist_uri).one())
         for top_track in tracks[: artist.num_top_tracks]:
             dedup_map[top_track.uri] = json.loads(top_track.api_response)
 
