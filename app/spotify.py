@@ -510,7 +510,7 @@ def get_tracks(user: User) -> List[JsonDict]:
         _, tracks = get_top_tracks(sp, SpotifyArtist.query.filter_by(uri=artist.spotify_artist_uri).one())
         for top_track in tracks[: artist.num_top_tracks]:
             dedup_map[top_track.track_uri] = json.loads(
-                SpotifyTrack.query.filter_by(top_track.track_uri).one().api_response
+                SpotifyTrack.query.filter_by(uri=top_track.track_uri).one().api_response
             )
 
     output = dedup_map.values()
