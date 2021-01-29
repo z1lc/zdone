@@ -22,7 +22,7 @@ MAX_RETRIES_PER_ARTIST = 2
 # heroku run python app/scheduled/update_artist_top_songs.py -a zdone
 if __name__ == "__main__":
     refresh_start_time = time.time()
-    all_users = User.query.all()
+    all_users = db.session.query(User).order_by(User.id.asc()).all()  # type: ignore
     log("Will update last.fm scrobble counts for all users.")
     for registered_user in all_users:
         try:

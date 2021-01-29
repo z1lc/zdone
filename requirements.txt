@@ -38,6 +38,7 @@ pre-commit==2.9.3
 untappd==0.4
 genanki==0.10.1
 google-cloud-translate==3.0.2
+unidecode==1.1.2
 
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.3.0/en_core_web_sm-2.3.0.tar.gz
 https://github.com/explosion/spacy-models/releases/download/fr_core_news_sm-2.3.0/fr_core_news_sm-2.3.0.tar.gz

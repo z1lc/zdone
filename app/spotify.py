@@ -2,6 +2,8 @@ import collections
 import datetime
 import json
 import random
+import re
+import unidecode
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from random import randrange
@@ -120,6 +122,14 @@ def update_spotify_anki_playlist(user: User):
     log(f"Updated Spotify playlist for user {user.username}")
 
 
+def uniform_artist_name(artist_name: str) -> str:
+    name = artist_name.lower()
+    name = unidecode.unidecode(name)  # Pražský výběr, Marie Rottrová
+    name = re.sub("&", "and", name)  # Smokey Robinson & The Miracles
+    name = re.sub("\\$", "s", name)  # Ke$ha
+    return re.sub("\\W", "", name)  # Lil' Wayne, Jean-Michel Jarre, Anna K.
+
+
 def update_last_fm_scrobble_counts(user: User):
     if user.last_fm_username is None:
         log(f"User {user.username} does not have a last.fm username set. Nothing to refresh.")
@@ -141,14 +151,14 @@ def update_last_fm_scrobble_counts(user: User):
             page += 1
             done = page >= int(top_artists_batch["topartists"]["@attr"]["totalPages"])
             for artist in top_artists_batch["topartists"]["artist"]:
-                name_to_plays[artist["name"].lower()] = artist["playcount"]
+                name_to_plays[uniform_artist_name(artist["name"])] = artist["playcount"]
         for managed_spotify_artist, spotify_artist in (
             db.session.query(ManagedSpotifyArtist, SpotifyArtist)
             .join(ManagedSpotifyArtist)
             .filter_by(user_id=user.id)
             .all()
         ):
-            managed_spotify_artist.last_fm_scrobbles = name_to_plays.get(spotify_artist.name.lower(), None)
+            managed_spotify_artist.last_fm_scrobbles = name_to_plays.get(uniform_artist_name(spotify_artist.name), None)
         user.last_fm_last_refresh_time = today_datetime()
         db.session.commit()
         log(f"Updated scrobble counts for user {user.username}")
