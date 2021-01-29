@@ -421,7 +421,12 @@ def get_top_tracks(sp, artist: SpotifyArtist, allow_refresh: bool = False) -> Tu
         db.session.commit()
         return dropped, to_return
     else:
-        return 0, TopTrack.query.filter_by(artist_uri=artist.uri).all()
+        return 0, (
+            db.session.query(TopTrack)
+            .filter(TopTrack.artist_uri == artist.uri)
+            .order_by(TopTrack.ordinal.asc())  # type: ignore
+            .all()
+        )
 
 
 def get_followed_managed_spotify_artists_for_user(user: User, should_update: bool) -> List[ManagedSpotifyArtist]:
